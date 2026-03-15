@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EJP Dashboard — 開發紀錄</title>
+  <meta name="description" content="非工程師用 AI 協作建出業務管道儀表板的完整案例：選型決策、推進方式、踩坑洞察。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f5f0;
+      --grid: rgba(0,0,0,0.04);
+      --grid-sm: rgba(0,0,0,0.02);
+      --surface: #ffffff;
+      --surface-warm: #faf9f6;
+      --ink: #18160f;
+      --ink-2: #3a3830;
+      --ink-3: #6b6860;
+      --ink-4: #9b9890;
+      --border: rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.14);
+      --gold: #b5872a;
+      --gold-light: rgba(181,135,42,0.10);
+      --gold-mid: rgba(181,135,42,0.20);
+      --sidebar-w: 240px;
+      --font: 'Inter', 'Noto Sans TC', sans-serif;
+      --serif: 'EB Garamond', 'Noto Sans TC', Georgia, serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(var(--grid-sm) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-sm) 1px, transparent 1px);
+      background-size: 100px 100px, 100px 100px, 25px 25px, 25px 25px;
+      color: var(--ink);
+      line-height: 1.85;
+      font-size: 19px;
+    }
+
+    .layout { display: flex; min-height: 100vh; width: 100%; }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--surface);
+      border-right: 1px solid var(--border-strong);
+      padding: 0 0 60px;
+    }
+
+    .sidebar-top {
+      padding: 32px 24px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .sidebar-eyebrow {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .sidebar-top h2 {
+      font-family: var(--serif);
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .nav-section { padding: 0 16px; }
+    .nav-group { margin-top: 28px; }
+
+    .nav-group-label {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      padding: 0 8px;
+      margin-bottom: 6px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 16px;
+      color: var(--ink-3);
+      text-decoration: none;
+      padding: 8px 8px;
+      border-radius: 4px;
+      transition: color .15s, background .15s;
+      line-height: 1.4;
+    }
+
+    .nav-link:hover { color: var(--ink); background: rgba(0,0,0,0.03); }
+
+    .nav-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ink-4);
+      flex-shrink: 0;
+    }
+
+    .main {
+      flex: 1;
+      padding: 64px 80px 120px 80px;
+      min-width: 0;
+    }
+
+    .hero { margin-bottom: 72px; }
+
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .hero-eyebrow::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-strong);
+    }
+
+    .eyebrow-text {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: 52px;
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--ink);
+      margin-bottom: 24px;
+      letter-spacing: -.01em;
+    }
+
+    .hero-rule { width: 48px; height: 2px; background: var(--gold); margin-bottom: 24px; }
+
+    .hero-desc { font-size: 20px; color: var(--ink-2); line-height: 1.75; }
+
+    .hero-meta { margin-top: 20px; font-size: 14px; color: var(--ink-4); letter-spacing: .05em; }
+
+    .section { margin-bottom: 72px; scroll-margin-top: 24px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-num { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--gold); letter-spacing: .05em; }
+
+    .section-title { font-family: var(--serif); font-size: 30px; font-weight: 400; color: var(--ink); letter-spacing: -.01em; }
+
+    p { margin-bottom: 18px; color: var(--ink-2); font-size: 19px; line-height: 1.85; }
+    strong { font-weight: 600; color: var(--ink); }
+    a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+
+    ul, ol { padding-left: 22px; margin-bottom: 18px; }
+    li { margin-bottom: 10px; font-size: 19px; line-height: 1.8; color: var(--ink-2); }
+    li::marker { color: var(--gold); }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-bottom: 28px;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 17px; }
+
+    thead th {
+      background: var(--ink);
+      color: #fff;
+      font-weight: 500;
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 13px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    tbody tr { background: var(--surface); transition: background .1s; }
+    tbody tr:nth-child(even) { background: var(--surface-warm); }
+    tbody tr:hover { background: var(--gold-light); }
+
+    td { padding: 14px 20px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 17px; line-height: 1.7; }
+
+    .callout {
+      display: flex;
+      gap: 16px;
+      padding: 20px 24px;
+      border-radius: 4px;
+      margin-bottom: 24px;
+      font-size: 18px;
+      line-height: 1.8;
+      border-left: 3px solid;
+    }
+
+    .callout-icon { font-size: 18px; flex-shrink: 0; line-height: 1.75; }
+    .callout-tip { background: rgba(181,135,42,0.07); border-color: var(--gold); color: var(--ink-2); }
+    .callout-note { background: rgba(0,0,0,0.04); border-color: var(--ink-3); color: var(--ink-2); }
+
+    .case-card {
+      border: 1px solid var(--border-strong);
+      border-top: 3px solid var(--gold);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 48px;
+    }
+
+    .case-card-row {
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+      padding: 15px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .case-card-row:last-child { border-bottom: none; }
+
+    .case-card-label {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      min-width: 160px;
+      flex-shrink: 0;
+    }
+
+    .case-card-value { font-size: 18px; color: var(--ink-2); line-height: 1.7; }
+
+    .bug-block {
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+
+    .bug-header {
+      background: #1e1b16;
+      padding: 15px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bug-icon { font-size: 16px; color: #e8c97a; }
+
+    .bug-title {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 500;
+      color: #e8c97a;
+      letter-spacing: .02em;
+    }
+
+    .bug-body { background: var(--surface); padding: 26px 28px; }
+    .bug-body p { margin-bottom: 14px; font-size: 18px; }
+    .bug-body p:last-child { margin-bottom: 0; }
+
+    .result-preview {
+      margin: 36px 0;
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .result-preview img { width: 100%; height: auto; display: block; }
+
+    .result-preview-caption {
+      background: var(--surface-warm);
+      border-top: 1px solid var(--border);
+      padding: 14px 22px;
+      font-size: 16px;
+      color: var(--ink-3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      line-height: 1.5;
+    }
+
+    .result-preview-badge {
+      background: var(--gold-light);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      padding: 3px 10px;
+      border: 1px solid var(--gold-mid);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .takeaway {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-top: 3px solid var(--gold);
+      border-radius: 4px;
+      padding: 36px 40px;
+      margin-bottom: 24px;
+    }
+
+    .takeaway-label {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    .takeaway h3 { font-size: 20px; font-weight: 600; color: var(--ink); margin-bottom: 10px; margin-top: 24px; }
+    .takeaway h3:first-of-type { margin-top: 0; }
+
+    footer {
+      margin-top: 72px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-strong);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+      color: var(--ink-4);
+      flex-wrap: wrap;
+      gap: 8px;
+      letter-spacing: .03em;
+    }
+
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 2px;
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 960px) {
+      .sidebar {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        z-index: 50;
+        transition: left .2s ease;
+        box-shadow: 4px 0 32px rgba(0,0,0,0.1);
+      }
+      .sidebar.open { left: 0; }
+      .main { padding: 40px 32px 80px; }
+      .hero h1 { font-size: 36px; }
+      .menu-toggle { display: flex; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-eyebrow">工具開發 · AI 協作案例</div>
+      <h2>EJP Dashboard 開發紀錄</h2>
+    </div>
+    <div class="nav-section">
+      <div class="nav-group">
+        <div class="nav-group-label">案例內容</div>
+        <a class="nav-link" href="#s1"><span class="nav-num">01</span>為什麼要做這件事</a>
+        <a class="nav-link" href="#s2"><span class="nav-num">02</span>技術選型</a>
+        <a class="nav-link" href="#s3"><span class="nav-num">03</span>推進方式</a>
+        <a class="nav-link" href="#s4"><span class="nav-num">04</span>踩到的坑</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>最終樣貌</a>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span>如果繼續往下</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">總結</div>
+        <a class="nav-link" href="#takeaway"><span class="nav-num">—</span>Takeaway</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <header class="hero">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-text">工具開發型 · 非工程師視角</span>
+      </div>
+      <h1>EJP Sales Pipeline Dashboard<br>開發紀錄</h1>
+      <div class="hero-rule"></div>
+      <p class="hero-desc">業務人員靠 AI 協作，從一份 Google Sheets 出發，在幾天內建出正式部署的銷售管道視覺化儀表板。</p>
+      <div class="hero-meta">整理日期：2026-03-11 &nbsp;·&nbsp; 類型：工具開發型（非工程師視角）</div>
+    </header>
+
+    <!-- Case Card -->
+    <div class="case-card">
+      <div class="case-card-row">
+        <span class="case-card-label">我用 AI 做了什麼</span>
+        <span class="case-card-value">用 Claude Code 從零建出部署在 Vercel 的銷售管道儀表板，含登入保護、英日雙語切換、多維度圖表，以及給分公司的配套導入文件</span>
+      </div>
+      <div class="case-card-row">
+        <span class="case-card-label">沒有 AI 的話</span>
+        <span class="case-card-value">找外包至少 2–4 週、預算數十萬日圓，且對方不懂業務邏輯還要來回溝通；或是等 IT 排期，時程更不可控</span>
+      </div>
+      <div class="case-card-row">
+        <span class="case-card-label">最終成果</span>
+        <span class="case-card-value">儀表板正式上線（<a href="https://ejp-pipeline-dashboard.vercel.app/" target="_blank">ejp-pipeline-dashboard.vercel.app</a>），搭配繁中 / 日文導入提案網頁 + IT 部門申請文件，整套交付物一站完成</span>
+      </div>
+    </div>
+
+    <!-- Result Preview -->
+    <div class="result-preview">
+      <img src="./screenshots/dashboard.png" alt="EJP Dashboard 儀表板截圖" />
+      <div class="result-preview-caption">
+        <span class="result-preview-badge">LIVE</span>
+        EJP Sales Pipeline Dashboard — 7 個 KPI 卡 + 6 張圖表 + 案件列表 + 日本地圖熱力圖，英日雙語切換
+      </div>
+    </div>
+
+    <!-- S1 -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">為什麼要做這件事</h2>
+      </div>
+
+      <p>EJP Japan 的業務 pipeline 資料散落在 Google Sheets 裡。每次開會都要手動整理數字、截圖貼到 PPT，沒有人能一眼看出哪個 Stage 的案件最多、哪個業務的 Pipeline 最健康。</p>
+
+      <p>不是不想用現成工具（Salesforce、HubSpot），而是：</p>
+
+      <ul>
+        <li>IT 採購流程太長，今天需要的明年才批</li>
+        <li>分公司規模小，付整套 CRM 的費用不合理</li>
+        <li>最重要的是：<strong>資料就在 Google Sheets 裡，只差一個能看的介面</strong></li>
+      </ul>
+
+      <p>所以目標很清楚：做一個 POC，證明「這件事值得繼續投資」，而不是先說服管理層、排預算、等 IT。</p>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">✦</span>
+        <span>用 AI 做 POC 的核心優勢不是「便宜」，而是「快到可以先驗證假設再決定要不要正式投資」。這個順序很重要。</span>
+      </div>
+    </section>
+
+    <!-- S2 -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">技術選型</h2>
+      </div>
+
+      <p>每個工具的選擇都只有一個標準：<strong>AI 最熟悉、最能幫我的</strong>，而不是「業界最好的」。</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>工具</th><th>選的理由</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Next.js</strong></td><td>AI 最熟悉、前後端一起搞定、Vercel 原生支援</td></tr>
+            <tr><td><strong>Recharts</strong></td><td>React 生態裡圖表最好用，不用額外學新框架</td></tr>
+            <tr><td><strong>Google Sheets API</strong></td><td>資料就在那裡，Service Account 幾分鐘接好，不需要建資料庫</td></tr>
+            <tr><td><strong>Vercel</strong></td><td>推 GitHub 就部署、免費方案夠用、URL 直接給管理層看很專業</td></tr>
+            <tr><td><strong>Tailwind CSS</strong></td><td>沒有設計稿也能寫出看得過去的 UI，AI 對 Tailwind 的掌握最穩</td></tr>
+            <tr><td><strong>Radix UI</strong></td><td>Dropdown、Modal 這類互動元件不用自己造輪子</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">✦</span>
+        <span>選型原則：在 AI 最熟悉的技術範圍內選，不是選「最好的」，而是選「AI 最能幫我的」。陌生的技術堆疊只會讓每個問題都變成 debug 地獄。</span>
+      </div>
+    </section>
+
+    <!-- S3 -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">推進方式</h2>
+      </div>
+
+      <p>整個過程不是「我想到什麼 AI 就做什麼」，而是<strong>把現有的 Google Sheets 當成規格書，讓 AI 逼近這個已知的正確答案</strong>。</p>
+
+      <p>具體做法：先把 Sheets 的欄位名稱、Stage 值、資料格式全部告訴 AI，然後逐步要求它把每個欄位正確地對應到介面上。每加一個功能，都先確認資料有沒有正確讀進來，再確認圖表顯示對不對。</p>
+
+      <p>任務拆解的順序大概是這樣：</p>
+
+      <ol>
+        <li>先有一個能跑的骨架（API 讀 Sheets，前端顯示一個表格）</li>
+        <li>再加圖表（Funnel、Bar、Pie 一個個加）</li>
+        <li>再加互動（Filter、搜尋、語言切換）</li>
+        <li>再加保護（登入頁、Middleware）</li>
+        <li>最後加交付物（提案網頁、IT 申請文件）</li>
+      </ol>
+
+      <p>每個階段都先讓它動起來，再優化細節。不試圖一次到位。</p>
+
+      <div class="callout callout-note">
+        <span class="callout-icon">—</span>
+        <span>「把已知的正確答案當起點，讓 AI 逼近它」比「從零開始設計需求」效率高很多。因為 AI 不需要猜你要什麼，它只需要比對和實作。</span>
+      </div>
+    </section>
+
+    <!-- S4 -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">踩到的坑，讓我更懂的事</h2>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">◆</span>
+          <span class="bug-title">坑一：Stage 資料全部顯示 0（資料讀進來了，但 key 對不上）</span>
+        </div>
+        <div class="bug-body">
+          <p><strong>症狀</strong>：Contact、Qualified、Evaluation、Quote 這幾個 Stage 的圖表全是 0，但 Sheets 裡明明有資料。</p>
+          <p>這個問題讓我理解了一件事：程式碼裡有兩套 Stage 名稱在同時存在，它們必須完全一致。Google Sheets 裡的原始值是 <code>"1 - Contact"</code>，程式用 <code>normalizeStage()</code> 把它轉成 <code>"Contact"</code>。但常數設定檔裡的 key 還是舊的 <code>"Initial Contact"</code>，永遠對不到，所以查表結果是 0。</p>
+          <div class="callout callout-tip" style="margin-top: 12px; margin-bottom: 0;">
+            <span class="callout-icon">✦</span>
+            <span>帶走的原則：凡是「資料在但畫面是 0」的問題，先查「資料有沒有被轉換過」、「轉換後的結果跟查詢用的 key 是否完全一致」。這類 key mismatch 問題很難靠肉眼看程式碼發現，但症狀非常典型。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">◆</span>
+          <span class="bug-title">坑二：圖表上有些 Bar 沒有數字標籤（空間不夠但 AI 不知道）</span>
+        </div>
+        <div class="bug-body">
+          <p><strong>症狀</strong>：Pipeline Stage 圖的某幾個 Stage Bar 太窄，數字被塞進去卻看不見，視覺上就像那個 Stage 沒有標籤。</p>
+          <p>根本問題是：標籤預設放在 Bar 裡面，但當 Bar 的寬度小於一定比例時，文字就超出邊界或被截掉了。解法是判斷 Bar 寬度，太窄就把標籤移到 Bar 右邊。</p>
+          <div class="callout callout-tip" style="margin-top: 12px; margin-bottom: 0;">
+            <span class="callout-icon">✦</span>
+            <span>帶走的原則：圖表的「看不見」問題，不是資料問題，是 overflow 行為問題。只要可視區域有截切，裡面的內容就可能消失。解法通常是把元素搬到容器外面。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">◆</span>
+          <span class="bug-title">坑三：語言切換破壞 HTML 結構（JS 換 innerHTML 的副作用）</span>
+        </div>
+        <div class="bug-body">
+          <p><strong>症狀</strong>：提案網頁的中文 / 日文切換時，某個包含子元素的容器，切換後裡面的 HTML 結構消失了。</p>
+          <p>原因是：<code>data-ja</code> 屬性被加在一個有子元素的容器上，語言切換時 JS 直接覆蓋了整個 <code>innerHTML</code>，子元素當然也一起消失。</p>
+          <div class="callout callout-tip" style="margin-top: 12px; margin-bottom: 0;">
+            <span class="callout-icon">✦</span>
+            <span>帶走的原則：如果要讓 JS 安全地替換文字，<code>data-ja</code> 只能加在「裡面只有純文字、沒有其他子元素」的節點上。否則切換語言 = 刪掉結構。</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- S5 -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">最終樣貌</h2>
+      </div>
+
+      <p><strong>儀表板本體</strong>（<a href="https://ejp-pipeline-dashboard.vercel.app/" target="_blank">ejp-pipeline-dashboard.vercel.app</a>）：</p>
+
+      <ul>
+        <li>密碼保護（全站 Middleware 守衛），不知道密碼的人看不到任何東西</li>
+        <li>7 個 KPI 卡：總案件數、活躍案件、Pipeline 總額、Closed Won、勝率、加重預測、當月新增</li>
+        <li>6 張圖表：Pipeline by Stage funnel、Vertical 分布、Stage vs 加重預測、地區 Top 10、業務員 Pipeline 排行、案件來源</li>
+        <li>案件列表：搜尋 + 多維篩選 + 點開看詳情 Modal</li>
+        <li>日本地圖：地區案件熱點視覺化</li>
+        <li>英 / 日雙語切換，基本 RWD（手機可用，平板以上最佳）</li>
+      </ul>
+
+      <p><strong>配套交付物</strong>（同步部署在 Vercel）：</p>
+
+      <ul>
+        <li><a href="https://ejp-pipeline-dashboard.vercel.app/proposal.html" target="_blank"><code>/proposal.html</code></a> — 分公司導入說明（繁中 / 日文雙語，附系統架構說明與存取控制方案）</li>
+        <li><a href="https://ejp-pipeline-dashboard.vercel.app/it-request.html" target="_blank"><code>/it-request.html</code></a> — IT 部門 Azure App Registration 申請文件，含 SSO 長期方案說明</li>
+        <li><code>docs/sharepoint-deployment-guide.md</code> — 開發者遷移指南（Google Sheets → SharePoint，約 60 行改動）</li>
+      </ul>
+    </section>
+
+    <!-- S6 -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">如果繼續往下</h2>
+      </div>
+
+      <ul>
+        <li><strong>資料來源遷移</strong>：Google Sheets 是 POC 用的，正式版應該接 SharePoint（分公司的 Excel 在那裡）。程式架構已預留好，換一個 <code>lib/sharepoint.js</code> 就搞定，其他不動。</li>
+        <li><strong>存取控制升級</strong>：目前是共用密碼，長期應接 Microsoft SSO，只有公司帳號才能進。IT 申請文件已備妥，等 POC 驗證後的自然下一步。</li>
+        <li><strong>讓業務自己填資料</strong>：現在格式由 AI 控制，未來要讓業務人員能直接更新 Excel，需要定義欄位規格並做輸入驗證提示。</li>
+        <li><strong>定期 Email Report</strong>：把儀表板每週快照自動寄給管理層，讓不登入的人也能收到資訊。</li>
+      </ul>
+    </section>
+
+    <!-- Takeaway -->
+    <section class="section" id="takeaway">
+      <div class="takeaway">
+        <div class="takeaway-label">Takeaway</div>
+
+        <h3>這個案例展示了什麼思路</h3>
+        <p>不是「我要做一個儀表板」然後從零開始設計，而是「我有一份 Sheets，我要讓它變得可見」——<strong>把已知的正確答案當起點，讓 AI 逐步逼近它</strong>。這個方式的效率遠高於從需求文件開始，因為 AI 不需要猜你要什麼，它只需要比對和實作。</p>
+
+        <h3>可移植性</h3>
+        <p>這個方法適用於任何「資料已經在某個地方、只差一個好看介面」的場景——Google Sheets、Airtable、Excel、CSV 都行。<br>不適用於需要設計全新資料流或資料庫架構的情況（那種需要更多前期規劃，不能直接跑）。</p>
+
+        <h3>如果你也要做，先問 AI 什麼</h3>
+        <ul style="padding-left: 0; list-style: none;">
+          <li style="padding: 8px 0; border-bottom: 1px solid var(--border);">→ 「我有一份 Google Sheets，欄位是 A/B/C，幫我用 Next.js + Recharts 做一個可以顯示 [具體圖表] 的儀表板，部署在 Vercel」</li>
+          <li style="padding: 8px 0;">→ 「我的圖表上有些資料顯示 0，但資料在 Sheets 裡確實有值，可能是什麼原因？幫我列出 checklist 逐一排查」</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      <span>EJP Dashboard 開發紀錄 · 工具開發型（非工程師視角）</span>
+      <span>2026-03-11</span>
+    </footer>
+
+  </main>
+</div>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Open menu">☰</button>
+
+<script>
+  const toggle = document.getElementById('menuToggle');
+  const sidebar = document.getElementById('sidebar');
+  toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+  document.addEventListener('click', e => {
+    if (!sidebar.contains(e.target) && e.target !== toggle) sidebar.classList.remove('open');
+  });
+
+  // Active nav on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.4 });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 學習筆記</title>
+  <meta name="description" content="用 AI 協作解決問題、建立工具的案例紀錄。" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f5f0;
+      --grid: rgba(0,0,0,0.04);
+      --grid-sm: rgba(0,0,0,0.02);
+      --surface: #ffffff;
+      --surface-warm: #faf9f6;
+      --ink: #18160f;
+      --ink-2: #3a3830;
+      --ink-3: #6b6860;
+      --ink-4: #9b9890;
+      --border: rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.14);
+      --gold: #b5872a;
+      --gold-light: rgba(181,135,42,0.10);
+      --gold-mid: rgba(181,135,42,0.20);
+      --font: 'Inter', 'Noto Sans TC', sans-serif;
+      --serif: 'EB Garamond', 'Noto Sans TC', Georgia, serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(var(--grid-sm) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-sm) 1px, transparent 1px);
+      background-size: 100px 100px, 100px 100px, 25px 25px, 25px 25px;
+      color: var(--ink);
+      font-size: 17px;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 48px 120px;
+    }
+
+    /* Header */
+    .header { margin-bottom: 72px; }
+
+    .header-eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-eyebrow::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-strong);
+    }
+
+    .header h1 {
+      font-family: var(--serif);
+      font-size: 48px;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.15;
+      letter-spacing: -.01em;
+      margin-bottom: 20px;
+    }
+
+    .header-rule { width: 48px; height: 2px; background: var(--gold); margin-bottom: 20px; }
+
+    .header-desc {
+      font-size: 18px;
+      color: var(--ink-3);
+      line-height: 1.75;
+      max-width: 520px;
+    }
+
+    /* Stats bar */
+    .stats {
+      display: flex;
+      gap: 40px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .stat-item { display: flex; flex-direction: column; gap: 4px; }
+
+    .stat-num {
+      font-family: var(--mono);
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: -.02em;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--ink-4);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    /* Section label */
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Note cards */
+    .notes-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .note-card {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-left: 3px solid transparent;
+      border-radius: 4px;
+      padding: 28px 32px;
+      text-decoration: none;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: start;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+
+    .note-card:hover {
+      border-left-color: var(--gold);
+      background: var(--surface-warm);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    }
+
+    .note-card-left { min-width: 0; }
+
+    .note-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .note-type-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 2px;
+      background: var(--gold-light);
+      color: var(--gold);
+      border: 1px solid var(--gold-mid);
+    }
+
+    .note-date {
+      font-size: 12px;
+      color: var(--ink-4);
+      letter-spacing: .04em;
+    }
+
+    .note-title {
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.3;
+      margin-bottom: 10px;
+      letter-spacing: -.01em;
+    }
+
+    .note-desc {
+      font-size: 15px;
+      color: var(--ink-3);
+      line-height: 1.65;
+      margin-bottom: 14px;
+    }
+
+    .note-outcome {
+      font-size: 13px;
+      color: var(--ink-4);
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .note-outcome-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .note-card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .note-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .note-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .04em;
+      padding: 6px 12px;
+      border-radius: 3px;
+      text-decoration: none;
+      border: 1px solid var(--border-strong);
+      color: var(--ink-3);
+      background: var(--bg);
+      transition: color .15s, border-color .15s, background .15s;
+    }
+
+    .note-link:hover { color: var(--ink); border-color: var(--gold); background: var(--gold-light); }
+
+    .note-link.primary {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+
+    .note-link.primary:hover { background: #2d2a22; border-color: #2d2a22; }
+
+    /* Empty state */
+    .empty-state {
+      padding: 48px 32px;
+      border: 1px dashed var(--border-strong);
+      border-radius: 4px;
+      text-align: center;
+      color: var(--ink-4);
+      font-size: 15px;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 72px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-strong);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--ink-4);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .container { padding: 48px 24px 80px; }
+      .header h1 { font-size: 34px; }
+      .note-card { grid-template-columns: 1fr; }
+      .note-card-right { align-items: flex-start; }
+      .stats { gap: 24px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <div class="header-eyebrow">AI 學習筆記</div>
+    <h1>用 AI 做過的事</h1>
+    <div class="header-rule"></div>
+    <p class="header-desc">每一篇都是真實發生的案例：選型決策、推進方式、踩過的坑，以及可以複製的方法。</p>
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-num" id="note-count">1</span>
+        <span class="stat-label">篇案例</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">2026</span>
+        <span class="stat-label">開始記錄</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="section-label">所有案例</div>
+
+  <div class="notes-grid" id="notes-grid">
+
+    <!-- ── EJP Dashboard ── -->
+    <div class="note-card">
+      <div class="note-card-left">
+        <div class="note-card-meta">
+          <span class="note-type-badge">工具開發</span>
+          <span class="note-date">2026-03-11</span>
+        </div>
+        <div class="note-title">EJP Sales Pipeline Dashboard</div>
+        <div class="note-desc">非工程師用 AI 協作，從一份 Google Sheets 出發，幾天內建出正式部署的業務管道視覺化儀表板，搭配分公司導入提案與 IT 申請文件。</div>
+        <div class="note-outcome">
+          <span class="note-outcome-label">成果</span>
+          <span>儀表板上線 · 7 KPI + 6 圖表 + 雙語切換 · Vercel 部署</span>
+        </div>
+      </div>
+      <div class="note-card-right">
+        <div class="note-links">
+          <a class="note-link" href="./ejp-dashboard/devlog.md">MD</a>
+          <a class="note-link primary" href="./ejp-dashboard/devlog.html">閱讀 →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 未來新案例加在這裡 -->
+
+  </div>
+
+  <footer>
+    <span>Terrel Yeh · AI 學習筆記</span>
+    <span>持續更新中</span>
+  </footer>
+
+</div>
+</body>
+</html>
