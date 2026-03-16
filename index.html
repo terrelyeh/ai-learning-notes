@@ -285,14 +285,28 @@
       margin-top: 72px;
       padding-top: 24px;
       border-top: 1px solid var(--border-strong);
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+    .footer-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 13px;
-      color: var(--ink-4);
       flex-wrap: wrap;
       gap: 8px;
     }
+    .footer-links {
+      margin-top: 14px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      color: var(--ink-4);
+      text-decoration: none;
+      transition: color .15s;
+    }
+    .footer-links a:hover { color: var(--gold); }
 
     @media (max-width: 640px) {
       .container { padding: 48px 24px 80px; }
@@ -398,8 +412,14 @@
   </div>
 
   <footer>
-    <span>Terrel Yeh · AI 學習筆記</span>
-    <span>持續更新中</span>
+    <div class="footer-top">
+      <span>Terrel Yeh · AI 搭檔日誌</span>
+      <span>持續更新中</span>
+    </div>
+    <div class="footer-links">
+      <a href="https://wanderland-21-21-21.pages.dev" target="_blank" rel="noopener noreferrer">🎯 2026 年度營業目標</a>
+      <a href="https://wanderland-internal-policy.pages.dev" target="_blank" rel="noopener noreferrer">📋 營運資源管理規章</a>
+    </div>
   </footer>
 
 </div>
