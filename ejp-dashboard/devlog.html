@@ -428,7 +428,7 @@
       <h1>EJP Sales Pipeline Dashboard<br>開發紀錄</h1>
       <div class="hero-rule"></div>
       <p class="hero-desc">業務人員靠 AI 協作，從一份 Google Sheets 出發，在幾天內建出正式部署的銷售管道視覺化儀表板。</p>
-      <div class="hero-meta">整理日期：2026-03-11 &nbsp;·&nbsp; 類型：工具開發型（非工程師視角）</div>
+      <div class="hero-meta">整理日期：2026-03-11，最後更新：2026-03-16 &nbsp;·&nbsp; 類型：工具開發型（非工程師視角）</div>
     </header>
 
     <!-- Case Card -->
@@ -608,6 +608,8 @@
         <li>7 個 KPI 卡：總案件數、活躍案件、Pipeline 總額、Closed Won、勝率、加重預測、當月新增</li>
         <li>6 張圖表：Pipeline by Stage funnel、Vertical 分布、Stage vs 加重預測、地區 Top 10、業務員 Pipeline 排行、案件來源</li>
         <li>案件列表：搜尋 + 多維篩選 + 點開看詳情 Modal</li>
+        <li><strong>Model Summary tab</strong>：所有 Model 的 QTY、單價、Standard Value 彙總；含月份分布 pivot（Model × 月份），支援 Close/Deploy Date 切換、季度小計</li>
+        <li><strong>Sales Rep Summary tab</strong>：業務員 × 月份 pivot，案件數數字可點擊帶 filter 跳回 Deal List</li>
         <li>日本地圖：地區案件熱點視覺化</li>
         <li>英 / 日雙語切換，基本 RWD（手機可用，平板以上最佳）</li>
       </ul>
@@ -629,7 +631,7 @@
       </div>
 
       <ul>
-        <li><strong>資料來源遷移</strong>：Google Sheets 是 POC 用的，正式版應該接 SharePoint（分公司的 Excel 在那裡）。程式架構已預留好，換一個 <code>lib/sharepoint.js</code> 就搞定，其他不動。</li>
+        <li><strong>資料來源遷移</strong>（等待 POC 確認中）：Google Sheets 是 POC 用的，分公司確認後接 SharePoint。程式架構已預留好，換一個 <code>lib/sharepoint.js</code> 就搞定，其他不動。IT 申請文件已備妥。</li>
         <li><strong>存取控制升級</strong>：目前是共用密碼，長期應接 Microsoft SSO，只有公司帳號才能進。IT 申請文件已備妥，等 POC 驗證後的自然下一步。</li>
         <li><strong>讓業務自己填資料</strong>：現在格式由 AI 控制，未來要讓業務人員能直接更新 Excel，需要定義欄位規格並做輸入驗證提示。</li>
         <li><strong>定期 Email Report</strong>：把儀表板每週快照自動寄給管理層，讓不登入的人也能收到資訊。</li>
@@ -657,7 +659,7 @@
 
     <footer>
       <span>EJP Dashboard 開發紀錄 · 工具開發型（非工程師視角）</span>
-      <span>2026-03-11</span>
+      <span>2026-03-16</span>
     </footer>
 
   </main>

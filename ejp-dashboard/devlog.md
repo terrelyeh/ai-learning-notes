@@ -92,6 +92,8 @@ EJP Japan 的業務 pipeline 資料散落在 Google Sheets 裡。每次開會都
 - 7 個 KPI 卡（總案件數、活躍案件、Pipeline 總額、Closed Won、勝率、加重預測、當月新增）
 - 6 個圖表（Pipeline by Stage funnel、Vertical 分布、Stage vs 加重預測、地區 Top 10、業務員排行、案件來源）
 - 案件列表（搜尋、多維篩選、點開看詳情）
+- **Model Summary tab**：所有 Model 的 QTY、單價、Standard Value 彙總；含月份分布 pivot（Model × 月份），支援 Close/Deploy Date 切換、季度小計
+- **Sales Rep Summary tab**：業務員 × 月份 pivot，案件數數字可點擊帶 filter 跳回 Deal List
 - 日本地圖（地區案件熱點）
 - 英/日雙語切換
 - 基本 RWD（手機可用，平板以上最佳）
@@ -105,7 +107,7 @@ EJP Japan 的業務 pipeline 資料散落在 Google Sheets 裡。每次開會都
 
 ## 六、如果繼續往下
 
-- **資料來源遷移**：Google Sheets 是 POC 用的，正式版應該接 SharePoint（分公司的 Excel 在那裡）。程式架構已預留好，換一個 `lib/sharepoint.js` 檔案就搞定，其他不動。
+- **資料來源遷移**（等待 POC 確認中）：Google Sheets 是 POC 用的，分公司確認後接 SharePoint。程式架構已預留好，換一個 `lib/sharepoint.js` 就搞定，其他不動。IT 申請文件已備妥。
 - **存取控制升級**：目前是共用密碼，長期應接 Microsoft SSO，只有公司帳號才能進。IT 申請文件已備妥，等 POC 驗證後的下一步。
 - **資料由業務自己填**：現在是工程師（AI）控制格式，未來要讓業務人員能直接更新 Excel，需要定義欄位規格並做驗證提示。
 - **定期 Email Report**：把儀表板每週快照自動寄給管理層，讓不登入的人也能收到資訊。
@@ -122,4 +124,4 @@ EJP Japan 的業務 pipeline 資料散落在 Google Sheets 裡。每次開會都
 - 「我有一份 Google Sheets，欄位是 A/B/C，幫我用 Next.js + Recharts 做一個可以顯示 [具體圖表] 的儀表板，部署在 Vercel」
 - 「我的圖表上有些 Stage 顯示 0，但資料在 Sheets 裡確實有值，可能是什麼原因？幫我列出 checklist 逐一排查」
 
-_開發日期：2026-03-11_
+_開發日期：2026-03-11，最後更新：2026-03-16_
