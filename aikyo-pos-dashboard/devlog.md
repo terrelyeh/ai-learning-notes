@@ -76,6 +76,8 @@
 
 一開始，每次更新月份資料後，需要下載整個 HTML 檔案，再手動用 git push 推上去。這個流程對非工程師來說太麻煩了。後來我請 AI 直接在網頁裡串 GitHub API，實現按一個按鈕就把更新後的 index.html push 到 GitHub，Cloudflare 自動部署。這讓整個「每月更新」流程從需要開終端機變成只需要開瀏覽器。
 
+這裡有一個設計決策：瀏覽器要直接呼叫 GitHub API 推送程式碼，需要一個 **GitHub Personal Access Token** 做身份驗證（GitHub 不允許匿名寫入）。Token 使用 Fine-grained 類型，只授權存取 `aikyo-dashboard` 這一個 repo 的內容讀寫權限，不能刪 repo 或改設定。安全性方面，Token 只存在瀏覽器的 `sessionStorage` 裡，關閉分頁就自動清除，不會存到硬碟。
+
 **轉折二：銷售日報表需要格式轉換**
 
 四種報表中，前三種（營運報表、支付明細、品項統計）從 POS 匯出就是 CSV，可以直接上傳。但第四種「銷售日報表」匯出的是原始訂單 Excel — 每一列是一筆訂單，品項全部擠在同一欄裡。儀表板需要的是「每天每個品項賣了幾份」的格式，兩者差很多。

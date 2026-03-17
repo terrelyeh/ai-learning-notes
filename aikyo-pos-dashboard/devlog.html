@@ -681,6 +681,11 @@
       <div class="subsection">
         <div class="subsection-label">關鍵轉折一：從「下載 HTML」到「一鍵發布」</div>
         <p>一開始，每次更新月份資料後，需要下載整個 HTML 檔案，再手動用 git push 推上去。後來直接在網頁裡串 GitHub API，按一個按鈕就能發布。這讓整個「每月更新」流程從需要開終端機變成只需要開瀏覽器。</p>
+        <p>這裡有一個設計決策：瀏覽器要直接呼叫 GitHub API 推送程式碼，需要一個 <strong>GitHub Personal Access Token</strong> 做身份驗證（GitHub 不允許匿名寫入）。Token 使用 Fine-grained 類型，只授權存取 <code>aikyo-dashboard</code> 這一個 repo 的內容讀寫權限，不能刪 repo 或改設定。</p>
+        <div class="callout callout-tip">
+          <span class="callout-icon">&rarr;</span>
+          <div><strong>安全性：</strong>Token 只存在瀏覽器的 <code>sessionStorage</code> 裡，關閉分頁就自動清除，不會存到硬碟或傳到其他地方。每次開新分頁第一次發布時需要重新貼上。</div>
+        </div>
       </div>
 
       <div class="subsection">
