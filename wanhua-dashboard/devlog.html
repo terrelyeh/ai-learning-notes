@@ -627,31 +627,31 @@
       <h1>萬華世界業績儀表板</h1>
       <div class="hero-rule"></div>
       <p class="hero-desc">一間下午酒場的老闆，想把每個月從 POS 系統匯出的 Excel 報表變成看得懂、能追蹤的視覺化儀表板。沒有工程師背景，只有 Claude Code 和一個模糊的想法。</p>
-      <div class="hero-meta">整理日期：2026-03-16 &nbsp;·&nbsp; 類型：工具開發（非工程師視角）+ AI 協作</div>
+      <div class="hero-meta">整理日期：2026-03-17 &nbsp;·&nbsp; 類型：工具開發（非工程師視角）+ AI 協作</div>
     </header>
 
     <!-- Case Card -->
     <div class="case-card">
       <div class="case-card-row">
         <span class="case-card-label">我用 AI 做了什麼</span>
-        <span class="case-card-value">用 Claude Code 從 POS 匯出的 Excel 開始，一路建到有密碼保護、自動部署的業績儀表板，過程中零手寫程式碼</span>
+        <span class="case-card-value">用 Claude Code 從 POS 匯出的 Excel 開始，一路建到涵蓋 14 個月報表、跨年趨勢分析、品類趨勢圖、drill-down 導航的業績儀表板，過程中零手寫程式碼</span>
       </div>
       <div class="case-card-row">
         <span class="case-card-label">沒有 AI 的話</span>
-        <span class="case-card-value">找外包或自學前端，保守估計 2-3 個月；更可能的結果是一直停在「用 Excel 看數字」的階段</span>
+        <span class="case-card-value">找外包或自學前端，保守估計 3-4 個月；更可能的結果是一直停在「用 Excel 看數字」的階段</span>
       </div>
       <div class="case-card-row">
         <span class="case-card-label">最終成果</span>
-        <span class="case-card-value">Next.js 儀表板上線（Vercel 自動部署）· 8 KPI 卡片 + 每日/類別/商品三分頁 + 跨月趨勢 + 年度目標追蹤 · 密碼保護 · 一鍵更新月報</span>
+        <span class="case-card-value">Next.js 儀表板上線（Vercel 自動部署）· 14 個月報表（2025 全年 + 2026 兩月）· 年份篩選趨勢頁 + 品類趨勢折線圖 · 品牌感首頁 · 密碼保護 · 一鍵更新月報</span>
       </div>
     </div>
 
     <!-- Result Preview: Homepage -->
     <div class="result-preview">
-      <img src="./screenshots/homepage.png" alt="萬華世界業績儀表板首頁 — 月份入口卡片" />
+      <img src="./screenshots/homepage.png" alt="萬華世界業績儀表板首頁 — Hero Banner + 最新月份 Spotlight" />
       <div class="result-preview-caption">
         <span class="result-preview-badge">成果截圖</span>
-        首頁 Portal — 每個月份一張卡片，顯示營業額和營業天數，點進去就是完整月報
+        品牌化首頁 — 浮世繪 Hero Banner + 最新月份 Spotlight（4 KPI + MoM）+ 近期 3 月卡片
       </div>
     </div>
 
@@ -716,7 +716,7 @@
         <h2 class="section-title">推進方式</h2>
       </div>
 
-      <p>整個專案從第一行程式碼到上線，經歷了大約 12 次 Claude Code session，跨度兩週多。不是一口氣做完的，而是每次有空的時候開一個 session，做一個階段。</p>
+      <p>整個專案從第一行程式碼到上線，經歷了 17 次 Claude Code session，跨度約三週。不是一口氣做完的，而是每次有空的時候開一個 session，做一個階段。</p>
 
       <!-- AI Role Card -->
       <div class="ai-role-card">
@@ -773,6 +773,19 @@
         <div class="subsection-label">第五階段：經營決策功能（Session 14）</div>
         <p>加入年度目標追蹤——團隊每年會設定營業額目標（例如 2026 年目標 NT$2,100 萬），希望在趨勢頁面隨時看到達成進度。</p>
         <p>這個 session 的互動模式很有代表性：我提出需求（「想追蹤年度目標」），Claude 先規劃完整方案（P0~P3 四個層級），我只挑了 P0 + P1。然後在 UI 設計上來回了好幾輪——從一張大卡片 → 改成右側滑出面板 → 調整卡片層級 → 加入進度狀態色彩 → 合併趨勢洞察為 5×2 網格 → 月份卡片改成中性灰 → Tab 按鈕改成深灰 pill + emoji。每一步都是我看到畫面後，用一句話描述感受（「太花了」「好像兩個框套在一起」「鮮紅色太突兀」），Claude 立刻調整。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">第六階段：歷史資料 + 跨年分析 + 首頁重塑（Session 17）</div>
+        <p>這是目前為止範圍最大的一次 session——一口氣做了五件事：</p>
+        <ol>
+          <li><strong>匯入 2025 年全年資料</strong>——12 個月份的 iChef Excel 一次轉檔完成，儀表板從 2 個月暴增到 14 個月。</li>
+          <li><strong>趨勢頁年份篩選</strong>——加入 Year pill 切換（2025 / 2026）。Claude 先做了 server-side 過濾，切換時卡頓明顯；我反映後改成 client-side 過濾，切換體驗變成即時。</li>
+          <li><strong>品類趨勢折線圖</strong>——X 軸月份，每條折線代表一個品類，自由勾選最多 6 個品類，支援營收/銷量切換。讓「精釀啤酒這半年的銷售趨勢」一目了然。</li>
+          <li><strong>Drill-down 導航</strong>——品類比較表的月份數字變成可點擊的連結。我修正了 Claude 的方向：從原本導到「類別分析」Tab，改為導到「商品明細」Tab + 自動篩選品類——因為使用者真正想看的是品類下的具體商品。</li>
+          <li><strong>首頁重新設計</strong>——原本 14 張月份卡片一字排開太雜亂。改成 Spotlight 模式：Hero Banner（浮世繪品牌插畫）+ 最新月份大面積展示 + 近 3 個月小卡片 + 快捷入口。</li>
+        </ol>
+        <p>這個 session 也展現了 <strong>UI 微調的價值</strong>：首頁做完後，我連續提了三輪視覺回饋——「營收紅色字有點奇怪」→ 改深鐵灰；「輔助資訊太灰」→ 加底色標籤；「卡片太灰黑，資訊層級不清楚」→ 人數和天數改成藍/琥珀色 pill 標籤。每輪都是一句話，Claude 秒改。</p>
       </div>
     </section>
 
@@ -843,6 +856,51 @@
           </div>
         </div>
       </div>
+
+      <!-- Bug 5 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">Server-side vs Client-side 過濾——體感比邏輯重要</span>
+        </div>
+        <div class="bug-body">
+          <p>趨勢頁加年份篩選時，Claude 第一版用了 URL 驅動的方式：切換年份 → URL 改變 → 頁面重新渲染。邏輯上完全正確，但體感上有明顯卡頓。改成 client-side 方案（一次載入全部資料 + <code>useMemo</code> 即時過濾），切換體感從「等一下」變成「瞬間」。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>使用者的體感才是標準。技術上正確的方案不一定是最好的。當資料量不大時，全載入 + client 過濾通常體驗更好。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bug 6 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">Drill-down 的目的地要跟使用者的思路對齊</span>
+        </div>
+        <div class="bug-body">
+          <p>品類比較表加了可點擊的月份欄位，Claude 預設導到「類別分析」Tab。聽起來合理——你點了品類，當然是看品類分析。但我立刻覺得不對：「如果我已經在看品類比較的全景圖了，點進去應該是看更細的東西——也就是該品類下面有哪些具體商品。」所以改成導到「商品明細」Tab + 自動篩選該品類。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>Drill-down 的邏輯是「從概覽到細節」，不是「從概覽到另一個概覽」。導航目的地要順著使用者的思考脈絡。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bug 7 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">首頁不是「所有東西都要看到」</span>
+        </div>
+        <div class="bug-body">
+          <p>14 張月份卡片一字排開，第一眼的感覺是壓迫。不是資訊不對，而是<strong>什麼都看到就等於什麼都沒看到</strong>。改成 Spotlight 模式後，首頁只呈現最新月份和近 3 個月。其他月份在 Navbar 和趨勢頁裡隨時可達。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>首頁的價值是「讓你 5 秒內知道現在的狀況」，不是「讓你找到所有東西」。資訊的入口和資訊的展示不應該混在一起。</div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ── Section 5: 最終樣貌 ── -->
@@ -852,11 +910,11 @@
         <h2 class="section-title">最終樣貌</h2>
       </div>
 
-      <p>現在的萬華世界業績儀表板是一個完整的 Next.js 應用，部署在 Vercel 上，有密碼保護。</p>
+      <p>現在的萬華世界業績儀表板是一個完整的 Next.js 應用，部署在 Vercel 上，有密碼保護，涵蓋 2025 全年 + 2026 年 1-2 月共 14 個月的報表。</p>
 
       <div class="subsection">
-        <div class="subsection-label">首頁 Portal</div>
-        <p>月份入口——每個月份一張卡片，顯示營業額和營業天數，點進去就是該月的完整報表。還有一張「趨勢總覽」卡片，看跨月的 KPI 比較。</p>
+        <div class="subsection-label">品牌化首頁</div>
+        <p>浮世繪風格的 Hero Banner 搭配品牌 Logo，最新月份以 Spotlight 大面積呈現（4 個 KPI + MoM 比較），下方 3 張近期月份小卡片帶彩色 pill 標籤（藍色人數 / 琥珀色天數），再加「趨勢總覽」和「操作教學」快捷入口。</p>
       </div>
 
       <div class="subsection">
@@ -878,16 +936,19 @@
       <div class="subsection">
         <div class="subsection-label">趨勢頁面</div>
         <div class="result-preview">
-          <img src="./screenshots/trend.png" alt="萬華世界趨勢總覽 — 年度目標追蹤 + 趨勢洞察 5×2 網格 + KPI 月度比較" />
+          <img src="./screenshots/trend.png" alt="萬華世界趨勢總覽 — 年份篩選 + 品類趨勢折線圖 + KPI 月度比較" />
           <div class="result-preview-caption">
             <span class="result-preview-badge">趨勢頁面</span>
-            年度目標達成徽章 + 趨勢洞察 5×2 KPI 網格 + 月份概覽 + KPI 月度比較（含月均目標紅色虛線）
+            年份 pill 切換 + 年度目標追蹤 + 品類趨勢折線圖 + KPI 月度比較 + 品類銷售比較（可 drill-down）
           </div>
         </div>
         <ul>
-          <li><strong>🎯 年度目標追蹤：</strong>右上角徽章顯示達成率，點擊滑出面板——含進度條、達成率（色彩反映狀態）、預估全年、進度分析摘要</li>
+          <li><strong>🗓 年份篩選：</strong>Year pill 切換（2025 / 2026），client-side 即時過濾，切換不卡頓</li>
+          <li><strong>🎯 年度目標追蹤：</strong>右上角徽章顯示達成率，點擊滑出面板——含進度條、達成率（色彩反映狀態）、預估全年</li>
           <li><strong>📊 趨勢洞察 5×2 網格：</strong>累計營業額、日均、來客數等 5 個 KPI + 最佳/最差月份和單日紀錄</li>
           <li><strong>📈 KPI 月度比較：</strong>柱狀圖可切換指標，營業額模式下有紅色月均目標虛線</li>
+          <li><strong>📉 品類趨勢折線圖：</strong>最多 6 條品類折線，營收/銷量切換，色碼 chip 多選</li>
+          <li><strong>🔗 品類銷售比較表：</strong>排序、sticky 前兩欄、可點擊月份欄位 drill-down 到該月商品明細 + 自動篩選品類</li>
         </ul>
       </div>
 
@@ -905,8 +966,8 @@
       </div>
 
       <ul>
-        <li><strong>手機版優化</strong>——現在的表格和圖表在手機上不太好用，需要做響應式調整。但因為主要使用場景是在電腦上看報表，暫時不急。</li>
-        <li><strong>更多趨勢分析</strong>——可以加類別趨勢（「精釀啤酒這三個月的銷售變化」）和商品排行趨勢（「哪個商品在成長」）。</li>
+        <li><strong>商品排行趨勢</strong>——類似品類趨勢圖，但追蹤單一商品在不同月份的銷售變化。</li>
+        <li><strong>年度同期比較（YoY）</strong>——2025 vs 2026 的同月比較，看年度成長。</li>
         <li><strong>自動抓取 iChef 資料</strong>——現在還是要手動下載 Excel。如果 iChef 有 API，可以做成全自動——每月 1 號自動抓上月資料。</li>
         <li><strong>目標細化</strong>——目前年度目標只有營業額全年均分。未來可以支援月份差異化目標（旺季/淡季不同）、甚至來客數、均消等多維度目標。</li>
       </ul>
@@ -921,25 +982,32 @@
 
       <div class="takeaway">
         <div class="takeaway-label">這個案例展示了什麼</div>
-        <p>一個非工程師背景的餐飲業者，用 Claude Code 在兩週內從零建出完整的業績儀表板。關鍵不是 AI 會寫程式碼——而是 AI 能夠理解「我想看到什麼」，然後選出對的工具和架構來實現。</p>
-        <p>最有效的提問模式是<strong>症狀描述型</strong>（「表格的字體看起來怪怪的」「鮮紅色太突兀」「好像兩個框套在一起」）和<strong>需求驅動型</strong>（「我想追蹤年度目標達成率」「同事常常漏掉分頁」）。不需要知道技術名詞，只要能清楚描述你看到什麼、想要什麼。</p>
-        <p>Session 14 特別展現了 <strong>UI 迭代式協作</strong>的價值：Tab 按鈕的設計來回了五輪（白底 → 紅底 → 深色容器 → 獨立 pill → 最終微調），每輪都是一句話的感受回饋，AI 立刻調整。這種「看到 → 說感受 → 下一版」的節奏，比寫詳細規格書更快也更準確。</p>
+        <p>一個非工程師背景的餐飲業者，用 Claude Code 在三週 17 個 session 內，從零建出涵蓋 14 個月資料的業績儀表板。關鍵不是 AI 會寫程式碼——而是 AI 能夠理解「我想看到什麼」，然後選出對的工具和架構來實現。</p>
+        <p>三種最有效的提問模式：</p>
+        <ul>
+          <li><strong>症狀描述型</strong>——「表格的字體看起來怪怪的」「卡片太灰黑，資訊層級不夠清楚」— AI 根據症狀推斷原因並修正</li>
+          <li><strong>需求驅動型</strong>——「我想追蹤年度目標達成率」「同事常常漏掉分頁」— AI 規劃方案讓你挑</li>
+          <li><strong>UX 方向修正型</strong>——「導到商品明細，但是把那個品項的 filter 選取，這樣會比較合乎邏輯」— 指出 AI 的方向不對並說明為什麼</li>
+        </ul>
+        <p>Session 17 還展現了一個重要模式——<strong>批量匯入 + 功能疊加</strong>：先一次導入 12 個月歷史資料，再在資料量暴增的基礎上做跨年分析功能。「先撐大資料量，再加分析維度」的節奏，讓每個新功能一做出來就有豐富的資料可以驗證。</p>
       </div>
 
       <div class="takeaway">
         <div class="takeaway-label">可移植性</div>
         <p>這個方法適用於任何「有結構化資料，想做成視覺化儀表板」的情境。POS 系統的 Excel、CRM 匯出的 CSV、Google Sheets 的銷售數據——只要資料格式固定，都可以用同樣的流程。</p>
-        <div class="matrix-row"><span class="matrix-key">前提</span><span class="matrix-arrow">→</span><span>你需要能清楚描述你的業務邏輯和需求。AI 不知道「均消」代表什麼。</span></div>
+        <p><strong>Session 17 的模式可以直接複製：</strong>如果你的儀表板已經做好基礎版本，想加入歷史資料和跨期分析——先批量導入歷史資料（轉檔腳本已經有了），再逐步疊加年份篩選、趨勢圖表、drill-down 導航。每一步都可以獨立驗證。</p>
+        <div class="matrix-row"><span class="matrix-key">前提</span><span class="matrix-arrow">→</span><span>你需要能清楚描述你的業務邏輯和需求。AI 不知道「均消」代表什麼、不知道「點了品類之後使用者想看什麼」。</span></div>
       </div>
 
       <div class="takeaway">
         <div class="takeaway-label">如果你也想做，先問 AI 這個</div>
         <blockquote>「我有一組 [資料來源] 的 [格式] 資料，每 [週期] 更新一次。我想做一個儀表板，主要想看 [列出 3-5 個你最想追蹤的指標]。你建議怎麼開始？」</blockquote>
+        <blockquote>「我的儀表板已經有 [N 個月] 的資料了，我想加入跨月趨勢分析和年份篩選。目前的架構是 [描述]，你建議怎麼擴充？」</blockquote>
       </div>
     </section>
 
     <footer>
-      <span>整理自 AI 協作開發紀錄 · <strong>2026-03-16</strong></span>
+      <span>整理自 AI 協作開發紀錄 · <strong>2026-03-17</strong></span>
       <span>工具開發（非工程師視角）+ AI 協作</span>
     </footer>
   </main>
