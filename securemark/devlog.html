@@ -480,6 +480,83 @@
 
     .bug-body { background: var(--surface); padding: 22px 24px; }
 
+    /* ── Result Preview ── */
+    .result-preview {
+      margin: 32px 0;
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .result-preview img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .result-preview-caption {
+      background: var(--surface-warm);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      font-size: 14px;
+      color: var(--ink-3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.5;
+    }
+
+    .result-preview-badge {
+      background: var(--gold-light);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      padding: 2px 8px;
+      border: 1px solid var(--gold-mid);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    /* ── Screenshot Compare ── */
+    .screenshot-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 32px 0;
+    }
+
+    .screenshot-compare-item {
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .screenshot-compare-label {
+      background: var(--ink);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      padding: 6px 14px;
+      text-transform: uppercase;
+    }
+
+    .screenshot-compare-label.after {
+      background: var(--gold);
+      color: var(--surface);
+    }
+
+    .screenshot-compare img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    @media (max-width: 960px) {
+      .screenshot-compare { grid-template-columns: 1fr; }
+    }
+
     /* ── Footer ── */
     footer {
       margin-top: 72px;
@@ -594,6 +671,15 @@
       <div class="case-card-row">
         <span class="case-card-label">最終成果</span>
         <span class="case-card-value">已部署上線的 Web App，支援圖片與多頁 PDF，所有處理在瀏覽器端完成，零伺服器成本</span>
+      </div>
+    </div>
+
+    <!-- Result Preview -->
+    <div class="result-preview">
+      <img src="./screenshots/app_with_watermark.png" alt="SecureMark 完整介面截圖：左側為加了浮水印的證件預覽，右側為控制面板" />
+      <div class="result-preview-caption">
+        <span class="result-preview-badge">成果截圖</span>
+        SecureMark 完整介面 — 左側 Canvas 預覽區顯示浮水印效果，右側為文字、樣式、輸出三區塊的控制面板
       </div>
     </div>
 
@@ -823,6 +909,18 @@ onClick={() => updateSettings({ style: mode, offsetX: 0, offsetY: 0 })}</code></
       </ul>
 
       <p>已部署在 Vercel，push main 自動部署，<strong>零伺服器成本</strong>。</p>
+
+      <!-- Before / After 浮水印效果對比 -->
+      <div class="screenshot-compare">
+        <div class="screenshot-compare-item">
+          <div class="screenshot-compare-label">Before — 原始證件</div>
+          <img src="./screenshots/watermark_before.png" alt="原始證件照，無浮水印" />
+        </div>
+        <div class="screenshot-compare-item">
+          <div class="screenshot-compare-label after">After — 加浮水印</div>
+          <img src="./screenshots/watermark_after.png" alt="加上「僅供身分驗證使用，他用無效」浮水印後的證件照" />
+        </div>
+      </div>
     </section>
 
     <!-- ══ Section 7: 如果繼續往下 ══ -->
