@@ -144,6 +144,12 @@
     .takeaway { background: var(--surface); border: 1px solid var(--border-strong); border-top: 3px solid var(--gold); border-radius: 4px; padding: 28px 32px; margin-bottom: 24px; }
     .takeaway-label { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
 
+    /* ── Result Preview ── */
+    .result-preview { margin: 32px 0; border: 1px solid var(--border-strong); border-radius: 2px; overflow: hidden; }
+    .result-preview img { width: 100%; height: auto; display: block; }
+    .result-preview-caption { background: var(--surface-warm); border-top: 1px solid var(--border); padding: 12px 20px; font-size: 14px; color: var(--ink-3); display: flex; align-items: center; gap: 10px; line-height: 1.5; }
+    .result-preview-badge { background: var(--gold-light); color: var(--gold); font-size: 11px; font-weight: 500; letter-spacing: .08em; padding: 2px 8px; border: 1px solid var(--gold-mid); flex-shrink: 0; white-space: nowrap; }
+
     /* ── Footer ── */
     footer { margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--border-strong); display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-4); flex-wrap: wrap; gap: 8px; letter-spacing: .03em; }
 
@@ -209,6 +215,15 @@
       <div class="case-card-row">
         <span class="case-card-label">最終成果</span>
         <span class="case-card-value">完整的生產環境 Dashboard，已部署在 Zeabur，日常用於管理 4 個區域的 EDM 行銷數據</span>
+      </div>
+    </div>
+
+    <!-- Result Preview -->
+    <div class="result-preview">
+      <img src="./screenshots/dashboard_overview.png" alt="Mailchimp Multi-Region Dashboard 總覽頁面" />
+      <div class="result-preview-caption">
+        <span class="result-preview-badge">成果截圖</span>
+        Dashboard 總覽頁面 — Executive Summary、KPI 卡片、時間序列圖表、區域摘要卡片
       </div>
     </div>
 
