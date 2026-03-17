@@ -622,7 +622,7 @@
             <tr><td>圖表</td><td>Chart.js 4.4</td><td>免費、輕量、社群成熟</td></tr>
             <tr><td>部署</td><td>Cloudflare Pages</td><td>免費靜態託管，GitHub push 後自動上線</td></tr>
             <tr><td>發布方式</td><td>內建 GitHub API push</td><td>不需開終端機，網頁上按一個按鈕就能發布</td></tr>
-            <tr><td>資料前處理</td><td>Claude Code skill</td><td>POS 匯出格式不統一，用 AI skill 自動整理</td></tr>
+            <tr><td>資料前處理</td><td>Claude Code skill</td><td>銷售日報表需從原始訂單 Excel 轉換為每日品項數量 CSV</td></tr>
           </tbody>
         </table>
       </div>
@@ -684,8 +684,8 @@
       </div>
 
       <div class="subsection">
-        <div class="subsection-label">關鍵轉折二：POS 匯出格式不統一</div>
-        <p>電小二匯出的 CSV 欄位格式不一致（日期格式、數字帶千分位逗號），直接上傳會解析錯誤。用 Claude Code 建了一個 <code>sales-report-parser</code> skill，專門把 POS 匯出的原始檔案轉成儀表板能吃的格式。等於在 AI 工具鏈裡加了一個「前處理站」。</p>
+        <div class="subsection-label">關鍵轉折二：銷售日報表需要格式轉換</div>
+        <p>四種報表中，前三種（營運報表、支付明細、品項統計）從 POS 匯出就是 CSV，可以直接上傳。但第四種「銷售日報表」匯出的是原始訂單 Excel — 每一列是一筆訂單，品項全部擠在同一欄裡。儀表板需要的是「每天每個品項賣了幾份」的格式。用 Claude Code 建了一個 <code>sales-report-parser</code> skill，自動把原始訂單 Excel 轉成每日品項數量的樞紐表 CSV。</p>
       </div>
 
       <div class="subsection">
@@ -738,13 +738,13 @@
       <div class="bug-block">
         <div class="bug-header">
           <span class="bug-icon">&#9888;</span>
-          <span class="bug-title">CSV 解析的魔鬼在細節</span>
+          <span class="bug-title">銷售日報表的格式落差</span>
         </div>
         <div class="bug-body">
-          <p>POS 系統匯出的四種報表，每一種的 CSV 格式都不太一樣 — 有的用逗號分隔、有的數字帶千分位、日期格式也不統一。一開始直接寫通用解析器，結果每換一種報表就出錯。最後為每種報表寫專門的解析邏輯，並建立 <code>sales-report-parser</code> skill 做前處理。</p>
+          <p>前三種報表從 POS 匯出就是乾淨的 CSV，直接上傳沒問題。但銷售日報表匯出的是原始訂單 Excel — 每列一筆訂單，品項資訊全部塞在同一欄、用換行分隔，格式像 <code>2 x 冰品-芒果冰沙 (甜度: 正常)</code>。儀表板需要的是「日期 × 品項 × 數量」的樞紐表，兩者差了一整個轉換步驟。最後建立 <code>sales-report-parser</code> skill 自動完成拆解與彙總。</p>
           <div class="callout callout-tip">
             <span class="callout-icon">&rarr;</span>
-            <div><strong>帶走的原則：</strong>不要假設所有 CSV 長一樣。先拿到真實資料看過格式，再寫解析器。</div>
+            <div><strong>帶走的原則：</strong>POS 匯出的格式不一定是你要的格式。先確認「系統給你的」和「你實際需要的」之間有沒有落差，有的話就建一個自動化的轉換流程。</div>
           </div>
         </div>
       </div>
@@ -789,7 +789,7 @@
         <li>資料量成長後，可以把月份資料拆成獨立 JSON 檔案，index.html 按需載入，避免單檔膨脹</li>
         <li>加入損益平衡分析 — footer 已經預留了連結，把成本資料加進來就能算出真正的盈虧</li>
         <li>做成 Progressive Web App（PWA），讓手機可以像 App 一樣開啟</li>
-        <li>把 <code>sales-report-parser</code> skill 做成網頁版，讓不用 Claude Code 的人也能前處理 CSV</li>
+        <li>把 <code>sales-report-parser</code> skill 做成網頁版，讓不用 Claude Code 的人也能轉換銷售日報表</li>
       </ul>
     </section>
 
