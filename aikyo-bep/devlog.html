@@ -47,6 +47,9 @@
     .nav-num { font-family: var(--mono); font-size: 10px; color: var(--ink-4); flex-shrink: 0; }
     .nav-link.active .nav-num { color: var(--gold); }
     .main { flex: 1; padding: 64px 80px 120px 80px; min-width: 0; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-4); text-decoration: none; letter-spacing: .03em; margin-bottom: 24px; transition: color .15s; }
+    .back-link:hover { color: var(--gold); }
+    .back-link svg { width: 14px; height: 14px; }
     .hero { margin-bottom: 72px; }
     .hero-eyebrow { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
     .hero-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--border-strong); }
@@ -137,6 +140,11 @@
 
   <main class="main">
 
+    <a class="back-link" href="../">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      所有案例
+    </a>
+
     <header class="hero">
       <div class="hero-eyebrow">
         <span class="eyebrow-text">工具開發 · AI 協作</span>
@@ -159,6 +167,14 @@
       <div class="case-card-row">
         <span class="case-card-label">最終成果</span>
         <span class="case-card-value">一個純 HTML 單檔的互動式計算器，部署在 Cloudflare Pages，團隊用瀏覽器就能操作</span>
+      </div>
+    </div>
+
+    <div class="result-preview">
+      <img src="./screenshots/full_overview.png" alt="愛嬌 BEP 試算器全貌 — 左側參數控制、右側即時結果" />
+      <div class="result-preview-caption">
+        <span class="result-preview-badge">成果截圖</span>
+        BEP 試算器全貌 — 左側調整產品、營運、成本參數，右側即時顯示損益平衡點與銷量目標
       </div>
     </div>
 
@@ -226,8 +242,27 @@
       <p><strong>第三階段：B2B 酒場通路模組</strong></p>
       <p>愛嬌有機會透過酒場通路銷售，但酒場要抽 20% 毛利作為返利。這個模組用 toggle 開關控制，開啟後才出現相關的輸入欄和計算結果。是一個完全選用的功能。</p>
 
+      <div class="result-preview">
+        <img src="./screenshots/full_b2b_enabled.png" alt="酒場 B2B 通路開啟後的完整畫面" />
+        <div class="result-preview-caption">
+          <span class="result-preview-badge">酒場通路</span>
+          開啟 B2B 開關後，左側出現月售量輸入、右側顯示全通路營業額拆解與綜合毛利率
+        </div>
+      </div>
+
       <p><strong>第四階段：從「打平」到「賺錢」</strong></p>
       <p>做完前三階段後，我意識到 BEP 只回答了「不虧錢要多少」，但團隊真正要規劃的是盈利策略。所以加了<strong>目標利潤模式</strong>（反推需要的營業額）和<strong>變動成本率</strong>（把包材、行銷等費用納入計算）。這兩個功能向下相容 — 設為 0 時結果跟原來完全一樣。</p>
+
+      <div class="screenshot-compare">
+        <div class="screenshot-compare-item">
+          <div class="screenshot-compare-label">BEP 模式（目標利潤 = 0）</div>
+          <img src="./screenshots/bep_card.png" alt="BEP 模式 — 橘色標題，顯示損益平衡點月營業額" />
+        </div>
+        <div class="screenshot-compare-item">
+          <div class="screenshot-compare-label after">目標利潤模式（月賺 3 萬）</div>
+          <img src="./screenshots/target_profit_card.png" alt="目標利潤模式 — 綠色標題，顯示目標月營業額與 Reset 按鈕" />
+        </div>
+      </div>
 
       <p><strong>第五階段：UI 打磨</strong></p>
       <p>數字全部換 Inter 字體、結果卡片加立體陰影、參考區間做成可收合、Reset 按鈕放到卡片右上角。這些都是實際使用時覺得「不太對」然後一個一個調整的。</p>
