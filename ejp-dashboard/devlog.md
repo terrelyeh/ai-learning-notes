@@ -85,18 +85,97 @@ EJP Japan 的業務 pipeline 資料散落在 Google Sheets 裡。每次開會都
 
 ---
 
-## 五、最終樣貌
+## 五、Activity Log 與 Last Updated（2026-03-22 新增）
+
+POC 功能穩定後，接下來遇到一個管理層很在意的問題：**「這個案子最後是什麼時候更新的？業務有在跟嗎？」**
+
+### 為什麼不直接加一欄讓業務填日期
+
+最初的想法是在 Pipeline 大表加一欄「最後更新時間」，請業務手動填。但人一定會忘記填。所以改用 **Apps Script 的 `onEdit` trigger**——只要業務編輯了 Pipeline 的任何欄位，R 欄自動寫入當前時間。零操作負擔。
+
+### Activity Log 的設計思路
+
+備註欄（Notes）有另一個問題：業務更新時會直接覆蓋舊的內容，歷史就不見了。
+
+跟 AI 討論了幾種方案：
+
+| 方案 | 做法 | 問題 |
+|------|------|------|
+| 同一格往下加 | 業務在 Notes 欄用日期前綴換行寫 | 格式混亂、容易誤刪 |
+| 每人一份 Log sheet | 每個業務有自己的紀錄表 | 管理層要看全貌時拼不起來 |
+| **共用 Activity Log sheet** | 全部人寫同一張表，用 author 欄區分 | ✅ 最簡單、Dashboard 好讀 |
+
+最後選了共用 Activity Log，關鍵設計是**讓業務只需做兩件事：選案件名 → 寫備註**，其他全自動。
+
+### Google Sheets 端的設定
+
+這是這次最有趣的部分。Activity Log 有 5 欄，但業務只操作其中 2 欄：
+
+| 欄 | 內容 | 來源 |
+|----|------|------|
+| A | Deal Name | **Dropdown**（來源 `Pipeline!B:B`，可打字搜尋） |
+| B | Date | Apps Script 自動填 |
+| C | Deal ID | INDEX/MATCH 公式自動帶 |
+| D | Sales Rep | INDEX/MATCH 公式自動帶 |
+| E | Note | 業務手動填 |
+
+幾個關鍵的設計決定：
+
+- **用 Deal Name 而不是 Deal ID 做 dropdown**——因為案子越來越多時，沒人記得 EJP-047 是哪個案子。用 Deal Name 做入口，業務打幾個字就能找到，Deal ID 讓公式自動帶出來就好。
+- **B/C/D 欄設定 Protect range（Only you）**——防止業務不小心刪到公式。這是 Google Sheets 原生功能，不用寫程式碼。
+- **Apps Script 同時處理兩件事**——Pipeline 的 `onEdit` 更新 R 欄時間，Activity Log 的 `onEdit` 自動填日期和公式。一個 function 搞定。
+
+> **帶走的原則**：Google Sheets 的 Data Validation + INDEX/MATCH + Protect range 這三個原生功能組合起來，就能做出「半自動表單」的體驗，不需要 Google Forms 或任何外部工具。
+
+### Dashboard 端怎麼呈現
+
+Dashboard 改動反而不大：
+- Deal List 表格多一欄 **Last Updated**
+- DealModal 底部多一個 **Activity Timeline**（teal 色時間線，按時間倒序）
+- 案件的 Last Updated 取 Pipeline R 欄和 Activity Log 最新日期中較新的那個
+- Deal List 內建 Updated filter（Last 3/7/14/30 Days + Inactive），只影響表格不影響圖表
+
+### 踩到的坑
+
+#### 坑：Apps Script 按 ▶️ 執行噴錯
+
+測試 Apps Script 時，在編輯器裡按了 ▶️ 執行按鈕，結果報 `TypeError: Cannot read properties of undefined (reading 'source')`。
+
+原因很簡單：`onEdit(e)` 是事件觸發的，手動執行時沒有 event 物件（`e`），所以 `e.source` 是 undefined。正確的測試方式是直接回到 Google Sheets 編輯儲存格。
+
+> **帶走的原則**：Google Apps Script 的 `onEdit` 不能手動測試，只能透過實際編輯觸發。如果要 debug，用 `Logger.log()` 配合觸發，然後到 Execution log 裡看結果。
+
+#### 坑：Activity Log 更新了但 Last Updated 沒動
+
+業務在 Activity Log 新增了一筆，但 Pipeline 大表的 Last Updated 欄還是空的。原因是 `onEdit` 只監聽被編輯的那張 sheet——編輯 Activity Log 不會觸發 Pipeline 的 `onEdit`。
+
+解法：不在 Google Sheets 端處理，而是在 **Dashboard 端合併**——讀取兩邊的日期，取較新的那個。這樣不管業務是直接改 Pipeline 還是加 Activity Log，Dashboard 都能反映最新狀態。
+
+> **帶走的原則**：當資料分散在多張 sheet 時，不要試圖用 Apps Script 讓它們完美同步。在讀取端（Dashboard）做合併，比在寫入端做連動更穩定、更好維護。
+
+---
+
+## 六、最終樣貌
 
 **儀表板本體**（[ejp-pipeline-dashboard.vercel.app](https://ejp-pipeline-dashboard.vercel.app/)）：
 - 密碼保護（`ejp@demo`），全站 Middleware 守衛
 - 7 個 KPI 卡（總案件數、活躍案件、Pipeline 總額、Closed Won、勝率、加重預測、當月新增）
 - 6 個圖表（Pipeline by Stage funnel、Vertical 分布、Stage vs 加重預測、地區 Top 10、業務員排行、案件來源）
-- 案件列表（搜尋、多維篩選、點開看詳情）
+- 案件列表（搜尋、多維篩選、點開看詳情、**表頭鎖定**）
+- **Activity Timeline**：DealModal 內顯示該案件的所有歷史備註，按時間倒序
+- **Updated filter**：在 Deal List 表格內篩選最近更新的案件（3/7/14/30 天 + Inactive）
+- **Deal ID 模糊搜尋**：`EJP002` 和 `EJP-002` 都能找到同一筆
 - **Model Summary tab**：所有 Model 的 QTY、單價、Standard Value 彙總；含月份分布 pivot（Model × 月份），支援 Close/Deploy Date 切換、季度小計
 - **Sales Rep Summary tab**：業務員 × 月份 pivot，案件數數字可點擊帶 filter 跳回 Deal List
 - 日本地圖（地區案件熱點）
 - 英/日雙語切換
 - 基本 RWD（手機可用，平板以上最佳）
+
+**Google Sheets 端**：
+- Pipeline sheet（A:R，18 欄）：R 欄 `last_updated` 由 Apps Script 自動填
+- Activity Log sheet（A:E，5 欄）：Dropdown + INDEX/MATCH + Protect，業務只需操作 2 欄
+- Price List sheet（A:C）：產品型號與單價對照
+- Settings sheet：JPY 匯率
 
 **交付物**：
 - `/proposal.html`：分公司導入說明（繁中/日文）
@@ -105,11 +184,11 @@ EJP Japan 的業務 pipeline 資料散落在 Google Sheets 裡。每次開會都
 
 ---
 
-## 六、如果繼續往下
+## 七、如果繼續往下
 
 - **資料來源遷移**（等待 POC 確認中）：Google Sheets 是 POC 用的，分公司確認後接 SharePoint。程式架構已預留好，換一個 `lib/sharepoint.js` 就搞定，其他不動。IT 申請文件已備妥。
 - **存取控制升級**：目前是共用密碼，長期應接 Microsoft SSO，只有公司帳號才能進。IT 申請文件已備妥，等 POC 驗證後的下一步。
-- **資料由業務自己填**：現在是工程師（AI）控制格式，未來要讓業務人員能直接更新 Excel，需要定義欄位規格並做驗證提示。
+- **Activity Log 進階**：目前 Activity Log 是手動填的，未來可以考慮讓 Dashboard 直接新增備註（需要 Google Sheets API 的寫入權限）。
 - **定期 Email Report**：把儀表板每週快照自動寄給管理層，讓不登入的人也能收到資訊。
 
 ---
@@ -118,10 +197,12 @@ EJP Japan 的業務 pipeline 資料散落在 Google Sheets 裡。每次開會都
 
 **這個案例展示了什麼思路**：不是「我要做一個儀表板」然後從零開始設計，而是「我有一份 Sheets，我要讓它變得可見」——把已知的正確答案當起點，讓 AI 逐步逼近它。這個方式的效率遠高於從需求文件開始。
 
-**可移植性**：這個方法適用於任何「資料已經在某個地方、只差一個好看介面」的場景。不適用於需要設計全新資料流或資料庫架構的情況。
+**Activity Log 的決策過程**：這次跟 AI 的討論模式是「先問需求（我要看到更新時間），再問方案（有哪些做法），再問取捨（要不要上資料庫）」。AI 建議不上 Supabase 的理由很清楚——資料量不大、業務流程還在 Google Sheets 上、多加一層同步只會增加維護負擔。這個「不做什麼」的決策，跟「做什麼」一樣重要。
+
+**可移植性**：Google Sheets 的 Data Validation + INDEX/MATCH + Apps Script + Protect range 組合，可以套用在任何「多張 sheet 需要連動、但不想搬到資料庫」的場景。Activity Log 的設計模式（選名稱 → 自動帶其他欄位 → 鎖定公式欄）在 CRM、專案管理、客服紀錄等場景都能直接複製。
 
 **如果你也要做，先問 AI 什麼**：
-- 「我有一份 Google Sheets，欄位是 A/B/C，幫我用 Next.js + Recharts 做一個可以顯示 [具體圖表] 的儀表板，部署在 Vercel」
-- 「我的圖表上有些 Stage 顯示 0，但資料在 Sheets 裡確實有值，可能是什麼原因？幫我列出 checklist 逐一排查」
+- 「我的 Google Sheets 有一張主表和一張紀錄表，我希望紀錄表選了案件名後自動帶出 ID 和負責人，要怎麼設定 Data Validation 和 INDEX/MATCH？」
+- 「我想在 Dashboard 上顯示每個案件的最新更新時間，但更新可能來自不同的 sheet，Dashboard 端要怎麼合併？」
 
-_開發日期：2026-03-11，最後更新：2026-03-16_
+_開發日期：2026-03-11，最後更新：2026-03-22_

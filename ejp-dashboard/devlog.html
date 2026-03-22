@@ -412,8 +412,9 @@
         <a class="nav-link" href="#s2"><span class="nav-num">02</span>技術選型</a>
         <a class="nav-link" href="#s3"><span class="nav-num">03</span>推進方式</a>
         <a class="nav-link" href="#s4"><span class="nav-num">04</span>踩到的坑</a>
-        <a class="nav-link" href="#s5"><span class="nav-num">05</span>最終樣貌</a>
-        <a class="nav-link" href="#s6"><span class="nav-num">06</span>如果繼續往下</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>Activity Log</a>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span>最終樣貌</a>
+        <a class="nav-link" href="#s7"><span class="nav-num">07</span>如果繼續往下</a>
       </div>
       <div class="nav-group">
         <div class="nav-group-label">總結</div>
@@ -436,7 +437,7 @@
       <h1>EJP Sales Pipeline Dashboard<br>開發紀錄</h1>
       <div class="hero-rule"></div>
       <p class="hero-desc">業務人員靠 AI 協作，從一份 Google Sheets 出發，在幾天內建出正式部署的銷售管道視覺化儀表板。</p>
-      <div class="hero-meta">整理日期：2026-03-11，最後更新：2026-03-16 &nbsp;·&nbsp; 類型：工具開發型（非工程師視角）</div>
+      <div class="hero-meta">整理日期：2026-03-11，最後更新：2026-03-22 &nbsp;·&nbsp; 類型：工具開發型（非工程師視角）</div>
     </header>
 
     <!-- Case Card -->
@@ -602,10 +603,92 @@
       </div>
     </section>
 
-    <!-- S5 -->
+    <!-- S5: Activity Log -->
     <section class="section" id="s5">
       <div class="section-header">
         <span class="section-num">05</span>
+        <h2 class="section-title">Activity Log 與 Last Updated</h2>
+      </div>
+
+      <p>POC 功能穩定後，管理層最在意的問題是：<strong>「這個案子最後是什麼時候更新的？業務有在跟嗎？」</strong></p>
+
+      <h3>為什麼不直接加一欄讓業務填日期</h3>
+      <p>最初的想法是加一欄「最後更新時間」讓業務手動填。但人一定會忘記填。所以改用 <strong>Apps Script 的 <code>onEdit</code> trigger</strong>——只要業務編輯了 Pipeline 的任何欄位，R 欄自動寫入當前時間。零操作負擔。</p>
+
+      <h3>Activity Log 的設計思路</h3>
+      <p>備註欄有另一個問題：業務更新時會直接覆蓋舊的內容，歷史就不見了。跟 AI 討論了幾種方案後，選了<strong>共用 Activity Log sheet</strong>：</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>方案</th><th>做法</th><th>問題</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>同一格往下加</td><td>在 Notes 欄用日期前綴換行寫</td><td>格式混亂、容易誤刪</td></tr>
+            <tr><td>每人一份 Log sheet</td><td>每個業務有自己的紀錄表</td><td>管理層看不到全貌</td></tr>
+            <tr><td><strong>共用 Activity Log</strong></td><td>全部人寫同一張表，用 author 欄區分</td><td>✅ 最簡單、Dashboard 好讀</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Google Sheets 端的巧思</h3>
+      <p>Activity Log 有 5 欄，但業務只操作其中 2 欄（選案件名 + 寫備註），其他全自動：</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>欄</th><th>內容</th><th>來源</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A</td><td>Deal Name</td><td><strong>Dropdown</strong>（可打字搜尋）</td></tr>
+            <tr><td>B</td><td>Date</td><td>Apps Script 自動填</td></tr>
+            <tr><td>C</td><td>Deal ID</td><td>INDEX/MATCH 公式自動帶</td></tr>
+            <tr><td>D</td><td>Sales Rep</td><td>INDEX/MATCH 公式自動帶</td></tr>
+            <tr><td>E</td><td>Note</td><td>業務手動填</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">✦</span>
+        <span>Google Sheets 的 Data Validation + INDEX/MATCH + Protect range 三個原生功能組合起來，就能做出「半自動表單」的體驗——不需要 Google Forms 或任何外部工具。這個模式可以套用在 CRM、專案管理、客服紀錄等任何場景。</span>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">◆</span>
+          <span class="bug-title">坑：Apps Script 按 ▶️ 執行噴錯</span>
+        </div>
+        <div class="bug-body">
+          <p><strong>症狀</strong>：在 Apps Script 編輯器裡按 ▶️ 測試 <code>onEdit</code>，結果報 <code>TypeError: Cannot read properties of undefined (reading 'source')</code>。</p>
+          <p>原因：<code>onEdit(e)</code> 是事件觸發的，手動執行時沒有 event 物件。正確的測試方式是直接回到 Google Sheets 編輯儲存格。</p>
+          <div class="callout callout-tip" style="margin-top: 12px; margin-bottom: 0;">
+            <span class="callout-icon">✦</span>
+            <span>帶走的原則：Google Apps Script 的 <code>onEdit</code> 不能手動測試，只能透過實際編輯觸發。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">◆</span>
+          <span class="bug-title">坑：Activity Log 更新了但 Last Updated 沒動</span>
+        </div>
+        <div class="bug-body">
+          <p><strong>症狀</strong>：業務在 Activity Log 新增了一筆，但 Pipeline 大表的 Last Updated 還是空的。</p>
+          <p>原因：<code>onEdit</code> 只監聽被編輯的那張 sheet。解法不在 Google Sheets 端，而是在 <strong>Dashboard 端合併</strong>——讀取兩邊的日期，取較新的那個。</p>
+          <div class="callout callout-tip" style="margin-top: 12px; margin-bottom: 0;">
+            <span class="callout-icon">✦</span>
+            <span>帶走的原則：資料分散在多張 sheet 時，不要試圖用 Apps Script 讓它們完美同步。在讀取端做合併，比在寫入端做連動更穩定、更好維護。</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- S6 -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
         <h2 class="section-title">最終樣貌</h2>
       </div>
 
@@ -615,7 +698,10 @@
         <li>密碼保護（全站 Middleware 守衛），不知道密碼的人看不到任何東西</li>
         <li>7 個 KPI 卡：總案件數、活躍案件、Pipeline 總額、Closed Won、勝率、加重預測、當月新增</li>
         <li>6 張圖表：Pipeline by Stage funnel、Vertical 分布、Stage vs 加重預測、地區 Top 10、業務員 Pipeline 排行、案件來源</li>
-        <li>案件列表：搜尋 + 多維篩選 + 點開看詳情 Modal</li>
+        <li>案件列表：搜尋 + 多維篩選 + 點開看詳情 Modal + <strong>表頭鎖定</strong></li>
+        <li><strong>Activity Timeline</strong>：DealModal 內顯示該案件的所有歷史備註，按時間倒序</li>
+        <li><strong>Updated filter</strong>：在 Deal List 內篩選最近更新的案件（3/7/14/30 天 + Inactive）</li>
+        <li><strong>Deal ID 模糊搜尋</strong>：<code>EJP002</code> 和 <code>EJP-002</code> 都能找到同一筆</li>
         <li><strong>Model Summary tab</strong>：所有 Model 的 QTY、單價、Standard Value 彙總；含月份分布 pivot（Model × 月份），支援 Close/Deploy Date 切換、季度小計</li>
         <li><strong>Sales Rep Summary tab</strong>：業務員 × 月份 pivot，案件數數字可點擊帶 filter 跳回 Deal List</li>
         <li>日本地圖：地區案件熱點視覺化</li>
@@ -629,19 +715,27 @@
         <li><a href="https://ejp-pipeline-dashboard.vercel.app/it-request.html" target="_blank"><code>/it-request.html</code></a> — IT 部門 Azure App Registration 申請文件，含 SSO 長期方案說明</li>
         <li><code>docs/sharepoint-deployment-guide.md</code> — 開發者遷移指南（Google Sheets → SharePoint，約 60 行改動）</li>
       </ul>
+
+      <p><strong>Google Sheets 端</strong>：</p>
+      <ul>
+        <li>Pipeline sheet（A:R，18 欄）：R 欄 <code>last_updated</code> 由 Apps Script 自動填</li>
+        <li>Activity Log sheet（A:E，5 欄）：Dropdown + INDEX/MATCH + Protect，業務只需操作 2 欄</li>
+        <li>Price List sheet（A:C）：產品型號與單價對照</li>
+        <li>Settings sheet：JPY 匯率</li>
+      </ul>
     </section>
 
-    <!-- S6 -->
-    <section class="section" id="s6">
+    <!-- S7 -->
+    <section class="section" id="s7">
       <div class="section-header">
-        <span class="section-num">06</span>
+        <span class="section-num">07</span>
         <h2 class="section-title">如果繼續往下</h2>
       </div>
 
       <ul>
         <li><strong>資料來源遷移</strong>（等待 POC 確認中）：Google Sheets 是 POC 用的，分公司確認後接 SharePoint。程式架構已預留好，換一個 <code>lib/sharepoint.js</code> 就搞定，其他不動。IT 申請文件已備妥。</li>
         <li><strong>存取控制升級</strong>：目前是共用密碼，長期應接 Microsoft SSO，只有公司帳號才能進。IT 申請文件已備妥，等 POC 驗證後的自然下一步。</li>
-        <li><strong>讓業務自己填資料</strong>：現在格式由 AI 控制，未來要讓業務人員能直接更新 Excel，需要定義欄位規格並做輸入驗證提示。</li>
+        <li><strong>Activity Log 進階</strong>：目前 Activity Log 是手動填的，未來可以考慮讓 Dashboard 直接新增備註（需要 Google Sheets API 的寫入權限）。</li>
         <li><strong>定期 Email Report</strong>：把儀表板每週快照自動寄給管理層，讓不登入的人也能收到資訊。</li>
       </ul>
     </section>
@@ -654,20 +748,23 @@
         <h3>這個案例展示了什麼思路</h3>
         <p>不是「我要做一個儀表板」然後從零開始設計，而是「我有一份 Sheets，我要讓它變得可見」——<strong>把已知的正確答案當起點，讓 AI 逐步逼近它</strong>。這個方式的效率遠高於從需求文件開始，因為 AI 不需要猜你要什麼，它只需要比對和實作。</p>
 
+        <h3>Activity Log 的決策過程</h3>
+        <p>這次跟 AI 的討論模式是「先問需求、再問方案、再問取捨」。AI 建議不上 Supabase 的理由很清楚——資料量不大、業務流程還在 Google Sheets 上、多加一層同步只會增加維護負擔。<strong>這個「不做什麼」的決策，跟「做什麼」一樣重要。</strong></p>
+
         <h3>可移植性</h3>
-        <p>這個方法適用於任何「資料已經在某個地方、只差一個好看介面」的場景——Google Sheets、Airtable、Excel、CSV 都行。<br>不適用於需要設計全新資料流或資料庫架構的情況（那種需要更多前期規劃，不能直接跑）。</p>
+        <p>Google Sheets 的 Data Validation + INDEX/MATCH + Apps Script + Protect range 組合，可以套用在任何「多張 sheet 需要連動、但不想搬到資料庫」的場景。Activity Log 的設計模式（選名稱 → 自動帶其他欄位 → 鎖定公式欄）在 CRM、專案管理、客服紀錄等場景都能直接複製。</p>
 
         <h3>如果你也要做，先問 AI 什麼</h3>
         <ul style="padding-left: 0; list-style: none;">
-          <li style="padding: 8px 0; border-bottom: 1px solid var(--border);">→ 「我有一份 Google Sheets，欄位是 A/B/C，幫我用 Next.js + Recharts 做一個可以顯示 [具體圖表] 的儀表板，部署在 Vercel」</li>
-          <li style="padding: 8px 0;">→ 「我的圖表上有些資料顯示 0，但資料在 Sheets 裡確實有值，可能是什麼原因？幫我列出 checklist 逐一排查」</li>
+          <li style="padding: 8px 0; border-bottom: 1px solid var(--border);">→ 「我的 Google Sheets 有一張主表和一張紀錄表，我希望紀錄表選了案件名後自動帶出 ID 和負責人，要怎麼設定 Data Validation 和 INDEX/MATCH？」</li>
+          <li style="padding: 8px 0;">→ 「我想在 Dashboard 上顯示每個案件的最新更新時間，但更新可能來自不同的 sheet，Dashboard 端要怎麼合併？」</li>
         </ul>
       </div>
     </section>
 
     <footer>
       <span>EJP Dashboard 開發紀錄 · 工具開發型（非工程師視角）</span>
-      <span>2026-03-16</span>
+      <span>2026-03-22</span>
     </footer>
 
   </main>
