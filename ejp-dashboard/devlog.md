@@ -164,7 +164,7 @@ Dashboard 改動反而不大：
 - 案件列表（搜尋、多維篩選、點開看詳情、**表頭鎖定**）
 - **Activity Timeline**：DealModal 內顯示該案件的所有歷史備註，按時間倒序
 - **Updated filter**：在 Deal List 表格內篩選最近更新的案件（3/7/14/30 天 + Inactive）
-- **Deal ID 模糊搜尋**：`EJP002` 和 `EJP-002` 都能找到同一筆
+- **Deal ID 模糊搜尋（Input Normalization）**：`EJP-086` / `EJP086` / `EJP86` / `EJP-86` / `ejp86` 都能找到同一筆，業務只記得「86」也能搜到
 - **Model Summary tab**：所有 Model 的 QTY、單價、Standard Value 彙總；含月份分布 pivot（Model × 月份），支援 Close/Deploy Date 切換、季度小計
 - **Sales Rep Summary tab**：業務員 × 月份 pivot，案件數數字可點擊帶 filter 跳回 Deal List
 - 日本地圖（地區案件熱點）
@@ -199,10 +199,12 @@ Dashboard 改動反而不大：
 
 **Activity Log 的決策過程**：這次跟 AI 的討論模式是「先問需求（我要看到更新時間），再問方案（有哪些做法），再問取捨（要不要上資料庫）」。AI 建議不上 Supabase 的理由很清楚——資料量不大、業務流程還在 Google Sheets 上、多加一層同步只會增加維護負擔。這個「不做什麼」的決策，跟「做什麼」一樣重要。
 
+**Input Normalization 的威力**：搜尋欄位最常見的 UX 問題是「使用者記得的格式跟系統存的不一樣」。解法不是教育使用者，而是在比對前把雙方都「洗」成同一種格式（去大小寫、去連字號、去前導零）。這個模式叫 **Input Normalization**，適用於任何有編號的搜尋場景——訂單號、發票號、員工編號、產品型號。做法很輕量（一行 regex），但對使用者體驗的提升是立即可感的。
+
 **可移植性**：Google Sheets 的 Data Validation + INDEX/MATCH + Apps Script + Protect range 組合，可以套用在任何「多張 sheet 需要連動、但不想搬到資料庫」的場景。Activity Log 的設計模式（選名稱 → 自動帶其他欄位 → 鎖定公式欄）在 CRM、專案管理、客服紀錄等場景都能直接複製。
 
 **如果你也要做，先問 AI 什麼**：
 - 「我的 Google Sheets 有一張主表和一張紀錄表，我希望紀錄表選了案件名後自動帶出 ID 和負責人，要怎麼設定 Data Validation 和 INDEX/MATCH？」
 - 「我想在 Dashboard 上顯示每個案件的最新更新時間，但更新可能來自不同的 sheet，Dashboard 端要怎麼合併？」
 
-_開發日期：2026-03-11，最後更新：2026-03-22_
+_開發日期：2026-03-11，最後更新：2026-03-22（Input Normalization 補充）_

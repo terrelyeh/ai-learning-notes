@@ -701,7 +701,7 @@
         <li>案件列表：搜尋 + 多維篩選 + 點開看詳情 Modal + <strong>表頭鎖定</strong></li>
         <li><strong>Activity Timeline</strong>：DealModal 內顯示該案件的所有歷史備註，按時間倒序</li>
         <li><strong>Updated filter</strong>：在 Deal List 內篩選最近更新的案件（3/7/14/30 天 + Inactive）</li>
-        <li><strong>Deal ID 模糊搜尋</strong>：<code>EJP002</code> 和 <code>EJP-002</code> 都能找到同一筆</li>
+        <li><strong>Deal ID 模糊搜尋（Input Normalization）</strong>：<code>EJP-086</code> / <code>EJP086</code> / <code>EJP86</code> / <code>ejp-86</code> 都能找到同一筆，業務只記得「86」也能搜到</li>
         <li><strong>Model Summary tab</strong>：所有 Model 的 QTY、單價、Standard Value 彙總；含月份分布 pivot（Model × 月份），支援 Close/Deploy Date 切換、季度小計</li>
         <li><strong>Sales Rep Summary tab</strong>：業務員 × 月份 pivot，案件數數字可點擊帶 filter 跳回 Deal List</li>
         <li>日本地圖：地區案件熱點視覺化</li>
@@ -750,6 +750,9 @@
 
         <h3>Activity Log 的決策過程</h3>
         <p>這次跟 AI 的討論模式是「先問需求、再問方案、再問取捨」。AI 建議不上 Supabase 的理由很清楚——資料量不大、業務流程還在 Google Sheets 上、多加一層同步只會增加維護負擔。<strong>這個「不做什麼」的決策，跟「做什麼」一樣重要。</strong></p>
+
+        <h3>Input Normalization 的威力</h3>
+        <p>搜尋欄位最常見的 UX 問題是「使用者記得的格式跟系統存的不一樣」。解法不是教育使用者，而是在比對前把雙方都「洗」成同一種格式（去大小寫、去連字號、去前導零）。這個模式叫 <strong>Input Normalization</strong>，適用於任何有編號的搜尋場景——訂單號、發票號、員工編號、產品型號。做法很輕量（一行 regex），但對使用者體驗的提升是立即可感的。</p>
 
         <h3>可移植性</h3>
         <p>Google Sheets 的 Data Validation + INDEX/MATCH + Apps Script + Protect range 組合，可以套用在任何「多張 sheet 需要連動、但不想搬到資料庫」的場景。Activity Log 的設計模式（選名稱 → 自動帶其他欄位 → 鎖定公式欄）在 CRM、專案管理、客服紀錄等場景都能直接複製。</p>
