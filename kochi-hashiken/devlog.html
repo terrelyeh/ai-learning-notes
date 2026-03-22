@@ -108,7 +108,7 @@
     .bug-icon { font-size: 14px; color: #e8c97a; }
     .bug-title { font-family: var(--mono); font-size: 13px; font-weight: 500; color: #e8c97a; letter-spacing: .04em; }
     .bug-body { background: var(--surface); padding: 22px 24px; }
-    .result-preview { margin: 32px 0; border: 1px solid var(--border-strong); border-radius: 2px; overflow: hidden; }
+    .result-preview { margin: 32px auto; border: 1px solid var(--border-strong); border-radius: 2px; overflow: hidden; max-width: 375px; }
     .result-preview img { width: 100%; height: auto; display: block; }
     .result-preview-caption { background: var(--surface-warm); border-top: 1px solid var(--border); padding: 12px 20px; font-size: 14px; color: var(--ink-3); display: flex; align-items: center; gap: 10px; line-height: 1.5; }
     .result-preview-badge { background: var(--gold-light); color: var(--gold); font-size: 11px; font-weight: 500; letter-spacing: .08em; padding: 2px 8px; border: 1px solid var(--gold-mid); flex-shrink: 0; white-space: nowrap; }
@@ -304,6 +304,13 @@
           <li><strong>三段音量控制</strong>：循環切換，跨遊戲共用</li>
         </ul>
         <p>可杯確立了「怎麼做音頻」「怎麼做 I18N」「怎麼做 PWA」的所有模式。</p>
+        <div class="result-preview">
+          <img src="./screenshots/bekuhai-welcome.png" alt="可杯歡迎頁截圖" />
+          <div class="result-preview-caption">
+            <span class="result-preview-badge">可杯</span>
+            歡迎頁 — 三種杯型說明與木紋深色主題
+          </div>
+        </div>
       </div>
 
       <div class="subsection">
@@ -314,6 +321,13 @@
           <li><strong>緊張感營造</strong>：語音節奏控制，翻杯後要等語音講完才能繼續</li>
           <li><strong>多種模式</strong>：6/9/12/15 杯四種難度</li>
         </ul>
+        <div class="result-preview">
+          <img src="./screenshots/kikuhai-game.png" alt="菊花杯翻杯畫面截圖" />
+          <div class="result-preview-caption">
+            <span class="result-preview-badge">菊花杯</span>
+            翻杯畫面 — 9 杯模式，翻到空杯安全過關
+          </div>
+        </div>
       </div>
 
       <div class="subsection">
@@ -325,6 +339,13 @@
           <li><strong>AI 角色「大將」</strong>：6 類情境 × 5 句台詞 × 中日雙語 = 30 句個性化對話</li>
           <li><strong>語音播報</strong>：大將的台詞不只顯示在氣泡裡，還會用語音說出來</li>
         </ul>
+        <div class="result-preview">
+          <img src="./screenshots/hashiken-welcome.png" alt="箸拳歡迎頁截圖" />
+          <div class="result-preview-caption">
+            <span class="result-preview-badge">箸拳</span>
+            歡迎頁 — 視覺化規則卡片取代文字說明
+          </div>
+        </div>
       </div>
 
       <div class="subsection">
@@ -472,10 +493,34 @@
       <p>首頁是一個遊戲選單，三張卡片排列，點擊即可進入對應遊戲。</p>
 
       <div class="result-preview">
-        <img src="./screenshots/welcome.png" alt="箸拳歡迎頁截圖" />
+        <img src="./screenshots/index.png" alt="首頁遊戲選單截圖" />
         <div class="result-preview-caption">
-          <span class="result-preview-badge">成果截圖</span>
-          箸拳歡迎頁 — 視覺化規則卡片與木紋背景
+          <span class="result-preview-badge">首頁</span>
+          遊戲選單 — 三張卡片，點擊即可進入對應遊戲
+        </div>
+      </div>
+
+      <div class="result-preview">
+        <img src="./screenshots/bekuhai-table.png" alt="可杯遊戲桌面截圖" />
+        <div class="result-preview-caption">
+          <span class="result-preview-badge">可杯</span>
+          圓桌俯瞰 — Q 版頭像座墊、陀螺、木紋背景
+        </div>
+      </div>
+
+      <div class="result-preview">
+        <img src="./screenshots/kikuhai-game.png" alt="菊花杯翻杯畫面截圖" />
+        <div class="result-preview-caption">
+          <span class="result-preview-badge">菊花杯</span>
+          翻杯進行中 — 已翻開的空杯與未翻的倒扣杯
+        </div>
+      </div>
+
+      <div class="result-preview">
+        <img src="./screenshots/hashiken-result.png" alt="箸拳對戰結果截圖" />
+        <div class="result-preview-caption">
+          <span class="result-preview-badge">箸拳</span>
+          對戰結果 — 大將的對話氣泡與回合判定
         </div>
       </div>
 
