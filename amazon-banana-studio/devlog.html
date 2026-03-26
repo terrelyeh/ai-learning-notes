@@ -347,7 +347,7 @@
       </div>
 
       <div class="subsection">
-        <div class="subsection-label">技術架構</div>
+        <div class="subsection-label">開發框架</div>
         <div class="tech-row">
           <span class="tech-pill"><span class="tech-dot" style="background:#61dafb"></span>React 19</span>
           <span class="tech-pill"><span class="tech-dot" style="background:#3178c6"></span>TypeScript 5.8</span>
@@ -357,6 +357,54 @@
           <span class="tech-pill"><span class="tech-dot" style="background:#000000"></span>Vercel Serverless</span>
           <span class="tech-pill"><span class="tech-dot" style="background:#4285f4"></span>Gemini 3.1 Pro</span>
           <span class="tech-pill"><span class="tech-dot" style="background:#fbbc04"></span>Gemini 3.1 Flash</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>層級</th><th>技術</th><th>選擇理由</th></tr></thead>
+            <tbody>
+              <tr><td>前端框架</td><td>React 19 + TypeScript 5.8</td><td>生態系成熟，AI 生成的程式碼品質最穩定</td></tr>
+              <tr><td>建置工具</td><td>Vite 6</td><td>快速 HMR，開發體驗好，Vercel 原生支援</td></tr>
+              <tr><td>樣式</td><td>Tailwind CSS 4</td><td>Utility-first，AI 生成 UI 時不需維護獨立 CSS</td></tr>
+              <tr><td>動畫</td><td>Motion 12（Framer Motion）</td><td>條件渲染的進出場動畫（AnimatePresence）</td></tr>
+              <tr><td>後端</td><td>Vercel Serverless Functions</td><td>零設定部署，API Key 安全隔離在 server-side</td></tr>
+              <tr><td>儲存</td><td>IndexedDB（瀏覽器端）</td><td>圖片不上傳第三方，保護商業機密</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">AI 模型</div>
+        <p>工具使用了 Google Gemini 的兩個模型，分別負責「理解」和「生成」：</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>模型</th><th>用途</th><th>為什麼選它</th></tr></thead>
+            <tbody>
+              <tr><td><code>gemini-3.1-pro-preview</code></td><td>文字 + 視覺理解</td><td>多模態能力強，能同時看懂產品圖 + 參考圖 + 文字描述，做邏輯推理</td></tr>
+              <tr><td><code>gemini-3.1-flash-image-preview</code></td><td>圖片生成</td><td>支援多種長寬比（1:1、5:1、3:4⋯）+ 高解析度，商業攝影等級品質</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>所有 AI 呼叫透過 <code>@google/genai</code> SDK，在 Vercel Serverless Functions 中執行。API Key 只存在後端，前端透過 <code>/api/*</code> 路由間接呼叫，不暴露金鑰。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">AI 在各階段的角色</div>
+        <p>整個生圖流程有 4 個階段，每個階段都用到了 AI，但角色不同：</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>階段</th><th>API</th><th>模型</th><th>AI 做什麼</th><th>觸發方式</th></tr></thead>
+            <tbody>
+              <tr><td>Step 0：產品分析</td><td><code>/api/analyze-product</code></td><td>Pro</td><td>看產品圖 → 辨識品類 → 推薦描述</td><td>上傳後自動背景觸發</td></tr>
+              <tr><td>Step 1：提示詞優化</td><td><code>/api/optimize-prompt</code></td><td>Pro</td><td>看全部輸入 → 生成含規範約束的專業 prompt</td><td>使用者點「生成」</td></tr>
+              <tr><td>Step 2：圖片生成</td><td><code>/api/generate-image</code></td><td>Flash</td><td>看產品圖 + prompt → 生成商品圖</td><td>緊接 Step 1</td></tr>
+              <tr><td>Step 3：合規檢查</td><td><code>/api/check-compliance</code></td><td>Pro</td><td>看生成的圖 → 逐項檢查 Amazon 規範</td><td>生圖後自動背景觸發</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-tip">
+          <span class="callout-icon">→</span>
+          <div><strong>關鍵設計</strong>：Step 1 的 prompt 優化不只是「把描述寫得更好」，而是把 Amazon 7 種版位的規範直接嵌入 prompt。例如選了「主圖」，生成的 prompt 會自動包含「pure white background RGB 255,255,255, no text, no logos, product fills 85%+ of frame」。這讓 Step 2 的圖片生成模型「天生合規」。</div>
         </div>
       </div>
 
