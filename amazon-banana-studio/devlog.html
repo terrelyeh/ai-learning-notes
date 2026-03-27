@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Amazon Banana Studio — AI 協作案例</title>
-  <meta name="description" content="用 AI 協作打造 Amazon 電商產品圖生成工具的完整案例紀錄" />
+  <title>Amazon Banana Studio — 開發紀錄</title>
+  <meta name="description" content="AI 電商產品圖生成工具的完整開發紀錄：4 階段 AI pipeline、8 種 Amazon 版位、前端費用預估、錯誤碼轉發" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <style>
     /* ── Reset ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -98,6 +100,7 @@
     /* ── Prose ── */
     p { margin-bottom: 16px; color: var(--ink-2); font-size: 17px; line-height: 1.8; }
     strong { font-weight: 600; color: var(--ink); }
+    code { font-family: var(--mono); font-size: 13px; background: rgba(0,0,0,0.05); color: var(--ink-2); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--border-strong); }
     ul, ol { padding-left: 20px; margin-bottom: 16px; }
     li { margin-bottom: 8px; font-size: 17px; line-height: 1.75; color: var(--ink-2); }
     li::marker { color: var(--gold); }
@@ -112,6 +115,10 @@
     tbody tr:hover { background: var(--gold-light); }
     td { padding: 12px 18px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 15px; line-height: 1.65; }
 
+    /* ── Code blocks ── */
+    pre { border-radius: 4px; overflow-x: auto; margin-bottom: 24px; font-size: 13.5px; line-height: 1.65; }
+    pre code { background: none; border: none; color: inherit; padding: 0; font-size: inherit; }
+
     /* ── Callout ── */
     .callout { display: flex; gap: 16px; padding: 18px 22px; border-radius: 4px; margin-bottom: 24px; font-size: 16px; line-height: 1.75; border-left: 3px solid; }
     .callout-icon { font-size: 18px; flex-shrink: 0; line-height: 1.75; }
@@ -124,18 +131,6 @@
     .case-card-row:last-child { border-bottom: none; }
     .case-card-label { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-4); min-width: 140px; flex-shrink: 0; }
     .case-card-value { font-size: 16px; color: var(--ink-2); line-height: 1.65; }
-
-    /* ── AI Role Card ── */
-    .ai-role-card { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; border: 1px solid var(--border-strong); background: var(--border-strong); border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
-    .ai-role-col { background: var(--surface); padding: 22px 24px; }
-    .ai-role-header { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-    .ai-role-ai .ai-role-header { color: #5c7abf; }
-    .ai-role-human .ai-role-header { color: #5c8a5c; }
-    .ai-role-col ul { padding-left: 0; list-style: none; margin: 0; }
-    .ai-role-col li { font-size: 15px; padding: 6px 0 6px 20px; position: relative; border-bottom: 1px solid var(--border); color: var(--ink-2); line-height: 1.55; }
-    .ai-role-col li:last-child { border-bottom: none; }
-    .ai-role-ai li::before { content: "≈"; position: absolute; left: 0; color: #5c7abf; font-family: var(--mono); }
-    .ai-role-human li::before { content: "✦"; position: absolute; left: 0; color: #5c8a5c; font-size: 10px; top: 10px; }
 
     /* ── Tech pills ── */
     .tech-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
@@ -153,6 +148,67 @@
     .bug-title { font-family: var(--mono); font-size: 13px; font-weight: 500; color: #e8c97a; letter-spacing: .04em; }
     .bug-body { background: var(--surface); padding: 22px 24px; }
 
+    /* ── Architecture Flow (arch-flow) ── */
+    .arch-flow {
+      display: flex; align-items: flex-start; gap: 0;
+      margin-bottom: 32px; overflow-x: auto; padding: 8px 0;
+    }
+    .arch-node {
+      background: var(--surface); border: 1px solid var(--border-strong);
+      border-top: 3px solid var(--ink-3); border-radius: 4px;
+      padding: 16px 20px; min-width: 140px; max-width: 200px; flex-shrink: 0;
+    }
+    .arch-node-label { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+    .arch-node-title { font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.4; margin-bottom: 4px; }
+    .arch-node-sub { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+    .arch-frontend { border-top-color: #61dafb; }
+    .arch-frontend .arch-node-label { color: #61dafb; }
+    .arch-backend { border-top-color: #68a063; }
+    .arch-backend .arch-node-label { color: #68a063; }
+    .arch-ai { border-top-color: #b5872a; }
+    .arch-ai .arch-node-label { color: #b5872a; }
+    .arch-storage { border-top-color: #9b72cf; }
+    .arch-storage .arch-node-label { color: #9b72cf; }
+    .arch-external { border-top-color: #5c7abf; }
+    .arch-external .arch-node-label { color: #5c7abf; }
+    .arch-arrow { display: flex; align-items: center; padding: 0 6px; flex-shrink: 0; color: var(--ink-4); font-size: 18px; align-self: center; }
+    .arch-arrow svg { width: 28px; height: 28px; stroke: var(--ink-4); stroke-width: 1.5; fill: none; }
+    .arch-arrow-label { font-size: 10px; color: var(--ink-4); text-align: center; font-family: var(--mono); letter-spacing: .05em; margin-top: 2px; }
+
+    .arch-flow-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px; margin-bottom: 32px;
+    }
+    .arch-flow-grid .arch-node { max-width: none; }
+
+    @media (max-width: 960px) {
+      .arch-flow { flex-direction: column; align-items: stretch; }
+      .arch-flow .arch-node { max-width: none; }
+      .arch-flow .arch-arrow { transform: rotate(90deg); align-self: center; padding: 4px 0; }
+    }
+
+    /* ── Credentials Block ── */
+    .credentials-block { border: 1px solid var(--border-strong); border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
+    .credentials-header { background: #1a1d2e; padding: 13px 22px; display: flex; align-items: center; gap: 10px; }
+    .credentials-icon { font-size: 14px; }
+    .credentials-title { font-family: var(--mono); font-size: 13px; font-weight: 500; color: #a8b5d6; letter-spacing: .04em; }
+    .credentials-body { background: var(--surface); }
+    .credentials-row { display: grid; grid-template-columns: 1fr 1.5fr 1fr 1.5fr; padding: 12px 22px; border-bottom: 1px solid var(--border); font-size: 14px; align-items: center; gap: 12px; }
+    .credentials-row:last-child { border-bottom: none; }
+    .credentials-row.header-row { background: var(--surface-warm); font-weight: 500; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); padding: 10px 22px; }
+    .credentials-service { font-weight: 500; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+    .credentials-type-badge { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: .06em; padding: 2px 6px; border-radius: 2px; white-space: nowrap; }
+    .badge-api-key { background: rgba(181,135,42,0.12); color: var(--gold); }
+    .badge-token { background: rgba(92,122,191,0.12); color: #5c7abf; }
+    .badge-secret { background: rgba(207,92,92,0.12); color: #cf5c5c; }
+    .badge-env { background: rgba(92,138,92,0.12); color: #5c8a5c; }
+    .badge-model { background: rgba(155,114,207,0.12); color: #9b72cf; }
+    .credentials-value { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+    .credentials-note { font-size: 13px; color: var(--ink-3); line-height: 1.5; }
+    @media (max-width: 960px) {
+      .credentials-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+    }
+
     /* ── Footer ── */
     footer { margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--border-strong); display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-4); flex-wrap: wrap; gap: 8px; letter-spacing: .03em; }
 
@@ -164,7 +220,6 @@
       .main { padding: 40px 28px 80px; }
       .hero h1 { font-size: 30px; }
       .menu-toggle { display: flex; }
-      .ai-role-card { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -174,18 +229,22 @@
   <!-- ══ SIDEBAR ══ -->
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-top">
-      <div class="sidebar-eyebrow">AI Collaboration · 工具開發</div>
+      <div class="sidebar-eyebrow">Dev Log · 工具開發</div>
       <h2>Amazon Banana Studio</h2>
     </div>
     <div class="nav-section">
       <div class="nav-group">
         <div class="nav-group-label">案例內容</div>
-        <a class="nav-link" href="#s1"><span class="nav-num">01</span>任務背景</a>
-        <a class="nav-link" href="#s2"><span class="nav-num">02</span>AI 使用策略</a>
-        <a class="nav-link" href="#s3"><span class="nav-num">03</span>關鍵對話轉折</a>
-        <a class="nav-link" href="#s4"><span class="nav-num">04</span>成果紀錄</a>
-        <a class="nav-link" href="#s5"><span class="nav-num">05</span>AI vs 人 分工回顧</a>
-        <a class="nav-link" href="#s6"><span class="nav-num">06</span>Takeaway</a>
+        <a class="nav-link" href="#s1"><span class="nav-num">01</span>需求背景</a>
+        <a class="nav-link" href="#s2"><span class="nav-num">02</span>技術選型</a>
+        <a class="nav-link" href="#s3"><span class="nav-num">03</span>外部服務與金鑰</a>
+        <a class="nav-link" href="#s4"><span class="nav-num">04</span>系統架構</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>核心流程</a>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span>技術重點</a>
+        <a class="nav-link" href="#s7"><span class="nav-num">07</span>實作步驟</a>
+        <a class="nav-link" href="#s8"><span class="nav-num">08</span>踩坑紀錄</a>
+        <a class="nav-link" href="#s9"><span class="nav-num">09</span>延伸課題</a>
+        <a class="nav-link" href="#s10"><span class="nav-num">10</span>Takeaway</a>
       </div>
     </div>
   </nav>
@@ -200,311 +259,475 @@
 
     <header class="hero">
       <div class="hero-eyebrow">
-        <span class="eyebrow-text">AI 協作 · 電商工具開發</span>
+        <span class="eyebrow-text">工具開發 · AI 電商</span>
       </div>
       <h1>Amazon Banana Studio</h1>
       <div class="hero-rule"></div>
-      <p class="hero-desc">用「提出情境 → 討論設計 → AI 實作」的協作模式，從零打造 Amazon 電商產品圖生成工具的完整案例。重點不在程式碼，而在如何用產品直覺驅動 AI 開發。</p>
-      <div class="hero-meta">整理日期：2026-03-26 &nbsp;·&nbsp; 類型：AI 協作 + 工具開發</div>
+      <p class="hero-desc">專為 Amazon 賣家打造的 AI 產品攝影工具。上傳去背產品圖，選版位，AI 自動生成符合 Amazon 規範的商業攝影級圖片。</p>
+      <div class="hero-meta">開發日期：2026-03-26 ~ 2026-03-27 &nbsp;·&nbsp; 類型：工具開發（工程師視角）</div>
     </header>
 
     <!-- Case Card -->
     <div class="case-card">
       <div class="case-card-row">
         <span class="case-card-label">我用 AI 做了什麼</span>
-        <span class="case-card-value">從零打造 AI 電商產品圖生成工具，涵蓋 7 種 Amazon 版位、智慧分析、風格參考系統、多產品模式、自動合規檢查</span>
+        <span class="case-card-value">從零打造 AI 電商產品圖生成工具，涵蓋 8 種 Amazon 版位、4 階段 AI pipeline、前端費用預估、按需合規檢查</span>
       </div>
       <div class="case-card-row">
         <span class="case-card-label">沒有 AI 的話</span>
-        <span class="case-card-value">理解 Amazon 規範 + 前後端架構 + UI 設計 + 文件撰寫，至少需要 2-3 週全職開發</span>
+        <span class="case-card-value">理解 Amazon 8 種版位規範 + 前後端架構 + Gemini 多模態串接 + UI 設計，至少需要 2-3 週全職開發</span>
       </div>
       <div class="case-card-row">
         <span class="case-card-label">最終成果</span>
-        <span class="case-card-value">已上線的完整工具（<a href="https://amazon-bs.vercel.app" target="_blank" style="color:var(--gold)">amazon-bs.vercel.app</a>），含使用指南和產業最佳實踐，已交付電商部門試用</span>
+        <span class="case-card-value">已上線工具（<a href="https://amazon-bs.vercel.app" target="_blank" style="color:var(--gold)">amazon-bs.vercel.app</a>），含使用指南、API 費用說明頁、產業最佳實踐文件，已交付電商部門試用</span>
       </div>
     </div>
 
-    <!-- Section 1 -->
+    <!-- Section 1: 需求背景 -->
     <section class="section" id="s1">
       <div class="section-header">
         <span class="section-num">01</span>
-        <h2 class="section-title">任務背景</h2>
+        <h2 class="section-title">需求背景</h2>
       </div>
-      <p>Amazon 賣家在上架產品時，需要準備大量不同規格的圖片：主圖要純白背景、副圖要情境照、旗艦店 Banner 要寬幅橫幅⋯每種版位都有嚴格的尺寸和合規要求。</p>
-      <p>傳統做法是請攝影師拍攝 + 設計師修圖，每個 SKU 的圖片成本動輒數千元。我們想做一個工具，讓賣家只需要一張產品去背圖，就能快速生成所有版位的圖片。</p>
-      <div class="callout callout-tip">
-        <span class="callout-icon">→</span>
-        <div><strong>核心挑戰</strong>：不只是「接一個 AI 生圖 API」，而是要把 Amazon 的圖片規範（主圖純白背景、禁止文字、產品佔比 85%⋯）內嵌到 AI 的行為中，讓生出來的圖「開箱即合規」。</div>
-      </div>
+      <p>Amazon 賣家上架一個 SKU，需要準備大量不同規格的圖片：主圖要純白背景且產品佔比 85%+、副圖要情境照、A+ Content 要 970x600 橫幅、旗艦店 Banner 要 3000x600 寬幅⋯⋯每種版位都有不同的尺寸要求和合規規範。</p>
+      <p>傳統做法是攝影師拍攝 + 設計師修圖，每個 SKU 成本動輒數千元。核心挑戰不只是「接一個 AI 生圖 API」，而是把 Amazon 的圖片規範（8 種版位各自的規則）內嵌到 AI 的行為中，讓生出來的圖「開箱即合規」。</p>
     </section>
 
-    <!-- Section 2 -->
+    <!-- Section 2: 技術選型 -->
     <section class="section" id="s2">
       <div class="section-header">
         <span class="section-num">02</span>
-        <h2 class="section-title">AI 使用策略</h2>
+        <h2 class="section-title">技術選型</h2>
       </div>
 
-      <div class="subsection">
-        <div class="subsection-label">提問模式：情境驅動型</div>
-        <p>整個開發過程中，我幾乎沒有直接說「幫我寫一個 function」。取而代之的是：</p>
-        <blockquote>我提出使用情境 → AI 提出設計方案 → 我追問邊界條件 → AI 修正方案 → 我確認 → AI 實作</blockquote>
-        <p>這個循環在每個功能上都重複了 3~5 輪。</p>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">分工方式</div>
-        <div class="ai-role-card">
-          <div class="ai-role-col ai-role-ai">
-            <div class="ai-role-header">AI 負責</div>
-            <ul>
-              <li>技術架構設計（React + Vercel + Gemini）</li>
-              <li>Amazon 規範萃取與結構化</li>
-              <li>前端 + 後端全部程式碼</li>
-              <li>使用指南與最佳實踐文件起草</li>
-              <li>產業知識產出（網通設備攻略）</li>
-            </ul>
-          </div>
-          <div class="ai-role-col ai-role-human">
-            <div class="ai-role-header">人負責</div>
-            <ul>
-              <li>使用情境定義與業務邏輯</li>
-              <li>UX 流程設計與直覺判斷</li>
-              <li>追問邊界條件和例外情況</li>
-              <li>設計品味審查（字級、間距、配色）</li>
-              <li>文件內容的實務正確性確認</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 3 -->
-    <section class="section" id="s3">
-      <div class="section-header">
-        <span class="section-num">03</span>
-        <h2 class="section-title">關鍵對話轉折</h2>
-      </div>
-
-      <div class="bug-block">
-        <div class="bug-header">
-          <span class="bug-icon">💡</span>
-          <span class="bug-title">轉折一：多產品模式的 UX 反模式</span>
-        </div>
-        <div class="bug-body">
-          <p><strong>情境</strong>：我問「如果使用者要做旗艦店 Banner，想放多個產品怎麼辦？」</p>
-          <p>AI 最初的設計是：使用者在下方選了「旗艦店」版位 → 上方自動跳出配角產品上傳區。我馬上發現問題：<strong>使用者的視線是往下走的，在下面選了東西，上面冒出新區塊，他根本不會注意到。</strong></p>
-          <p>我提出替代方案：做成獨立開關，放在產品圖下方。開關打開 → 版位自動鎖定旗艦店。資訊流完全由上往下。</p>
-          <div class="callout callout-tip">
-            <span class="callout-icon">→</span>
-            <div><strong>帶走的原則</strong>：UI 的控制流應該由上往下。如果你發現「下面的操作會改變上面的東西」，通常代表控制權放錯位置了。</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bug-block">
-        <div class="bug-header">
-          <span class="bug-icon">💡</span>
-          <span class="bug-title">轉折二：競品參考圖的文字處理</span>
-        </div>
-        <div class="bug-body">
-          <p><strong>情境</strong>：我問「如果給 AI 競品的圖，上面有壓文字，AI 會怎麼處理？」</p>
-          <p>AI 的第一反應是「會自動忽略文字」。但我追問：<strong>「重點不是文字的內容，而是文字的擺法和位置。」</strong></p>
-          <p>這句話讓 AI 調整了整個設計思路，最終建立了三層優先級系統：</p>
-          <ol>
-            <li><strong>忽略文字內容</strong>（不複製競品文案）</li>
-            <li><strong>分析文字佈局</strong>（位置、大小、與產品的關係）</li>
-            <li><strong>使用者的排版需求優先</strong>（明確指定 > 參考圖推斷 > 無指引）</li>
-          </ol>
-          <div class="callout callout-tip">
-            <span class="callout-icon">→</span>
-            <div><strong>帶走的原則</strong>：不要讓 AI 只做二元判斷（用 or 不用）。追問「這個東西的哪個面向有價值」，往往能找到更細膩的處理方式。</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bug-block">
-        <div class="bug-header">
-          <span class="bug-icon">💡</span>
-          <span class="bug-title">轉折三：從功能到產業最佳實踐</span>
-        </div>
-        <div class="bug-body">
-          <p><strong>情境</strong>：功能做完後，我問了一個實務問題：「假設我是網通品牌商，你有沒有 Best Practice？」</p>
-          <p>AI 給出了極度詳細的攻略。我覺得品質很好，就說「這應該獨立一份」。於是 AI 直接生成了完整的獨立 HTML 頁面，含 5 大章節、情境卡片、SOP 流程圖。</p>
-          <div class="callout callout-tip">
-            <span class="callout-icon">→</span>
-            <div><strong>帶走的原則</strong>：AI 不只能幫你「做功能」，還能幫你「做內容」。當你發現 AI 對某領域理解夠深，直接讓它產出面向使用者的文件，效率極高。</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 4 -->
-    <section class="section" id="s4">
-      <div class="section-header">
-        <span class="section-num">04</span>
-        <h2 class="section-title">成果紀錄</h2>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">開發框架</div>
-        <div class="tech-row">
-          <span class="tech-pill"><span class="tech-dot" style="background:#61dafb"></span>React 19</span>
-          <span class="tech-pill"><span class="tech-dot" style="background:#3178c6"></span>TypeScript 5.8</span>
-          <span class="tech-pill"><span class="tech-dot" style="background:#646cff"></span>Vite 6</span>
-          <span class="tech-pill"><span class="tech-dot" style="background:#06b6d4"></span>Tailwind CSS 4</span>
-          <span class="tech-pill"><span class="tech-dot" style="background:#f472b6"></span>Motion 12</span>
-          <span class="tech-pill"><span class="tech-dot" style="background:#000000"></span>Vercel Serverless</span>
-          <span class="tech-pill"><span class="tech-dot" style="background:#4285f4"></span>Gemini 3.1 Pro</span>
-          <span class="tech-pill"><span class="tech-dot" style="background:#fbbc04"></span>Gemini 3.1 Flash</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>層級</th><th>技術</th><th>選擇理由</th></tr></thead>
-            <tbody>
-              <tr><td>前端框架</td><td>React 19 + TypeScript 5.8</td><td>生態系成熟，AI 生成的程式碼品質最穩定</td></tr>
-              <tr><td>建置工具</td><td>Vite 6</td><td>快速 HMR，開發體驗好，Vercel 原生支援</td></tr>
-              <tr><td>樣式</td><td>Tailwind CSS 4</td><td>Utility-first，AI 生成 UI 時不需維護獨立 CSS</td></tr>
-              <tr><td>動畫</td><td>Motion 12（Framer Motion）</td><td>條件渲染的進出場動畫（AnimatePresence）</td></tr>
-              <tr><td>後端</td><td>Vercel Serverless Functions</td><td>零設定部署，API Key 安全隔離在 server-side</td></tr>
-              <tr><td>儲存</td><td>IndexedDB（瀏覽器端）</td><td>圖片不上傳第三方，保護商業機密</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">AI 模型</div>
-        <p>工具使用了 Google Gemini 的兩個模型，分別負責「理解」和「生成」：</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>模型</th><th>用途</th><th>為什麼選它</th></tr></thead>
-            <tbody>
-              <tr><td><code>gemini-3.1-pro-preview</code></td><td>文字 + 視覺理解</td><td>多模態能力強，能同時看懂產品圖 + 參考圖 + 文字描述，做邏輯推理</td></tr>
-              <tr><td><code>gemini-3.1-flash-image-preview</code></td><td>圖片生成</td><td>支援多種長寬比（1:1、5:1、3:4⋯）+ 高解析度，商業攝影等級品質</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p>所有 AI 呼叫透過 <code>@google/genai</code> SDK，在 Vercel Serverless Functions 中執行。API Key 只存在後端，前端透過 <code>/api/*</code> 路由間接呼叫，不暴露金鑰。</p>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">AI 在各階段的角色</div>
-        <p>整個生圖流程有 4 個階段，每個階段都用到了 AI，但角色不同：</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>階段</th><th>API</th><th>模型</th><th>AI 做什麼</th><th>觸發方式</th></tr></thead>
-            <tbody>
-              <tr><td>Step 0：產品分析</td><td><code>/api/analyze-product</code></td><td>Pro</td><td>看產品圖 → 辨識品類 → 推薦描述</td><td>上傳後自動背景觸發</td></tr>
-              <tr><td>Step 1：提示詞優化</td><td><code>/api/optimize-prompt</code></td><td>Pro</td><td>看全部輸入 → 生成含規範約束的專業 prompt</td><td>使用者點「生成」</td></tr>
-              <tr><td>Step 2：圖片生成</td><td><code>/api/generate-image</code></td><td>Flash</td><td>看產品圖 + prompt → 生成商品圖</td><td>緊接 Step 1</td></tr>
-              <tr><td>Step 3：合規檢查</td><td><code>/api/check-compliance</code></td><td>Pro</td><td>看生成的圖 → 逐項檢查 Amazon 規範</td><td>生圖後自動背景觸發</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="callout callout-tip">
-          <span class="callout-icon">→</span>
-          <div><strong>關鍵設計</strong>：Step 1 的 prompt 優化不只是「把描述寫得更好」，而是把 Amazon 7 種版位的規範直接嵌入 prompt。例如選了「主圖」，生成的 prompt 會自動包含「pure white background RGB 255,255,255, no text, no logos, product fills 85%+ of frame」。這讓 Step 2 的圖片生成模型「天生合規」。</div>
-        </div>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">最終產出</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>產出</th><th>說明</th></tr></thead>
-            <tbody>
-              <tr><td>主工具</td><td>AI 產品圖生成器 — 7 種版位、智慧分析、6 種風格參考面向、多產品模式、自動合規檢查</td></tr>
-              <tr><td>使用指南</td><td>完整功能文件，涵蓋所有輸入欄位用途和 Amazon 規範解說</td></tr>
-              <tr><td>最佳實踐</td><td>網通設備產業專屬攻略（含版位對照、SOP 流程、常見錯誤）</td></tr>
-              <tr><td>開發文件</td><td>README.md（產品介紹）+ CLAUDE.md（技術上下文）</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="callout callout-note">
-        <span class="callout-icon">!</span>
-        <div>整個工具從概念到上線，跨越約 3 個 AI 對話 session。同等品質的工具（含前後端、AI 串接、合規規範、文件），保守估計需要 <strong>2-3 週全職開發</strong>。</div>
-      </div>
-    </section>
-
-    <!-- Section 5 -->
-    <section class="section" id="s5">
-      <div class="section-header">
-        <span class="section-num">05</span>
-        <h2 class="section-title">AI vs 人 分工回顧</h2>
+      <div class="tech-row">
+        <span class="tech-pill"><span class="tech-dot" style="background:#61dafb"></span>React 19</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#3178c6"></span>TypeScript 5.8</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#646cff"></span>Vite 6</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#06b6d4"></span>Tailwind CSS 4</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#f472b6"></span>Motion 12</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#68a063"></span>Vercel Serverless</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#b5872a"></span>Gemini 3.1</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#9b72cf"></span>IndexedDB</span>
       </div>
 
       <div class="table-wrap">
         <table>
-          <thead><tr><th>環節</th><th>誰負責</th><th>關鍵洞察</th></tr></thead>
+          <thead><tr><th>層級</th><th>技術</th><th>選擇理由</th></tr></thead>
           <tbody>
-            <tr><td>提出使用場景</td><td>人</td><td>AI 不知道 Amazon 賣家的真實工作流程</td></tr>
-            <tr><td>整理 Amazon 規範</td><td>AI</td><td>從官方文件萃取並結構化，這是 AI 最擅長的</td></tr>
-            <tr><td>UX 流程設計</td><td>人為主</td><td>「使用者會不會注意到？」這類判斷 AI 很難主動提出</td></tr>
-            <tr><td>前後端實作</td><td>AI</td><td>1700 行 App.tsx + 4 個 API，全部零 TypeScript 錯誤</td></tr>
-            <tr><td>邊界條件追問</td><td>人</td><td>「如果開關打開但沒上傳配角呢？」「如果參考圖有文字呢？」</td></tr>
-            <tr><td>設計品味判斷</td><td>人</td><td>「文字偏小」「這個章節字級需要拉大」</td></tr>
-            <tr><td>產業知識產出</td><td>AI</td><td>網通設備最佳實踐的內容深度超乎預期</td></tr>
-            <tr><td>文件撰寫</td><td>協作</td><td>AI 起草結構，人確認實務正確性，再由 AI 完善</td></tr>
+            <tr><td>前端框架</td><td>React 19 + TypeScript 5.8</td><td>生態系成熟，AI 生成的程式碼品質最穩定</td></tr>
+            <tr><td>建置工具</td><td>Vite 6</td><td>快速 HMR，Vercel 原生支援</td></tr>
+            <tr><td>樣式</td><td>Tailwind CSS 4</td><td>Utility-first，AI 生成 UI 時不需維護獨立 CSS</td></tr>
+            <tr><td>動畫</td><td>Motion 12 (Framer Motion)</td><td><code>AnimatePresence</code> 處理條件渲染的進出場</td></tr>
+            <tr><td>後端</td><td>Vercel Serverless Functions</td><td>零設定部署，API Key 安全隔離在 server-side</td></tr>
+            <tr><td>儲存</td><td>IndexedDB（瀏覽器端）</td><td>圖片不上傳第三方，保護商業機密，FIFO 50 張上限</td></tr>
+            <tr><td>AI SDK</td><td><code>@google/genai</code></td><td>Server-side only，輕量，支援 structured output</td></tr>
+            <tr><td>部署</td><td>Vercel</td><td><code>npx vercel --prod</code> 一鍵部署，自動 CI/CD</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- Section 6: Takeaway -->
+    <!-- Section 3: 外部服務與金鑰 -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">外部服務與金鑰</h2>
+      </div>
+
+      <div class="credentials-block">
+        <div class="credentials-header">
+          <span class="credentials-icon">&#128273;</span>
+          <span class="credentials-title">Services &amp; Credentials</span>
+        </div>
+        <div class="credentials-body">
+          <div class="credentials-row header-row">
+            <span>服務 / 模型</span>
+            <span>用途</span>
+            <span>類型</span>
+            <span>備註</span>
+          </div>
+          <div class="credentials-row">
+            <span class="credentials-service">gemini-3.1-pro-preview</span>
+            <span>提示詞優化、合規檢測、產品分析</span>
+            <span><span class="credentials-type-badge badge-model">MODEL</span></span>
+            <span class="credentials-note">多模態理解，看懂圖片 + 做邏輯推理</span>
+          </div>
+          <div class="credentials-row">
+            <span class="credentials-service">gemini-3.1-flash-image-preview</span>
+            <span>產品圖生成</span>
+            <span><span class="credentials-type-badge badge-model">MODEL</span></span>
+            <span class="credentials-note">支援 14 種 aspect ratio + 1K/2K 解析度</span>
+          </div>
+          <div class="credentials-row">
+            <span class="credentials-service">GEMINI_API_KEY</span>
+            <span>所有 Gemini API 呼叫</span>
+            <span><span class="credentials-type-badge badge-api-key">API KEY</span></span>
+            <span class="credentials-note">存放於 Vercel env / <code>.env.local</code></span>
+          </div>
+          <div class="credentials-row">
+            <span class="credentials-service">Vercel</span>
+            <span>部署 + Serverless runtime</span>
+            <span><span class="credentials-type-badge badge-token">PLATFORM</span></span>
+            <span class="credentials-note">GitHub 連動，push 即自動部署</span>
+          </div>
+          <div class="credentials-row">
+            <span class="credentials-service">Google AI Studio</span>
+            <span>API 管理 + Billing + spending cap</span>
+            <span><span class="credentials-type-badge badge-env">PLATFORM</span></span>
+            <span class="credentials-note">Monthly cap 設定在 AI Studio Settings</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-note">
+        <span class="callout-icon">!</span>
+        <div><code>GEMINI_API_KEY</code> 必須來自<strong>已啟用 Billing</strong> 的 Google Cloud 專案。圖片生成模型（Flash Image）沒有免費額度，純付費。Google AI Studio 有 Tier 制 spending cap（Tier 1 = $250/月），與 Cloud Billing Budgets 是獨立的兩套系統。</div>
+      </div>
+    </section>
+
+    <!-- Section 4: 系統架構 -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">系統架構</h2>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">整體架構</div>
+        <div class="arch-flow">
+          <div class="arch-node arch-frontend">
+            <div class="arch-node-label">Frontend</div>
+            <div class="arch-node-title">React 19 SPA</div>
+            <div class="arch-node-sub">App.tsx (~2000 行)<br>Tailwind CSS + Motion</div>
+          </div>
+          <div class="arch-arrow">
+            <div>
+              <svg viewBox="0 0 28 28"><path d="M4 14h20M18 8l6 6-6 6"/></svg>
+              <div class="arch-arrow-label">/api/*</div>
+            </div>
+          </div>
+          <div class="arch-node arch-backend">
+            <div class="arch-node-label">Backend</div>
+            <div class="arch-node-title">Vercel Serverless</div>
+            <div class="arch-node-sub">4 個 API endpoint<br>@google/genai SDK</div>
+          </div>
+          <div class="arch-arrow">
+            <div>
+              <svg viewBox="0 0 28 28"><path d="M4 14h20M18 8l6 6-6 6"/></svg>
+              <div class="arch-arrow-label">REST</div>
+            </div>
+          </div>
+          <div class="arch-node arch-ai">
+            <div class="arch-node-label">AI</div>
+            <div class="arch-node-title">Gemini 3.1</div>
+            <div class="arch-node-sub">Pro: 文字 + 視覺理解<br>Flash: 圖片生成</div>
+          </div>
+          <div class="arch-arrow">
+            <div>
+              <svg viewBox="0 0 28 28"><path d="M4 14h20M18 8l6 6-6 6"/></svg>
+              <div class="arch-arrow-label">base64</div>
+            </div>
+          </div>
+          <div class="arch-node arch-storage">
+            <div class="arch-node-label">Storage</div>
+            <div class="arch-node-title">IndexedDB</div>
+            <div class="arch-node-sub">瀏覽器端<br>FIFO 50 張上限</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">AI Pipeline（4 階段）</div>
+        <div class="arch-flow-grid">
+          <div class="arch-node arch-ai">
+            <div class="arch-node-label">Step 0</div>
+            <div class="arch-node-title">analyze-product</div>
+            <div class="arch-node-sub">Gemini Pro<br>辨識品類 + 推薦描述<br>背景自動觸發</div>
+          </div>
+          <div class="arch-node arch-ai">
+            <div class="arch-node-label">Step 1</div>
+            <div class="arch-node-title">optimize-prompt</div>
+            <div class="arch-node-sub">Gemini Pro<br>嵌入版位規範 + 生成 prompt<br>使用者點「生成」</div>
+          </div>
+          <div class="arch-node arch-ai">
+            <div class="arch-node-label">Step 2</div>
+            <div class="arch-node-title">generate-image</div>
+            <div class="arch-node-sub">Gemini Flash<br>生成商品圖 x N 張<br>Promise.allSettled</div>
+          </div>
+          <div class="arch-node arch-ai">
+            <div class="arch-node-label">Step 3</div>
+            <div class="arch-node-title">check-compliance</div>
+            <div class="arch-node-sub">Gemini Pro<br>逐項檢查 Amazon 規範<br>手動按需觸發</div>
+          </div>
+        </div>
+      </div>
+
+      <ul>
+        <li><strong>前端不持有 API Key</strong>：所有 AI 呼叫都經過 <code>/api/*</code> serverless function</li>
+        <li><strong>IndexedDB 而非雲端儲存</strong>：產品圖是商業機密，不上傳第三方</li>
+        <li><strong>4 個 API endpoint 各司其職</strong>：分析、優化、生成、檢查，pipeline 式串接</li>
+      </ul>
+    </section>
+
+    <!-- Section 5: 核心流程 -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">核心流程</h2>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">生圖主流程</div>
+        <p>使用者上傳產品圖後，背景自動觸發 <code>analyze-product</code> 做品類辨識和描述建議。使用者點「生成」後，<code>optimize-prompt</code> 將使用者描述 + 版位規範 + 參考圖合成一段專業英文 prompt，同時決定最適 aspect ratio。接著 <code>generate-image</code> 用 <code>Promise.allSettled</code> 平行生成 N 張圖，自動重試失敗的請求。最後存入 IndexedDB 並顯示預估費用。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">關鍵設計：Amazon 規範嵌入點</div>
+        <p>版位規範不是在「合規檢查」時才介入，而是在 <strong>Step 1 的 prompt 優化</strong>就內嵌。<code>optimize-prompt.ts</code> 的 <code>PLACEMENT_RULES</code> 包含 8 種版位的完整規則（純白背景、產品佔比、禁止文字⋯），生成的 prompt 會自動帶入合規約束，讓圖片「天生合規」。合規檢查是二次驗證，不是唯一防線。</p>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">&#x2192;</span>
+        <div><strong>設計原則</strong>：把規範嵌入「生成階段」而非只在「檢查階段」，等同於把品管從 QC（事後抽檢）推到 QA（過程控制）。對使用者來說，生成的圖更大機率直接可用，減少重做次數。</div>
+      </div>
+    </section>
+
+    <!-- Section 6: 技術重點 -->
     <section class="section" id="s6">
       <div class="section-header">
         <span class="section-num">06</span>
+        <h2 class="section-title">技術重點</h2>
+      </div>
+
+      <ol>
+        <li><strong>Aspect Ratio 安全閥</strong>：Gemini 只接受 14 種特定比例。<code>normalizeAspectRatio()</code> 將任意比例映射到最近的有效值，避免 API 回 400。新增版位時必須確認比例是否在 <code>VALID_RATIOS</code> 中。</li>
+        <li><strong>前端費用預估</strong>：圖片生成成本是確定性的（1K=$0.067/張, 2K=$0.101/張），用前端公式即可精準估算。不走後端，是因為 <code>usage_metadata</code> 裡的 thinking tokens 不可預測，反而不如固定公式準確。</li>
+        <li><strong>合規檢查從自動改為手動</strong>：初版每次生圖後自動跑合規，但 prompt 優化已內嵌規範，多數圖片本來就合規。改為手動觸發，降低 API 成本。</li>
+        <li><strong>錯誤碼轉發</strong>：Gemini API 回 429 spending cap 時，後端原本統一包成 500。修正後 4 個 endpoint 都轉發原始 HTTP status，前端 <code>friendlyError()</code> 匹配中文提示。</li>
+        <li><strong>多產品模式的控制流</strong>：<code>multiProductMode</code> 是獨立開關（由上往下的控制流），開啟時版位鎖定旗艦店 + 展開配角上傳區。避免了「下方操作觸發上方 UI 變化」的 UX 反模式。</li>
+      </ol>
+    </section>
+
+    <!-- Section 7: 實作步驟 -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">實作步驟</h2>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">步驟一：4 階段 AI Pipeline</div>
+        <p>每個階段是獨立的 Vercel Serverless Function，各自負責一種 AI 任務：</p>
+        <pre><code class="language-typescript">// api/optimize-prompt.ts — 核心：版位規範嵌入
+const PLACEMENT_RULES: Record&lt;string, string&gt; = {
+  '主圖 (Main Image)': `
+    Must use PURE WHITE background (RGB 255, 255, 255).
+    Product must fill ≥85% of the frame.
+    NO text, NO logos, NO watermarks, NO props...
+  `,
+  'A+ 橫幅 (970×600)': `
+    A+ Content Module 06. Actual 970×600px (≈16:10).
+    Generate at 16:9, crop height afterward...
+  `,
+  // ... 8 種版位
+};</code></pre>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">步驟二：Aspect Ratio 安全閥</div>
+        <pre><code class="language-typescript">// api/generate-image.ts
+const VALID_RATIOS = new Set([
+  '1:1','1:4','1:8','2:3','3:2','3:4','4:1','4:3',
+  '4:5','5:4','8:1','9:16','16:9','21:9'
+]);
+
+function normalizeAspectRatio(ratio: string): string {
+  if (VALID_RATIOS.has(ratio)) return ratio;
+  const [w, h] = ratio.split(':').map(Number);
+  const target = w / h;
+  // 找最近的有效比例...
+  return closestRatio;
+}</code></pre>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">步驟三：前端費用預估</div>
+        <pre><code class="language-typescript">// src/App.tsx
+const estimateCost = (imgCount: number, size: string): number =&gt; {
+  const IMAGE_COST: Record&lt;string, number&gt; = { '1K': 0.067, '2K': 0.101 };
+  const OVERHEAD_FIXED = 0.036; // prompt optimization (Pro model)
+  return OVERHEAD_FIXED + imgCount * (IMAGE_COST[size] || 0.067);
+};</code></pre>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">步驟四：錯誤碼轉發 + 中文化</div>
+        <pre><code class="language-typescript">// api/*.ts — 所有 4 個 endpoint 統一處理
+catch (error: any) {
+  const httpCode = error?.status || error?.httpStatusCode || (() =&gt; {
+    try { return JSON.parse(error?.message)?.error?.code; }
+    catch { return undefined; }
+  })();
+  const status = [400, 401, 403, 429, 503].includes(httpCode)
+    ? httpCode : 500;
+  return res.status(status).json({ error: error.message });
+}
+
+// src/lib/api.ts — 前端友善提示
+function friendlyError(status: number, data: any): string {
+  if (code === 429 &amp;&amp; msg.includes('spending cap'))
+    return 'API 月度花費已達上限。請至 Google AI Studio → Settings 調整。';
+  // ...
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- Section 8: 踩坑紀錄 -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">踩坑紀錄</h2>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">&#x1F41B;</span>
+          <span class="bug-title">Bug 1：Gemini 收緊 Aspect Ratio 驗證</span>
+        </div>
+        <div class="bug-body">
+          <p><strong>症狀</strong>：圖片生成突然全部失敗，回 400 錯誤。程式碼沒改過。</p>
+          <p><strong>根本原因</strong>：Gemini API 在某次更新後收緊了 aspect ratio 驗證，只接受 14 種特定比例。原本能通過的 <code>5:1</code>（旗艦店 Banner）被拒絕。</p>
+          <p><strong>解法</strong>：加入 <code>normalizeAspectRatio()</code> 安全閥，將非標準比例映射到最近的有效值。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">&#x2192;</span>
+            <div><strong>教訓</strong>：依賴外部 API 時，即使你的程式碼沒改，API 的行為可能改變。加一層 normalization 防禦層。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">&#x1F41B;</span>
+          <span class="bug-title">Bug 2：Spending cap 錯誤被吞掉</span>
+        </div>
+        <div class="bug-body">
+          <p><strong>症狀</strong>：使用者點「合規」按鈕，顯示「AI 服務暫時異常」，但實際原因是 API 月度花費達上限。</p>
+          <p><strong>根本原因</strong>：後端 catch block 統一回 <code>status(500)</code>，原始的 429 錯誤碼被丟失。前端看到 500 就顯示通用錯誤訊息。</p>
+          <p><strong>解法</strong>：4 個 API endpoint 都改為轉發原始 HTTP status，前端根據 status + message 匹配精確的中文提示。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">&#x2192;</span>
+            <div><strong>教訓</strong>：錯誤處理要保留原始資訊，不能在中間層統一吞掉。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">&#x1F41B;</span>
+          <span class="bug-title">Bug 3：friendlyError() 的 .includes() crash</span>
+        </div>
+        <div class="bug-body">
+          <p><strong>症狀</strong>：點合規按鈕，console 報 <code>o.includes is not a function</code>（minified 錯誤）。</p>
+          <p><strong>根本原因</strong>：<code>friendlyError()</code> 的 fallback chain 中，當 <code>parsed.error</code> 是 object（而不是 string）時，<code>msg</code> 拿到 object，呼叫 <code>.includes()</code> 就 crash。</p>
+          <p><strong>解法</strong>：加入明確的類型檢查 <code>typeof rawMsg === 'string' ? rawMsg : ''</code>。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">&#x2192;</span>
+            <div><strong>教訓</strong>：TypeScript 的型別標註不是 runtime guarantee。API 回傳的 error 結構不可預期，要防禦性處理。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">&#x1F41B;</span>
+          <span class="bug-title">Bug 4：Google AI Studio vs Cloud Billing 的花費上限</span>
+        </div>
+        <div class="bug-body">
+          <p><strong>症狀</strong>：用 <code>gcloud billing budgets list</code> 查詢，回 0 筆預算。但使用者確實設了月度上限。</p>
+          <p><strong>根本原因</strong>：Google AI Studio 的 Monthly spending cap 和 Google Cloud Billing Budgets 是<strong>兩套獨立系統</strong>。用 <code>gcloud</code> 查的是後者，使用者設的是前者。</p>
+          <p><strong>解法</strong>：引導使用者到 AI Studio &#x2192; Settings 查看和調整 cap。同時把前端錯誤提示指向正確的設定位置。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">&#x2192;</span>
+            <div><strong>教訓</strong>：Google 的 AI 服務有兩個入口（AI Studio vs Vertex AI），各自有獨立的帳單管理。搞混會找不到設定。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 9: 延伸課題 -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">延伸課題</h2>
+      </div>
+      <ul>
+        <li><strong>使用者管理 / Access Control</strong>：目前是單一 API Key 共用，多人使用會撞 spending cap</li>
+        <li><strong>圖片精修（Image Refinement）</strong>：基於已生成的圖片微調（Gemini 目前沒有 seed/deterministic generation，無法精確控制）</li>
+        <li><strong>更多產業的 Best Practice</strong>：目前只有網通設備，可擴展到食品、美妝、3C 等</li>
+        <li><strong>批次生成模式</strong>：一次上傳多個 SKU，自動跑完所有版位</li>
+      </ul>
+    </section>
+
+    <!-- Section 10: Takeaway -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
         <h2 class="section-title">Takeaway</h2>
       </div>
 
       <div class="takeaway">
         <div class="takeaway-label">這個案例展示了什麼</div>
-        <p><strong>「情境驅動開發」的 AI 協作模式</strong>：不是給 AI 寫規格書，而是用「假設我是 XXX 使用者，遇到 YYY 情境」的方式推進。每個功能都是從真實使用場景反推出來的，而不是從技術能力正推。</p>
-        <p>這種模式特別適合：你懂業務但不寫程式、或你有產品直覺但缺乏開發資源的情境。</p>
+        <p><strong>「情境驅動開發」+ AI 全棧實作</strong>的協作模式：人提出使用場景和邊界條件，AI 負責架構設計和全部程式碼。每個功能都是從真實使用情境反推出來的，而不是從技術能力正推。</p>
+        <p>關鍵是「追問邊界條件」：</p>
+        <ul>
+          <li>「如果參考圖有文字怎麼辦？」&#x2192; 演化出三層優先級的佈局系統</li>
+          <li>「合規檢查真的每次都要跑嗎？」&#x2192; 改成按需觸發，省 50% API 成本</li>
+          <li>「API 花費上限查不到？」&#x2192; 發現 AI Studio 和 Cloud Billing 是兩套系統</li>
+        </ul>
       </div>
 
       <div class="takeaway">
         <div class="takeaway-label">可移植性</div>
         <p><strong>可直接複製的部分</strong>：</p>
         <ul>
-          <li>「提出情境 → 討論設計 → AI 實作」的三步迭代循環</li>
-          <li>讓 AI 同時產出功能和面向使用者的文件</li>
-          <li>用「追問邊界條件」來逼出更完善的設計</li>
+          <li>4 階段 AI pipeline 的架構（分析 &#x2192; 優化 &#x2192; 生成 &#x2192; 檢查）適用於任何「AI 生成 + 品質把關」的場景</li>
+          <li>Aspect Ratio normalization 的防禦策略適用於所有 Gemini 圖片生成</li>
+          <li>前端費用預估的做法適用於成本確定性高的 AI API（圖片生成、TTS 等）</li>
         </ul>
         <p><strong>這個案例的特殊條件</strong>：</p>
         <ul>
-          <li>Gemini 的圖片生成能力是核心（換其他模型效果可能不同）</li>
-          <li>Amazon 規範的結構化程度高，適合 AI 整理（其他平台不一定）</li>
+          <li>Gemini Flash Image 的圖片生成品質是核心（換模型效果不同）</li>
+          <li>Amazon 的規範結構化程度高，適合嵌入 prompt（其他平台不一定）</li>
         </ul>
       </div>
 
       <div class="takeaway">
         <div class="takeaway-label">如果你也要做，先問 AI 什麼</div>
-        <p><strong>1.</strong> 「我要做一個 [你的領域] 的 AI 工具，使用者是 [角色]，他們的痛點是 [問題]。你建議怎麼架構？」— 讓 AI 先給你全貌，再從情境出發逐步細化。</p>
-        <p><strong>2.</strong> 「假設我是 [使用者角色]，手上有 [素材]，想要 [結果]。這中間有哪些步驟是 AI 可以自動化的？」— 幫你找到 AI 最能發揮價值的環節。</p>
+        <p><strong>1.</strong> 「我要做一個 [領域] 的 AI 工具，使用者是 [角色]，痛點是 [問題]。我想用 [AI 模型]。你建議怎麼架構 API pipeline？」</p>
+        <p><strong>2.</strong> 「這個 AI API 有哪些已知限制（rate limit、支援的參數範圍、計費方式）？我要怎麼在程式碼裡做防禦？」</p>
       </div>
     </section>
 
     <footer>
-      <span>整理自 AI 問答對話 · <strong>2026-03-26</strong></span>
-      <span>AI 協作 + 工具開發</span>
+      <span>開發日期：<strong>2026-03-26 ~ 2026-03-27</strong></span>
+      <span>工具開發（工程師視角）</span>
     </footer>
   </main>
 </div>
 
-<button class="menu-toggle" id="menuToggle" aria-label="目錄">≡</button>
+<button class="menu-toggle" id="menuToggle" aria-label="目錄">&#x2261;</button>
 
 <script>
+  // Sidebar toggle (mobile)
   const sidebar = document.getElementById('sidebar');
   const toggle = document.getElementById('menuToggle');
   toggle.addEventListener('click', () => {
     sidebar.classList.toggle('open');
-    toggle.textContent = sidebar.classList.contains('open') ? '✕' : '≡';
+    toggle.textContent = sidebar.classList.contains('open') ? '\u2715' : '\u2261';
   });
 
+  // Active nav tracking
   const sections = document.querySelectorAll('.section');
   const navLinks = document.querySelectorAll('.nav-link');
   const io = new IntersectionObserver(entries => {
@@ -517,6 +740,9 @@
     });
   }, { threshold: 0.25 });
   sections.forEach(s => io.observe(s));
+
+  // Syntax highlighting
+  hljs.highlightAll();
 </script>
 </body>
 </html>
