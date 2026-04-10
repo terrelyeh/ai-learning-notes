@@ -886,31 +886,40 @@
 
       <p>完整的資料流：</p>
 
-      <!-- ASCII architecture in dark terminal block -->
-      <div class="tree-block">
-<span class="tq">Data Sources</span><br>
-<br>
-&nbsp;&nbsp;Manual Upload &mdash;&mdash;&mdash;&mdash;&mdash;&#9488;<br>
-&nbsp;&nbsp;Linux wireless-regdb &mdash;&#9508;<br>
-&nbsp;&nbsp;CEPT/EFIS &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&#9500;&mdash;&rarr; <span class="ta">Sync APIs</span> &mdash;&rarr; <span class="ta">Parser</span><br>
-&nbsp;&nbsp;FCC eCFR &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&#9508;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(5 endpoints)&nbsp;&nbsp;&nbsp;(Structured or AI)<br>
-&nbsp;&nbsp;PolicyTracker RSS &mdash;&mdash;&#9496;<br>
-<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;<br>
-<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tc">regulation_alerts</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="tc">regulatory_briefs</span> (auto-generated)<br>
-<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ta">Apply</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ta">Approve</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tq">Dismiss</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PATCH /api/regulations/[code]<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;regulations 表更新 + change_log 自動記錄<br>
-<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;<br>
-&nbsp;&nbsp;<span class="tc">Frontend JSON</span>&nbsp;&nbsp;<span class="tc">Backend JSON</span>&nbsp;&nbsp;<span class="tc">Excel (.xlsx)</span><br>
-&nbsp;&nbsp;(countryInfo)&nbsp;&nbsp;&nbsp;(regular_domains)
+      <!-- Vertical flow: Sources → Parse → Alerts → Actions → Export -->
+      <div class="arch-flow" style="flex-direction:column;align-items:center;gap:12px;padding:32px;">
+        <div class="arch-flow" style="gap:8px;flex-wrap:wrap;justify-content:center;">
+          <div class="arch-node arch-external">Manual Upload</div>
+          <div class="arch-node arch-external">wireless-regdb</div>
+          <div class="arch-node arch-external">CEPT/EFIS</div>
+          <div class="arch-node arch-external">FCC eCFR</div>
+          <div class="arch-node arch-external">PolicyTracker RSS</div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-flow" style="gap:8px;justify-content:center;">
+          <div class="arch-node arch-backend">Sync APIs (5)</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node arch-ai">Parser (Structured / AI)</div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-flow" style="gap:8px;justify-content:center;">
+          <div class="arch-node arch-storage">regulation_alerts</div>
+          <div class="arch-node arch-storage">regulatory_briefs</div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-flow" style="gap:8px;justify-content:center;">
+          <div class="arch-node arch-backend">Apply</div>
+          <div class="arch-node arch-backend">Approve</div>
+          <div class="arch-node" style="background:#f1f5f9;color:#64748b;">Dismiss</div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-node arch-storage">regulations 表 + change_log</div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-flow" style="gap:8px;justify-content:center;">
+          <div class="arch-node arch-frontend">Frontend JSON</div>
+          <div class="arch-node arch-frontend">Backend JSON</div>
+          <div class="arch-node arch-frontend">Excel (.xlsx)</div>
+        </div>
       </div>
     </section>
 
