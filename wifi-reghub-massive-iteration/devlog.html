@@ -886,41 +886,32 @@
 
       <p>完整的資料流：</p>
 
-      <!-- Vertical flow: Sources → Parse → Alerts → Actions → Export -->
-      <div class="arch-flow" style="flex-direction:column;align-items:center;gap:12px;padding:32px;">
-        <div class="arch-flow" style="gap:8px;flex-wrap:wrap;justify-content:center;">
-          <div class="arch-node arch-external">Manual Upload</div>
-          <div class="arch-node arch-external">wireless-regdb</div>
-          <div class="arch-node arch-external">CEPT/EFIS</div>
-          <div class="arch-node arch-external">FCC eCFR</div>
-          <div class="arch-node arch-external">PolicyTracker RSS</div>
-        </div>
-        <div class="arch-arrow">↓</div>
-        <div class="arch-flow" style="gap:8px;justify-content:center;">
-          <div class="arch-node arch-backend">Sync APIs (5)</div>
-          <div class="arch-arrow">→</div>
-          <div class="arch-node arch-ai">Parser (Structured / AI)</div>
-        </div>
-        <div class="arch-arrow">↓</div>
-        <div class="arch-flow" style="gap:8px;justify-content:center;">
-          <div class="arch-node arch-storage">regulation_alerts</div>
-          <div class="arch-node arch-storage">regulatory_briefs</div>
-        </div>
-        <div class="arch-arrow">↓</div>
-        <div class="arch-flow" style="gap:8px;justify-content:center;">
-          <div class="arch-node arch-backend">Apply</div>
-          <div class="arch-node arch-backend">Approve</div>
-          <div class="arch-node" style="background:#f1f5f9;color:#64748b;">Dismiss</div>
-        </div>
-        <div class="arch-arrow">↓</div>
-        <div class="arch-node arch-storage">regulations 表 + change_log</div>
-        <div class="arch-arrow">↓</div>
-        <div class="arch-flow" style="gap:8px;justify-content:center;">
-          <div class="arch-node arch-frontend">Frontend JSON</div>
-          <div class="arch-node arch-frontend">Backend JSON</div>
-          <div class="arch-node arch-frontend">Excel (.xlsx)</div>
-        </div>
-      </div>
+      <div class="tree-block"><span class="tq">Data Sources</span>
+
+  Manual Upload ────────┐
+  Linux wireless-regdb ─┤
+  CEPT/EFIS ────────────┼──→ <span class="ta">Sync APIs</span> ──→ <span class="ta">Parser</span>
+  FCC eCFR ─────────────┤    (5 endpoints)   (Structured or AI)
+  PolicyTracker RSS ────┘
+                              │
+                              ▼
+                    <span class="tc">regulation_alerts</span>
+                    + <span class="tc">regulatory_briefs</span> (auto-generated)
+                              │
+                    ┌─────────┼─────────┐
+                    ▼         ▼         ▼
+              <span class="ta">Apply</span>     <span class="ta">Approve</span>    <span class="tq">Dismiss</span>
+                    │         │
+                    ▼         ▼
+              PATCH /api/regulations/[code]
+                    │
+                    ├── <span class="tc">regulations</span> 表更新
+                    └── <span class="tc">change_log</span> 自動記錄
+                              │
+                    ┌─────────┼─────────┐
+                    ▼         ▼         ▼
+          <span class="tc">Frontend JSON</span>  <span class="tc">Backend JSON</span>  <span class="tc">Excel (.xlsx)</span>
+          (countryInfo)   (regular_domains)</div>
     </section>
 
     <!-- ══ Section 4: 技術選型 ══ -->
