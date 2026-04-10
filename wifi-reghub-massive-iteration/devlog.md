@@ -1,208 +1,165 @@
-# WiFi RegHub 大規模功能迭代 — AI 協作案例
+# WiFi RegHub — AI 協作開發紀錄
 
-> 🤖 **我用 AI 做了什麼**：在一個超長 session 中，與 Claude 協作完成 WiFi RegHub 從「堪用的 MVP」到「可展示的內部產品」的跨越 — 涵蓋 UI 重新設計、AI 解析升級、後台 JSON 驗證、國家比較功能等 50+ 個 commit
-> ⏱ **沒有 AI 的話**：同等範圍的功能開發 + 設計 + 文件，估計需要 2-3 週（含前後端 + 設計 + 文件撰寫）
-> ✅ **最終成果**：WiFi RegHub 從 Dashboard + Alert 基礎功能，升級為具備 59 欄色帶表頭、全欄位搜尋、Saved Views、Country Compare、AI 法規文件解析（含中文 Brief）、後台 JSON 匯出驗證、Excel 一鍵匯出的完整產品
+> 🤖 **我用 AI 做了什麼**：與 Claude 協作，在單一 session 中將 WiFi RegHub 從基礎 MVP 升級為具備 59 欄色帶表頭、AI 法規文件解析、Saved Views、Country Compare 的完整內部產品
+> ⏱ **沒有 AI 的話**：同等範圍的功能開發 + UI 設計 + 文件撰寫，估計需要 2-3 週
+> ✅ **最終成果**：93 國法規管理系統，涵蓋 Dashboard、Alert 監控、AI PDF 解析、三種格式匯出、國家比較、自訂視角
 
-> 這是一個超過 12 小時的單一 session，過程中幾乎沒有中斷，從功能開發、bug 修復、UI 設計、文件撰寫到 RD 溝通的 email 稿都在同一個對話中完成。
-
----
-
-## 任務背景
-
-WiFi RegHub 是 EnGenius 內部的 WiFi 法規資料管理系統，管理 93 個國家的法規資料。在這次 session 之前，系統已經有：
-- Dashboard 大表（35 欄位）
-- 5 個法規監控來源（regdb / EFIS / eCFR / RSS / SDK 手動上傳）
-- Alert 系統（Pending → Approve → Apply）
-- Export Manager（countryInfo.json 版本控制）
-
-**這次 session 要解決的核心問題**：
-1. 功能夠了但 UX 不好 — 資訊層級不清、搜尋不夠強、沒有視角管理
-2. AI 解析結果不夠精確 — 沒有對應到 DB 欄位
-3. 後台 JSON 格式沒做 — RD 需要另一種格式
-4. 監控策略文件需要重新設計和更新
+> WiFi RegHub 是 EnGenius 內部工具，取代 Excel 管理全球 93 國的 WiFi 法規資料。這次 session 把它從「能用」變成「好用」。
 
 ---
 
-## AI 使用策略
+## 一、為什麼要做這件事
 
-### 分工方式
+EnGenius 用一份 Excel（93 國 × 56 欄）管理各國 WiFi 法規。問題：
 
-| 環節 | 誰主導 | 說明 |
-|------|--------|------|
-| 需求定義 | 人 | 每個功能都是我先提出需求或問題 |
-| 技術方案 | AI 提議，人決定 | Claude 提 2-3 個選項，我選一個或調整 |
-| 程式碼實作 | AI | 幾乎所有程式碼由 Claude 直接寫 + commit |
-| UI 設計決策 | 協作 | 我描述感覺（「太小」「太散」「太花」），Claude 翻譯成 CSS |
-| 文件撰寫 | AI 草稿，人審核 | 監控策略文件、驗證報告、email 稿 |
-| Bug 偵測 | 協作 | 我用截圖指出問題，Claude 定位原因 + 修復 |
-| 業務決策 | 人 | Chip Vendor SDK 改名、風險分級定義、篩選器取捨 |
+- **沒人知道資料對不對** — 很多國家的值是 2015 年填的，從來沒更新
+- **沒有自動偵測法規變更的機制** — 完全靠 PM 手動追蹤
+- **兩套 JSON 格式各自維護** — 前端和後台的 JSON 由不同腳本產出，有不一致
 
-### 提問模式
-
-這次 session 的主要提問模式是**「截圖驅動 + 感受描述」**：
-
-- 我幾乎不看程式碼，直接用截圖指出「這裡很怪」「字太小」「看不出關聯」
-- Claude 從截圖理解問題 → 定位到程式碼 → 修復 → 部署
-- 這種模式讓非工程師也能有效地做 UI 迭代
-
-另一個常用模式是**「質疑式引導」**：
-
-- 我會問「這樣合理嗎？」「真的需要嗎？」迫使 Claude 重新評估
-- 例如：「eCFR 需要優化什麼？」→ Claude 發現 Gemini model 已 deprecated
-- 例如：「EFIS alert 需要嗎？」→ Claude 分析發現跟 regdb 重複
+之前的 session 已經建了 MVP（Dashboard + Alert + Export）。這次要解決的是：UX 不好用、AI 解析不夠精確、缺後台 JSON 驗證、沒有視角管理。
 
 ---
 
-## 關鍵對話轉折
+## 二、最終樣貌
 
-### 轉折一：RD 回信改變了整個架構定位
+### Dashboard
+- 59 欄完整覆蓋 Excel 56 欄 + 3 個額外欄位
+- 色帶分組表頭（7 種顏色，一眼看出 2.4G / 5G / 6G）
+- 全欄位搜尋（打 `UNII-5` 能搜到 6GHz outdoor 欄位）
+- Saved Views（儲存自訂欄位 + 篩選組合）
+- Country Compare（勾選國家，差異黃色高亮）
+- Frozen Country 欄 + DFS channel detail + Excel 一鍵匯出
 
-我把 RD 的回信貼給 Claude：
+### Alert 監控
+- 5 種 alert type 各自有結構化 layout（不再是文字牆）
+- AI 解析結果精確到 DB 欄位名（如 `unii_outdoor` → UNII-5）
+- 上傳 PDF → AI 自動產出 Regulatory Brief（中文摘要 + 建議動作）
 
-> 「各國法規是否開放 channel/band 不是定義在 Chipset Vendor 的 SDK 裡，而是自行定義在檔案裡做開啟。」
+### 國家詳細頁
+- 色帶排版（teal / blue / amber）跟 Dashboard 一致
+- DFS channel detail 標註「auto from Band2 + Band3」
+- 風險等級 badge + 官方 regulator 連結
 
-這一句話直接改變了系統的 Tier 分層 — 原本的「Tier 0: Chip Vendor SDK = 最終決定者」被推翻。Claude 立刻建議把 SDK 改成通用的 Manual Upload，我同意後整個監控策略文件和前端都更新了。
-
-**洞察**：AI 能快速 react 到新資訊並調整整個系統設計，但**新資訊必須由人帶入** — AI 不會自己去問 RD。
-
-### 轉折二：PDF Parser 在 Vercel 壞掉 → 連鎖發現
-
-上傳 FCC 和 Ofcom 的法規 PDF 測試 AI 解析，結果發現：
-1. `pdf-parse` v2 在 Vercel serverless 靜默失敗
-2. Fallback 把 PDF 二進位直接轉 UTF-8 → 亂碼
-3. AI 拿到亂碼 → keyword fallback → 「No WiFi keywords detected」
-
-修完 PDF parser（換 `unpdf`）後又發現 Gemini 2.0-flash 已 deprecated，換成 2.5-flash 才正常。
-
-**洞察**：一個看似簡單的「測試 PDF 上傳」揭露了三層問題（parser / model / prompt）。AI 能快速定位每一層，但只有實際測試才會觸發。
-
-### 轉折三：「後台 JSON 不一致」的發現
-
-比對我們 DB 產出的後台 JSON vs RD 提供的 production JSON，發現 99% match 但有 31 個 diff。進一步分析發現**不是我們的問題，是 RD 的 backend 腳本有 bug**（6GHz bonding 沒做、DFS power 漏填）。
-
-這個發現變成了一份正式的驗證報告，核心結論是：「同一份 Excel，兩套腳本產出的 JSON 就不一致 → WiFi RegHub 用單一 DB 可以根本解決」。
-
-**洞察**：AI 擅長做大量資料的交叉比對和差異分析。5,369 個欄位的比對人做可能要一天，AI 幾秒鐘。
-
-### 轉折四：AI Prompt 升級 — 從「通用描述」到「DB 欄位建議」
-
-舊的 AI prompt 只要求「描述 WiFi 法規變更」，結果 Gemini 產出的是泛泛的文字（「Ofcom authorized outdoor WiFi...」）。
-
-把完整的 35 個 DB 欄位定義塞進 system prompt 後，Gemini 開始產出精確的 field-level changes：
-- `unii_outdoor` → 加入 UNII-5
-- `power_unii5` → 36 dBm EIRP
-- status: confirmed / proposed
-- action: update / monitor
-
-**洞察**：AI 的輸出品質直接取決於你給它多少 context。把 DB schema 給 AI = 讓它知道「答案要長什麼樣」。
+### Export
+- 三種格式：Excel (.xlsx) / Frontend JSON / Backend JSON
+- JSON 驗證報告：前端 100% match、後台 99% match + 差異分析
 
 ---
 
-## 成果紀錄
+## 三、系統架構
 
-### 功能清單（這個 session 完成的）
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Data Sources                             │
+│                                                              │
+│  Manual Upload ────────┐                                     │
+│  Linux wireless-regdb ─┤                                     │
+│  CEPT/EFIS ────────────┼──→  Sync APIs  ──→  Parser         │
+│  FCC eCFR ─────────────┤     (5 endpoints)   (Structured    │
+│  PolicyTracker RSS ────┘                      or AI)         │
+│                                   │                          │
+│                                   ▼                          │
+│                         regulation_alerts                     │
+│                         + regulatory_briefs (auto-generated)  │
+│                                   │                          │
+│                    ┌──────────────┼──────────────┐           │
+│                    ▼              ▼              ▼           │
+│              Apply           Approve         Dismiss         │
+│                    │              │                          │
+│                    ▼              ▼                          │
+│              PATCH /api/regulations/[code]                    │
+│                    │                                         │
+│                    ├── regulations 表更新                     │
+│                    └── change_log 自動記錄                    │
+│                                   │                          │
+│                    ┌──────────────┼──────────────┐           │
+│                    ▼              ▼              ▼           │
+│              Frontend JSON   Backend JSON    Excel (.xlsx)    │
+│              (countryInfo)   (regular_domains)                │
+└─────────────────────────────────────────────────────────────┘
+```
 
-**Dashboard 大表**
-- 59 欄（覆蓋 Excel 全部 56 欄 + 3 個額外欄位）
-- 色帶分組表頭（7 種顏色對應 7 個欄位群組）
-- 全欄位搜尋 + 關鍵字篩選（DFS / band1-4 / unii5-8）+ 搜尋高亮
-- Frozen Country 欄 + DFS channel detail（click popover）
-- Quick Filters 調整（移除 Band4/HT240，新增 No 6GHz/INT）
-- Saved Views（localStorage，一鍵切換自訂欄位+篩選組合）
-- Country Compare（checkbox 勾選最多 6 國，diff 高亮）
-- Alert pending badge（紅色數字）
-- Excel 一鍵匯出（與原始格式相同的 .xlsx）
+## 四、技術選型
 
-**國家詳細頁**
-- 重新設計（色帶排版、三級字體層級、DFS channel detail）
-- 國旗 emoji + 風險等級 badge + 官方 regulator 連結
-
-**Alert 系統**
-- Dismiss memory（已 dismiss 的不重建）
-- 5 種 alert type 各自的結構化 layout
-- Manual Upload 簡化（移除 Document Type/Version）
-- View Brief 連結 + 上傳後結果卡片
-
-**AI 解析**
-- Gemini 2.0 → 2.5 Flash
-- PDF parser: pdf-parse → unpdf
-- System prompt 升級（含 35 欄位 DB schema + 中文輸出）
-- eCFR / RSS 的 AI 結果也存 raw_data（結構化顯示）
-
-**匯出 + 驗證**
-- 後台 JSON export（regular_domains.json 格式）
-- 前端 + 後台 JSON 驗證報告（100% / 99% match）
-- Excel 匯出 API
-
-**監控策略**
-- Chip Vendor SDK → Manual Upload
-- Verification Source Map（93 國風險分級 + regulator URL）
-- EFIS regdb 覆蓋標記
-
-**其他**
-- 專案改名 WiFi RegHub
-- Vercel Git 自動部署
-- OpenGraph metadata
-
-### 數字
-
-- Commits：50+
-- 新增/修改檔案：~30 個
-- 新增 DB 表：1（regulatory_briefs）
-- 新增 DB 欄位：3（countries: risk_tier, regulator_name, regulator_url）
-- 新增 API：4（/export/regular-domains, /export/excel, /api/briefs, /api/briefs/[id]）
-- 新增頁面：1（/briefs）
-- 耗時：~12 小時（單一 session）
+| 工具 / 技術 | 選的理由 |
+|---|---|
+| Next.js 16 + React 19 | App Router、server component 做 data fetching |
+| Supabase (PostgreSQL) | 免費、有 API、SQL 彈性大 |
+| TanStack Table v8 | 59 欄需要 column visibility、sorting、filtering |
+| Tailwind CSS v4 | 快速迭代 UI，不用寫 CSS 檔 |
+| Gemini 2.5 Flash | AI 解析法規文件，速度快、成本低 |
+| unpdf | PDF 文字提取，Vercel serverless 相容 |
+| ExcelJS | 產出 .xlsx 格式匹配原始 Excel |
+| Vercel | Git push 自動部署 |
 
 ---
 
-## AI vs 人 分工回顧
+## 五、AI 怎麼幫我做的
 
-| 環節 | 誰 | 說明 |
-|------|------|------|
-| 功能需求 | 人 | 每個功能由我提出，通常是截圖 + 一句話 |
-| 技術方案選擇 | AI 提案，人拍板 | 例：Saved Views 存 localStorage vs DB → 我選 localStorage |
-| 程式碼撰寫 | AI | TypeScript / React / SQL 全由 Claude 寫 |
-| Git 操作 | AI | commit message + push 由 Claude 執行 |
-| Vercel 部署 | AI → 自動 | 前半手動 deploy，後半設好 Git 整合 |
-| UI 設計 | 協作 | 我描述感受，Claude 翻譯成 Tailwind CSS |
-| 文件撰寫 | AI 草稿 + 人審核 | 監控策略、驗證報告、email、regulatory brief |
-| 業務判斷 | 人 | SDK 角色定位、風險分級、篩選器取捨 |
-| Bug 定位 | 協作 | 我截圖，Claude 找 root cause |
-| 資料分析 | AI | 5,369 欄位交叉比對、93 國分級 |
+**分工**：我負責需求和業務判斷，Claude 負責所有程式碼、UI 實作、文件撰寫。我幾乎不看 code，用截圖 + 一句話描述問題，Claude 定位並修復。
+
+**提問模式**：截圖驅動 + 質疑式引導。我不說「把 padding 改成 16px」，而是說「這裡看起來很鬆」「欄位跟值距離太遠」。Claude 從視覺問題反推 CSS。
+
+### 關鍵轉折一：RD 回信推翻了整個 Tier 架構
+
+原本把 Chip Vendor SDK 定位成「Tier 0 — 最終決定者」。RD 回信說：
+
+> 各國法規 channel/band 不是 SDK 定義的，而是 EnGenius 自行維護。
+
+一句話直接改變了系統定位 — SDK 降級為 Manual Upload，Tier 0 移除，整個監控策略文件和前端都更新了。
+
+### 關鍵轉折二：AI Prompt 升級 — 從泛泛描述到精確欄位建議
+
+把 35 個 DB 欄位定義塞進 Gemini 的 system prompt 後，AI 產出從「Ofcom authorized outdoor WiFi...」變成「`unii_outdoor` → UNII-5, 36 dBm, status: confirmed, action: update」。一樣的 PDF，完全不同的產出品質。
+
+### 關鍵轉折三：後台 JSON 驗證發現 RD 的腳本有 bug
+
+比對 5,369 個欄位後發現 31 個 diff — 不是我們的問題，是 RD 的 backend 腳本沒做 6GHz bonding 過濾 + DFS power 漏填。這變成了一份給 RD 的正式驗證報告。
 
 ---
 
-## Takeaway
+## 六、踩到的坑
 
-### 1. 截圖驅動的 UI 迭代是最高效的協作模式
+### 坑一：PDF Parser 在 Vercel 靜默失敗
+- **症狀**：上傳 FCC 的 PDF，AI 說「No WiFi keywords detected」— 但 PDF 裡滿滿都是 WiFi
+- **根本原因**：`pdf-parse` v2 的 API 在 Vercel serverless 壞掉，fallback 把 PDF 二進位直接 `.toString("utf8")` → 亂碼
+- **解法**：換成 `unpdf`（pdf.js-based，serverless 相容）
 
-不需要看程式碼，不需要說 CSS 術語。截圖 + 「這裡很怪」就夠了。AI 能從截圖理解視覺問題並定位到程式碼。這讓非工程師也能深度參與 UI 設計。
+### 坑二：Gemini 2.0 Flash 已 deprecated
+- **症狀**：有 API key 但所有 AI 呼叫都走 keyword-fallback
+- **根本原因**：`gemini-2.0-flash` 被 Google deprecated，回 400
+- **解法**：升級到 `gemini-2.5-flash` + 增加 timeout 到 90 秒
 
-### 2. 單一超長 session 的優勢：累積 context
+### 坑三：CSS group-hover tooltip 撐爆表格
+- **症狀**：DFS channel 的 hover tooltip 出現時，表格多了一大塊空白
+- **根本原因**：tooltip 用 `absolute` 定位但父元素有 `overflow: hidden`
+- **解法**：改成 click popover + `fixed` 定位
 
-12 小時的 session 意味著 Claude 記得所有之前的決策、踩過的坑、RD 的回信。不需要每次重新解釋。這種「沉浸式協作」比零碎的短 session 效率高很多，特別適合功能密集的開發衝刺。
+### 坑四：eCFR alert renderer 不認 raw_data type
+- **症狀**：eCFR alert 展開後沒有結構化的 AI Analysis 區塊
+- **根本原因**：renderer 檢查 `type === "amendment"` 但 eCFR sync 存的是 `"section"`
+- **解法**：改成兩個都 match
 
-### 3. AI 的輸出品質 = f(你給的 context)
+---
 
-最明顯的例子：AI prompt 升級。同一份 PDF，舊 prompt 產出「Ofcom authorized outdoor WiFi...」（沒用），新 prompt（含 DB schema）產出「`unii_outdoor` → UNII-5, 36 dBm, status: confirmed, action: update」（直接可操作）。
+## 七、Takeaway
 
-### 4. 「先做再說」比「先討論再做」更快
+### 截圖驅動的 UI 迭代是最高效的協作模式
+不需要看 code，不需要說 CSS 術語。截圖 + 「這裡很怪」就夠了。這讓非工程師也能深度參與產品設計。
 
-很多功能（如 Saved Views vs Preset Views）原本可以花很長時間討論。但實際上先做一個最小版本、看到效果、再決定要不要擴展，比坐著討論規格更有效率。AI 讓「先做一版看看」的成本降到幾乎為零。
+### AI 的輸出品質 = 你給它的 context
+最明顯的例子：同一份 PDF，舊 prompt 產出無用的文字，新 prompt（含 DB schema）產出精確到欄位的建議。把 schema 給 AI = 讓它知道「答案要長什麼樣」。
+
+### 「先做再說」比「先討論再做」更快
+Saved Views 的討論可以花一小時，但直接做一個 localStorage 版本只要 20 分鐘。AI 讓 prototype 的成本趨近於零。
 
 ### 可移植性
-
-- **截圖驅動 UI 迭代**：適用於任何有 UI 的專案，特別是非工程師主導的產品
-- **DB schema 塞進 AI prompt**：適用於任何需要 AI 產出結構化資料的場景
-- **單一長 session 衝刺**：適用於功能密集、相互依賴的開發任務，不適用於需要深思的架構設計
+- 截圖驅動 UI 迭代：適用於任何有 UI 的專案
+- DB schema 塞進 AI prompt：適用於任何需要結構化 AI 輸出的場景
+- 單一長 session 衝刺：適用於功能密集的開發任務
 
 ### 如果你也要做，先問 AI 什麼
+1. 「我的 DB 有這些欄位 [貼 schema]，幫我寫一個 AI prompt 讓 LLM 解析文件時能對應到這些欄位」
+2. 「這是我的 Dashboard 截圖 [貼圖]，資訊層級哪裡不清楚？怎麼改？」
 
-1. 「我的 DB 有這些欄位 [貼 schema]，幫我寫一個 AI prompt 讓 LLM 解析法規文件時能對應到這些欄位」
-2. 「這是我的 Dashboard 截圖 [貼圖]，哪些地方的資訊層級不清楚？怎麼改善？」
-
----
-
-*記錄日期：2026-04-10*
+_開發日期：2026-04-09 ~ 2026-04-10_

@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WiFi RegHub 大規模功能迭代 — AI 協作案例</title>
-  <meta name="description" content="與 Claude 協作完成 50+ commits，從 MVP 到完整產品" />
+  <title>WiFi RegHub — AI 協作開發紀錄</title>
+  <meta name="description" content="與 Claude 協作，在單一 session 中將 WiFi RegHub 從基礎 MVP 升級為具備 59 欄色帶表頭、AI 法規文件解析、Saved Views、Country Compare 的完整內部產品" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.min.js"></script>
   <style>
     /* ── Reset ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -360,6 +360,24 @@
     .callout-tip { background: rgba(181,135,42,0.07); border-color: var(--gold); }
     .callout-note { background: rgba(0,0,0,0.04); border-color: var(--ink-3); }
 
+    /* ── Tech pills ── */
+    .tech-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+
+    .tech-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      padding: 6px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-2);
+    }
+
+    .tech-dot { width: 8px; height: 8px; border-radius: 50%; }
+
     /* ── Takeaway boxes ── */
     .takeaway {
       background: var(--surface);
@@ -457,8 +475,8 @@
     }
 
     .ai-role-col li:last-child { border-bottom: none; }
-    .ai-role-ai li::before { content: "≈"; position: absolute; left: 0; color: #5c7abf; font-family: var(--mono); }
-    .ai-role-human li::before { content: "✦"; position: absolute; left: 0; color: #5c8a5c; font-size: 10px; top: 10px; }
+    .ai-role-ai li::before { content: "\2248"; position: absolute; left: 0; color: #5c7abf; font-family: var(--mono); }
+    .ai-role-human li::before { content: "\2726"; position: absolute; left: 0; color: #5c8a5c; font-size: 10px; top: 10px; }
 
     /* ── Bug Block ── */
     .bug-block {
@@ -487,6 +505,152 @@
     }
 
     .bug-body { background: var(--surface); padding: 22px 24px; }
+
+    /* ── Result Preview ── */
+    .result-preview {
+      margin: 32px 0;
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .result-preview img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .result-preview-caption {
+      background: var(--surface-warm);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      font-size: 14px;
+      color: var(--ink-3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.5;
+    }
+
+    .result-preview-badge {
+      background: var(--gold-light);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      padding: 2px 8px;
+      border: 1px solid var(--gold-mid);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    /* ── Architecture Flow ── */
+    .arch-flow {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      margin-bottom: 32px;
+      overflow-x: auto;
+      padding: 8px 0;
+    }
+
+    .arch-node {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-top: 3px solid var(--ink-3);
+      border-radius: 4px;
+      padding: 16px 20px;
+      min-width: 140px;
+      max-width: 200px;
+      flex-shrink: 0;
+    }
+
+    .arch-node-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .arch-node-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+
+    .arch-node-sub {
+      font-size: 12px;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
+
+    .arch-frontend { border-top-color: #61dafb; }
+    .arch-frontend .arch-node-label { color: #61dafb; }
+    .arch-backend { border-top-color: #68a063; }
+    .arch-backend .arch-node-label { color: #68a063; }
+    .arch-ai { border-top-color: #b5872a; }
+    .arch-ai .arch-node-label { color: #b5872a; }
+    .arch-storage { border-top-color: #9b72cf; }
+    .arch-storage .arch-node-label { color: #9b72cf; }
+    .arch-external { border-top-color: #5c7abf; }
+    .arch-external .arch-node-label { color: #5c7abf; }
+
+    .arch-arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      flex-shrink: 0;
+      color: var(--ink-4);
+      font-size: 18px;
+      align-self: center;
+    }
+
+    .arch-arrow svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--ink-4);
+      stroke-width: 1.5;
+      fill: none;
+    }
+
+    .arch-arrow-label {
+      font-size: 10px;
+      color: var(--ink-4);
+      text-align: center;
+      font-family: var(--mono);
+      letter-spacing: .05em;
+      margin-top: 2px;
+    }
+
+    .arch-flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .arch-flow-grid .arch-node { max-width: none; }
+
+    /* ── Architecture ASCII (dark terminal) ── */
+    .tree-block {
+      background: #111009;
+      border-radius: 4px;
+      padding: 28px 32px;
+      font-family: var(--mono);
+      font-size: 13.5px;
+      line-height: 2;
+      color: #c9c5b8;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .tq { color: #d4b483; }
+    .ta { color: #8fba8f; }
+    .tc { color: #9ab0c9; }
 
     /* ── Footer ── */
     footer {
@@ -542,26 +706,27 @@
 <body>
 <div class="layout">
 
-  <!-- ══ SIDEBAR ══════════════════════════════════════════════════ -->
+  <!-- SIDEBAR -->
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-top">
-      <div class="sidebar-eyebrow">Case Study · AI 協作</div>
-      <h2>WiFi RegHub 大規模功能迭代</h2>
+      <div class="sidebar-eyebrow">Devlog &middot; AI 工具開發型</div>
+      <h2>WiFi RegHub<br>AI 協作開發紀錄</h2>
     </div>
     <div class="nav-section">
       <div class="nav-group">
-        <div class="nav-group-label">章節</div>
-        <a class="nav-link" href="#s1"><span class="nav-num">01</span>任務背景</a>
-        <a class="nav-link" href="#s2"><span class="nav-num">02</span>AI 使用策略</a>
-        <a class="nav-link" href="#s3"><span class="nav-num">03</span>關鍵對話轉折</a>
-        <a class="nav-link" href="#s4"><span class="nav-num">04</span>成果紀錄</a>
-        <a class="nav-link" href="#s5"><span class="nav-num">05</span>AI vs 人分工回顧</a>
-        <a class="nav-link" href="#s6"><span class="nav-num">06</span>Takeaway</a>
+        <div class="nav-group-label">Contents</div>
+        <a class="nav-link" href="#s1"><span class="nav-num">01</span>為什麼要做這件事</a>
+        <a class="nav-link" href="#s2"><span class="nav-num">02</span>最終樣貌</a>
+        <a class="nav-link" href="#s3"><span class="nav-num">03</span>系統架構</a>
+        <a class="nav-link" href="#s4"><span class="nav-num">04</span>技術選型</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>AI 怎麼幫我做的</a>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span>踩到的坑</a>
+        <a class="nav-link" href="#s7"><span class="nav-num">07</span>Takeaway</a>
       </div>
     </div>
   </nav>
 
-  <!-- ══ MAIN CONTENT ════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT -->
   <main class="main">
 
     <!-- Back link -->
@@ -573,407 +738,442 @@
     <!-- Hero -->
     <header class="hero">
       <div class="hero-eyebrow">
-        <span class="eyebrow-text">AI 協作型 · 產品開發</span>
+        <span class="eyebrow-text">AI 工具開發型 &middot; 內部產品</span>
       </div>
-      <h1>WiFi RegHub 大規模功能迭代 — AI 協作案例</h1>
+      <h1>WiFi RegHub &mdash; AI 協作開發紀錄</h1>
       <div class="hero-rule"></div>
-      <p class="hero-desc">與 Claude 協作完成 50+ commits，從 MVP 到完整產品。這是一個超過 12 小時的單一 session，過程中幾乎沒有中斷，從功能開發、bug 修復、UI 設計、文件撰寫到 RD 溝通的 email 稿都在同一個對話中完成。</p>
-      <div class="hero-meta">整理日期：2026-04-10 &nbsp;·&nbsp; 類型：AI 協作型</div>
+      <p class="hero-desc">WiFi RegHub 是 EnGenius 內部工具，取代 Excel 管理全球 93 國的 WiFi 法規資料。這次 session 把它從「能用」變成「好用」。</p>
+      <div class="hero-meta">整理日期：2026-04-10 &nbsp;&middot;&nbsp; 類型：AI 工具開發型</div>
     </header>
 
     <!-- Case Card -->
     <div class="case-card">
       <div class="case-card-row">
         <span class="case-card-label">我用 AI 做了什麼</span>
-        <span class="case-card-value">在一個超長 session 中，與 Claude 協作完成 WiFi RegHub 從「堪用的 MVP」到「可展示的內部產品」的跨越 — 涵蓋 UI 重新設計、AI 解析升級、後台 JSON 驗證、國家比較功能等 50+ 個 commit</span>
+        <span class="case-card-value">與 Claude 協作，在單一 session 中將 WiFi RegHub 從基礎 MVP 升級為具備 59 欄色帶表頭、AI 法規文件解析、Saved Views、Country Compare 的完整內部產品</span>
       </div>
       <div class="case-card-row">
         <span class="case-card-label">沒有 AI 的話</span>
-        <span class="case-card-value">同等範圍的功能開發 + 設計 + 文件，估計需要 2-3 週（含前後端 + 設計 + 文件撰寫）</span>
+        <span class="case-card-value">同等範圍的功能開發 + UI 設計 + 文件撰寫，估計需要 2&ndash;3 週</span>
       </div>
       <div class="case-card-row">
         <span class="case-card-label">最終成果</span>
-        <span class="case-card-value">WiFi RegHub 從 Dashboard + Alert 基礎功能，升級為具備 59 欄色帶表頭、全欄位搜尋、Saved Views、Country Compare、AI 法規文件解析（含中文 Brief）、後台 JSON 匯出驗證、Excel 一鍵匯出的完整產品</span>
+        <span class="case-card-value">93 國法規管理系統，涵蓋 Dashboard、Alert 監控、AI PDF 解析、三種格式匯出、國家比較、自訂視角</span>
       </div>
     </div>
 
-    <!-- ══ Section 1: 任務背景 ══ -->
+    <!-- ══ Section 1: 為什麼要做這件事 ══ -->
     <section class="section" id="s1">
       <div class="section-header">
         <span class="section-num">01</span>
-        <h2 class="section-title">任務背景</h2>
+        <h2 class="section-title">為什麼要做這件事</h2>
       </div>
 
-      <p>WiFi RegHub 是 EnGenius 內部的 WiFi 法規資料管理系統，管理 <strong>93 個國家</strong>的法規資料。在這次 session 之前，系統已經有：</p>
+      <p>EnGenius 用一份 Excel（93 國 &times; 56 欄）管理各國 WiFi 法規。問題：</p>
 
       <ul>
-        <li>Dashboard 大表（35 欄位）</li>
-        <li>5 個法規監控來源（regdb / EFIS / eCFR / RSS / SDK 手動上傳）</li>
-        <li>Alert 系統（Pending → Approve → Apply）</li>
-        <li>Export Manager（countryInfo.json 版本控制）</li>
+        <li><strong>沒人知道資料對不對</strong> &mdash; 很多國家的值是 2015 年填的，從來沒更新</li>
+        <li><strong>沒有自動偵測法規變更的機制</strong> &mdash; 完全靠 PM 手動追蹤</li>
+        <li><strong>兩套 JSON 格式各自維護</strong> &mdash; 前端和後台的 JSON 由不同腳本產出，有不一致</li>
       </ul>
 
-      <div class="subsection">
-        <div class="subsection-label">這次 session 要解決的核心問題</div>
-        <p><strong>1. 功能夠了但 UX 不好</strong> — 資訊層級不清、搜尋不夠強、沒有視角管理</p>
-        <p><strong>2. AI 解析結果不夠精確</strong> — 沒有對應到 DB 欄位</p>
-        <p><strong>3. 後台 JSON 格式沒做</strong> — RD 需要另一種格式</p>
-        <p><strong>4. 監控策略文件需要重新設計和更新</strong></p>
-      </div>
+      <p>之前的 session 已經建了 MVP（Dashboard + Alert + Export）。這次要解決的是：UX 不好用、AI 解析不夠精確、缺後台 JSON 驗證、沒有視角管理。</p>
     </section>
 
-    <!-- ══ Section 2: AI 使用策略 ══ -->
+    <!-- ══ Section 2: 最終樣貌 ══ -->
     <section class="section" id="s2">
       <div class="section-header">
         <span class="section-num">02</span>
-        <h2 class="section-title">AI 使用策略</h2>
+        <h2 class="section-title">最終樣貌</h2>
       </div>
 
       <div class="subsection">
-        <div class="subsection-label">分工方式</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>環節</th><th>誰主導</th><th>說明</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>需求定義</td><td>人</td><td>每個功能都是我先提出需求或問題</td></tr>
-              <tr><td>技術方案</td><td>AI 提議，人決定</td><td>Claude 提 2-3 個選項，我選一個或調整</td></tr>
-              <tr><td>程式碼實作</td><td>AI</td><td>幾乎所有程式碼由 Claude 直接寫 + commit</td></tr>
-              <tr><td>UI 設計決策</td><td>協作</td><td>我描述感覺（「太小」「太散」「太花」），Claude 翻譯成 CSS</td></tr>
-              <tr><td>文件撰寫</td><td>AI 草稿，人審核</td><td>監控策略文件、驗證報告、email 稿</td></tr>
-              <tr><td>Bug 偵測</td><td>協作</td><td>我用截圖指出問題，Claude 定位原因 + 修復</td></tr>
-              <tr><td>業務決策</td><td>人</td><td>Chip Vendor SDK 改名、風險分級定義、篩選器取捨</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">截圖驅動 + 感受描述</div>
-        <p>這次 session 的主要提問模式是<strong>「截圖驅動 + 感受描述」</strong>：</p>
+        <div class="subsection-label">Dashboard</div>
         <ul>
-          <li>我幾乎不看程式碼，直接用截圖指出「這裡很怪」「字太小」「看不出關聯」</li>
-          <li>Claude 從截圖理解問題 → 定位到程式碼 → 修復 → 部署</li>
-          <li>這種模式讓非工程師也能有效地做 UI 迭代</li>
+          <li>59 欄完整覆蓋 Excel 56 欄 + 3 個額外欄位</li>
+          <li>色帶分組表頭（7 種顏色，一眼看出 2.4G / 5G / 6G）</li>
+          <li>全欄位搜尋（打 <code>UNII-5</code> 能搜到 6GHz outdoor 欄位）</li>
+          <li>Saved Views（儲存自訂欄位 + 篩選組合）</li>
+          <li>Country Compare（勾選國家，差異黃色高亮）</li>
+          <li>Frozen Country 欄 + DFS channel detail + Excel 一鍵匯出</li>
         </ul>
       </div>
 
+      <!-- Screenshot placeholder: Dashboard -->
+      <div class="result-preview">
+        <img src="./screenshots/dashboard.png" alt="WiFi RegHub Dashboard with color-banded headers" />
+        <div class="result-preview-caption">
+          <span class="result-preview-badge">Dashboard</span>
+          59 欄色帶表頭 + Saved Views + Country Compare
+        </div>
+      </div>
+
       <div class="subsection">
-        <div class="subsection-label">質疑式引導</div>
-        <p>另一個常用模式是<strong>「質疑式引導」</strong>：</p>
+        <div class="subsection-label">Alert 監控</div>
         <ul>
-          <li>我會問「這樣合理嗎？」「真的需要嗎？」迫使 Claude 重新評估</li>
-          <li>例如：「eCFR 需要優化什麼？」→ Claude 發現 Gemini model 已 deprecated</li>
-          <li>例如：「EFIS alert 需要嗎？」→ Claude 分析發現跟 regdb 重複</li>
+          <li>5 種 alert type 各自有結構化 layout（不再是文字牆）</li>
+          <li>AI 解析結果精確到 DB 欄位名（如 <code>unii_outdoor</code> &rarr; UNII-5）</li>
+          <li>上傳 PDF &rarr; AI 自動產出 Regulatory Brief（中文摘要 + 建議動作）</li>
         </ul>
       </div>
 
-      <div class="callout callout-tip">
-        <span class="callout-icon">→</span>
-        <div><strong>關鍵洞察：</strong>不需要看程式碼，不需要說 CSS 術語。截圖 + 「這裡很怪」就夠了。AI 能從截圖理解視覺問題並定位到程式碼。</div>
-      </div>
-    </section>
-
-    <!-- ══ Section 3: 關鍵對話轉折 ══ -->
-    <section class="section" id="s3">
-      <div class="section-header">
-        <span class="section-num">03</span>
-        <h2 class="section-title">關鍵對話轉折</h2>
-      </div>
-
-      <!-- 轉折一 -->
-      <div class="subsection">
-        <div class="subsection-label">轉折一：RD 回信改變了整個架構定位</div>
-        <p>我把 RD 的回信貼給 Claude：</p>
-        <blockquote>各國法規是否開放 channel/band 不是定義在 Chipset Vendor 的 SDK 裡，而是自行定義在檔案裡做開啟。</blockquote>
-        <p>這一句話直接改變了系統的 Tier 分層 — 原本的「Tier 0: Chip Vendor SDK = 最終決定者」被推翻。Claude 立刻建議把 SDK 改成通用的 Manual Upload，我同意後整個監控策略文件和前端都更新了。</p>
-        <div class="callout callout-tip">
-          <span class="callout-icon">→</span>
-          <div>AI 能快速 react 到新資訊並調整整個系統設計，但<strong>新資訊必須由人帶入</strong> — AI 不會自己去問 RD。</div>
+      <!-- Screenshot placeholder: Alert -->
+      <div class="result-preview">
+        <img src="./screenshots/alert.png" alt="Alert monitoring page with structured AI analysis" />
+        <div class="result-preview-caption">
+          <span class="result-preview-badge">Alert</span>
+          結構化 AI 分析 + PDF 上傳自動產出 Regulatory Brief
         </div>
-      </div>
-
-      <!-- 轉折二 -->
-      <div class="subsection">
-        <div class="subsection-label">轉折二：PDF Parser 在 Vercel 壞掉 → 連鎖發現</div>
-        <p>上傳 FCC 和 Ofcom 的法規 PDF 測試 AI 解析，結果發現：</p>
-
-        <div class="bug-block">
-          <div class="bug-header">
-            <span class="bug-icon">⚠</span>
-            <span class="bug-title">Bug：PDF 解析三層連鎖失敗</span>
-          </div>
-          <div class="bug-body">
-            <div class="callout callout-note">
-              <span class="callout-icon">!</span>
-              <div><strong>症狀：</strong>上傳 PDF 後 AI 回傳「No WiFi keywords detected」，完全無法解析法規內容</div>
-            </div>
-            <p><strong>第一層：</strong><code>pdf-parse</code> v2 在 Vercel serverless 靜默失敗</p>
-            <p><strong>第二層：</strong>Fallback 把 PDF 二進位直接轉 UTF-8 → 亂碼</p>
-            <p><strong>第三層：</strong>AI 拿到亂碼 → keyword fallback → 「No WiFi keywords detected」</p>
-            <p><strong>修復：</strong>PDF parser 換成 <code>unpdf</code>，Gemini 從 2.0-flash（已 deprecated）升級到 2.5-flash</p>
-          </div>
-        </div>
-
-        <div class="callout callout-tip">
-          <span class="callout-icon">→</span>
-          <div>一個看似簡單的「測試 PDF 上傳」揭露了三層問題（parser / model / prompt）。AI 能快速定位每一層，但<strong>只有實際測試才會觸發</strong>。</div>
-        </div>
-      </div>
-
-      <!-- 轉折三 -->
-      <div class="subsection">
-        <div class="subsection-label">轉折三：「後台 JSON 不一致」的發現</div>
-        <p>比對我們 DB 產出的後台 JSON vs RD 提供的 production JSON，發現 99% match 但有 31 個 diff。進一步分析發現<strong>不是我們的問題，是 RD 的 backend 腳本有 bug</strong>（6GHz bonding 沒做、DFS power 漏填）。</p>
-        <p>這個發現變成了一份正式的驗證報告，核心結論是：「同一份 Excel，兩套腳本產出的 JSON 就不一致 → WiFi RegHub 用單一 DB 可以根本解決」。</p>
-        <div class="callout callout-tip">
-          <span class="callout-icon">→</span>
-          <div>AI 擅長做大量資料的交叉比對和差異分析。<strong>5,369 個欄位的比對</strong>人做可能要一天，AI 幾秒鐘。</div>
-        </div>
-      </div>
-
-      <!-- 轉折四 -->
-      <div class="subsection">
-        <div class="subsection-label">轉折四：AI Prompt 升級 — 從「通用描述」到「DB 欄位建議」</div>
-        <p>舊的 AI prompt 只要求「描述 WiFi 法規變更」，結果 Gemini 產出的是泛泛的文字（「Ofcom authorized outdoor WiFi...」）。</p>
-        <p>把完整的 35 個 DB 欄位定義塞進 system prompt 後，Gemini 開始產出精確的 field-level changes：</p>
-        <ul>
-          <li><code>unii_outdoor</code> → 加入 UNII-5</li>
-          <li><code>power_unii5</code> → 36 dBm EIRP</li>
-          <li>status: confirmed / proposed</li>
-          <li>action: update / monitor</li>
-        </ul>
-        <div class="callout callout-tip">
-          <span class="callout-icon">→</span>
-          <div>AI 的輸出品質直接取決於你給它多少 context。<strong>把 DB schema 給 AI = 讓它知道「答案要長什麼樣」</strong>。</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══ Section 4: 成果紀錄 ══ -->
-    <section class="section" id="s4">
-      <div class="section-header">
-        <span class="section-num">04</span>
-        <h2 class="section-title">成果紀錄</h2>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">Dashboard 大表</div>
-        <ul>
-          <li>59 欄（覆蓋 Excel 全部 56 欄 + 3 個額外欄位）</li>
-          <li>色帶分組表頭（7 種顏色對應 7 個欄位群組）</li>
-          <li>全欄位搜尋 + 關鍵字篩選（DFS / band1-4 / unii5-8）+ 搜尋高亮</li>
-          <li>Frozen Country 欄 + DFS channel detail（click popover）</li>
-          <li>Quick Filters 調整（移除 Band4/HT240，新增 No 6GHz/INT）</li>
-          <li>Saved Views（localStorage，一鍵切換自訂欄位+篩選組合）</li>
-          <li>Country Compare（checkbox 勾選最多 6 國，diff 高亮）</li>
-          <li>Alert pending badge（紅色數字）</li>
-          <li>Excel 一鍵匯出（與原始格式相同的 .xlsx）</li>
-        </ul>
       </div>
 
       <div class="subsection">
         <div class="subsection-label">國家詳細頁</div>
         <ul>
-          <li>重新設計（色帶排版、三級字體層級、DFS channel detail）</li>
-          <li>國旗 emoji + 風險等級 badge + 官方 regulator 連結</li>
+          <li>色帶排版（teal / blue / amber）跟 Dashboard 一致</li>
+          <li>DFS channel detail 標註「auto from Band2 + Band3」</li>
+          <li>風險等級 badge + 官方 regulator 連結</li>
         </ul>
       </div>
 
       <div class="subsection">
-        <div class="subsection-label">Alert 系統</div>
+        <div class="subsection-label">Export</div>
         <ul>
-          <li>Dismiss memory（已 dismiss 的不重建）</li>
-          <li>5 種 alert type 各自的結構化 layout</li>
-          <li>Manual Upload 簡化（移除 Document Type/Version）</li>
-          <li>View Brief 連結 + 上傳後結果卡片</li>
+          <li>三種格式：Excel (.xlsx) / Frontend JSON / Backend JSON</li>
+          <li>JSON 驗證報告：前端 100% match、後台 99% match + 差異分析</li>
         </ul>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">AI 解析</div>
-        <ul>
-          <li>Gemini 2.0 → 2.5 Flash</li>
-          <li>PDF parser: pdf-parse → unpdf</li>
-          <li>System prompt 升級（含 35 欄位 DB schema + 中文輸出）</li>
-          <li>eCFR / RSS 的 AI 結果也存 raw_data（結構化顯示）</li>
-        </ul>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">匯出 + 驗證</div>
-        <ul>
-          <li>後台 JSON export（regular_domains.json 格式）</li>
-          <li>前端 + 後台 JSON 驗證報告（100% / 99% match）</li>
-          <li>Excel 匯出 API</li>
-        </ul>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">監控策略</div>
-        <ul>
-          <li>Chip Vendor SDK → Manual Upload</li>
-          <li>Verification Source Map（93 國風險分級 + regulator URL）</li>
-          <li>EFIS regdb 覆蓋標記</li>
-        </ul>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">其他</div>
-        <ul>
-          <li>專案改名 WiFi RegHub</li>
-          <li>Vercel Git 自動部署</li>
-          <li>OpenGraph metadata</li>
-        </ul>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">數字總覽</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>指標</th><th>數量</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Commits</td><td>50+</td></tr>
-              <tr><td>新增/修改檔案</td><td>~30 個</td></tr>
-              <tr><td>新增 DB 表</td><td>1（regulatory_briefs）</td></tr>
-              <tr><td>新增 DB 欄位</td><td>3（countries: risk_tier, regulator_name, regulator_url）</td></tr>
-              <tr><td>新增 API</td><td>4（/export/regular-domains, /export/excel, /api/briefs, /api/briefs/[id]）</td></tr>
-              <tr><td>新增頁面</td><td>1（/briefs）</td></tr>
-              <tr><td>耗時</td><td>~12 小時（單一 session）</td></tr>
-            </tbody>
-          </table>
-        </div>
       </div>
     </section>
 
-    <!-- ══ Section 5: AI vs 人分工回顧 ══ -->
-    <section class="section" id="s5">
+    <!-- ══ Section 3: 系統架構 ══ -->
+    <section class="section" id="s3">
       <div class="section-header">
-        <span class="section-num">05</span>
-        <h2 class="section-title">AI vs 人分工回顧</h2>
+        <span class="section-num">03</span>
+        <h2 class="section-title">系統架構</h2>
       </div>
 
-      <div class="ai-role-card">
-        <div class="ai-role-col ai-role-ai">
-          <div class="ai-role-header">AI 負責</div>
-          <ul>
-            <li>程式碼撰寫（TypeScript / React / SQL）</li>
-            <li>Git 操作（commit message + push）</li>
-            <li>技術方案提案（2-3 個選項）</li>
-            <li>文件草稿（監控策略、驗證報告、email）</li>
-            <li>資料分析（5,369 欄位交叉比對、93 國分級）</li>
-            <li>Bug root cause 定位</li>
-            <li>Vercel 部署設定</li>
-          </ul>
+      <!-- Horizontal arch-flow: Data Sources → Sync/Parse → Storage → Output -->
+      <div class="arch-flow">
+        <div class="arch-node arch-external">
+          <div class="arch-node-label">Data Sources</div>
+          <div class="arch-node-title">5 Endpoints</div>
+          <div class="arch-node-sub">Manual Upload, wireless-regdb, CEPT/EFIS, FCC eCFR, PolicyTracker RSS</div>
         </div>
-        <div class="ai-role-col ai-role-human">
-          <div class="ai-role-header">人負責</div>
-          <ul>
-            <li>功能需求提出（截圖 + 一句話）</li>
-            <li>技術方案最終拍板</li>
-            <li>UI 感受描述（「太小」「太散」「太花」）</li>
-            <li>業務判斷（SDK 角色定位、風險分級、篩選器取捨）</li>
-            <li>帶入外部資訊（RD 回信、production JSON）</li>
-            <li>文件審核與修改</li>
-            <li>截圖指出 Bug 位置</li>
-          </ul>
+        <div class="arch-arrow">
+          <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
+        <div class="arch-node arch-backend">
+          <div class="arch-node-label">Processing</div>
+          <div class="arch-node-title">Sync APIs + Parser</div>
+          <div class="arch-node-sub">Structured or AI (Gemini 2.5 Flash)</div>
+        </div>
+        <div class="arch-arrow">
+          <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="arch-node arch-storage">
+          <div class="arch-node-label">Storage</div>
+          <div class="arch-node-title">Supabase</div>
+          <div class="arch-node-sub">regulation_alerts + regulatory_briefs + regulations + change_log</div>
+        </div>
+        <div class="arch-arrow">
+          <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="arch-node arch-frontend">
+          <div class="arch-node-label">Output</div>
+          <div class="arch-node-title">3 Formats</div>
+          <div class="arch-node-sub">Frontend JSON, Backend JSON, Excel (.xlsx)</div>
+        </div>
+      </div>
+
+      <p>完整的資料流：</p>
+
+      <!-- ASCII architecture in dark terminal block -->
+      <div class="tree-block">
+<span class="tq">Data Sources</span><br>
+<br>
+&nbsp;&nbsp;Manual Upload &mdash;&mdash;&mdash;&mdash;&mdash;&#9488;<br>
+&nbsp;&nbsp;Linux wireless-regdb &mdash;&#9508;<br>
+&nbsp;&nbsp;CEPT/EFIS &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&#9500;&mdash;&rarr; <span class="ta">Sync APIs</span> &mdash;&rarr; <span class="ta">Parser</span><br>
+&nbsp;&nbsp;FCC eCFR &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&#9508;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(5 endpoints)&nbsp;&nbsp;&nbsp;(Structured or AI)<br>
+&nbsp;&nbsp;PolicyTracker RSS &mdash;&mdash;&#9496;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tc">regulation_alerts</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="tc">regulatory_briefs</span> (auto-generated)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ta">Apply</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ta">Approve</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tq">Dismiss</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PATCH /api/regulations/[code]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;regulations 表更新 + change_log 自動記錄<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;<br>
+&nbsp;&nbsp;<span class="tc">Frontend JSON</span>&nbsp;&nbsp;<span class="tc">Backend JSON</span>&nbsp;&nbsp;<span class="tc">Excel (.xlsx)</span><br>
+&nbsp;&nbsp;(countryInfo)&nbsp;&nbsp;&nbsp;(regular_domains)
+      </div>
+    </section>
+
+    <!-- ══ Section 4: 技術選型 ══ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">技術選型</h2>
+      </div>
+
+      <div class="tech-row">
+        <span class="tech-pill"><span class="tech-dot" style="background:#000"></span>Next.js 16</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#61dafb"></span>React 19</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#3ecf8e"></span>Supabase</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#e8612c"></span>TanStack Table v8</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#38bdf8"></span>Tailwind CSS v4</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#4285f4"></span>Gemini 2.5 Flash</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#666"></span>unpdf</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#217346"></span>ExcelJS</span>
+        <span class="tech-pill"><span class="tech-dot" style="background:#000"></span>Vercel</span>
       </div>
 
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>環節</th><th>誰</th><th>說明</th></tr>
+            <tr>
+              <th>工具 / 技術</th>
+              <th>選的理由</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><td>功能需求</td><td>人</td><td>每個功能由我提出，通常是截圖 + 一句話</td></tr>
-            <tr><td>技術方案選擇</td><td>AI 提案，人拍板</td><td>例：Saved Views 存 localStorage vs DB → 我選 localStorage</td></tr>
-            <tr><td>程式碼撰寫</td><td>AI</td><td>TypeScript / React / SQL 全由 Claude 寫</td></tr>
-            <tr><td>Git 操作</td><td>AI</td><td>commit message + push 由 Claude 執行</td></tr>
-            <tr><td>Vercel 部署</td><td>AI → 自動</td><td>前半手動 deploy，後半設好 Git 整合</td></tr>
-            <tr><td>UI 設計</td><td>協作</td><td>我描述感受，Claude 翻譯成 Tailwind CSS</td></tr>
-            <tr><td>文件撰寫</td><td>AI 草稿 + 人審核</td><td>監控策略、驗證報告、email、regulatory brief</td></tr>
-            <tr><td>業務判斷</td><td>人</td><td>SDK 角色定位、風險分級、篩選器取捨</td></tr>
-            <tr><td>Bug 定位</td><td>協作</td><td>我截圖，Claude 找 root cause</td></tr>
-            <tr><td>資料分析</td><td>AI</td><td>5,369 欄位交叉比對、93 國分級</td></tr>
+            <tr>
+              <td><strong>Next.js 16 + React 19</strong></td>
+              <td>App Router、server component 做 data fetching</td>
+            </tr>
+            <tr>
+              <td><strong>Supabase (PostgreSQL)</strong></td>
+              <td>免費、有 API、SQL 彈性大</td>
+            </tr>
+            <tr>
+              <td><strong>TanStack Table v8</strong></td>
+              <td>59 欄需要 column visibility、sorting、filtering</td>
+            </tr>
+            <tr>
+              <td><strong>Tailwind CSS v4</strong></td>
+              <td>快速迭代 UI，不用寫 CSS 檔</td>
+            </tr>
+            <tr>
+              <td><strong>Gemini 2.5 Flash</strong></td>
+              <td>AI 解析法規文件，速度快、成本低</td>
+            </tr>
+            <tr>
+              <td><strong>unpdf</strong></td>
+              <td>PDF 文字提取，Vercel serverless 相容</td>
+            </tr>
+            <tr>
+              <td><strong>ExcelJS</strong></td>
+              <td>產出 .xlsx 格式匹配原始 Excel</td>
+            </tr>
+            <tr>
+              <td><strong>Vercel</strong></td>
+              <td>Git push 自動部署</td>
+            </tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- ══ Section 6: Takeaway ══ -->
-    <section class="section" id="s6">
+    <!-- ══ Section 5: AI 怎麼幫我做的 ══ -->
+    <section class="section" id="s5">
       <div class="section-header">
-        <span class="section-num">06</span>
-        <h2 class="section-title">Takeaway</h2>
+        <span class="section-num">05</span>
+        <h2 class="section-title">AI 怎麼幫我做的</h2>
       </div>
 
-      <div class="takeaway">
-        <div class="takeaway-label">Takeaway 1</div>
-        <p><strong>截圖驅動的 UI 迭代是最高效的協作模式</strong></p>
-        <p>不需要看程式碼，不需要說 CSS 術語。截圖 + 「這裡很怪」就夠了。AI 能從截圖理解視覺問題並定位到程式碼。這讓非工程師也能深度參與 UI 設計。</p>
-      </div>
+      <p><strong>分工</strong>：我負責需求和業務判斷，Claude 負責所有程式碼、UI 實作、文件撰寫。我幾乎不看 code，用截圖 + 一句話描述問題，Claude 定位並修復。</p>
 
-      <div class="takeaway">
-        <div class="takeaway-label">Takeaway 2</div>
-        <p><strong>單一超長 session 的優勢：累積 context</strong></p>
-        <p>12 小時的 session 意味著 Claude 記得所有之前的決策、踩過的坑、RD 的回信。不需要每次重新解釋。這種「沉浸式協作」比零碎的短 session 效率高很多，特別適合功能密集的開發衝刺。</p>
-      </div>
+      <p><strong>提問模式</strong>：截圖驅動 + 質疑式引導。我不說「把 padding 改成 16px」，而是說「這裡看起來很鬆」「欄位跟值距離太遠」。Claude 從視覺問題反推 CSS。</p>
 
-      <div class="takeaway">
-        <div class="takeaway-label">Takeaway 3</div>
-        <p><strong>AI 的輸出品質 = f(你給的 context)</strong></p>
-        <p>最明顯的例子：AI prompt 升級。同一份 PDF，舊 prompt 產出「Ofcom authorized outdoor WiFi...」（沒用），新 prompt（含 DB schema）產出「<code>unii_outdoor</code> → UNII-5, 36 dBm, status: confirmed, action: update」（直接可操作）。</p>
-      </div>
-
-      <div class="takeaway">
-        <div class="takeaway-label">Takeaway 4</div>
-        <p><strong>「先做再說」比「先討論再做」更快</strong></p>
-        <p>很多功能（如 Saved Views vs Preset Views）原本可以花很長時間討論。但實際上先做一個最小版本、看到效果、再決定要不要擴展，比坐著討論規格更有效率。AI 讓「先做一版看看」的成本降到幾乎為零。</p>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-label">可移植性</div>
-        <div class="takeaway">
-          <div class="takeaway-label">適用場景</div>
-          <div class="matrix-row">
-            <span class="matrix-key">截圖驅動 UI 迭代</span>
-            <span class="matrix-arrow">→</span>
-            <span>適用於任何有 UI 的專案，特別是非工程師主導的產品</span>
-          </div>
-          <div class="matrix-row">
-            <span class="matrix-key">DB schema 塞進 AI prompt</span>
-            <span class="matrix-arrow">→</span>
-            <span>適用於任何需要 AI 產出結構化資料的場景</span>
-          </div>
-          <div class="matrix-row">
-            <span class="matrix-key">單一長 session 衝刺</span>
-            <span class="matrix-arrow">→</span>
-            <span>適用於功能密集、相互依賴的開發任務，不適用於需要深思的架構設計</span>
-          </div>
+      <!-- AI Role Card -->
+      <div class="ai-role-card">
+        <div class="ai-role-col ai-role-ai">
+          <div class="ai-role-header">Claude 負責</div>
+          <ul>
+            <li>所有程式碼實作（前端 + API + DB schema）</li>
+            <li>UI 視覺調整（從截圖反推 CSS）</li>
+            <li>Gemini prompt 撰寫與調校</li>
+            <li>JSON 驗證報告 + 差異分析</li>
+            <li>文件撰寫（監控策略、系統架構）</li>
+          </ul>
+        </div>
+        <div class="ai-role-col ai-role-human">
+          <div class="ai-role-header">我負責</div>
+          <ul>
+            <li>需求定義 + 優先排序</li>
+            <li>業務判斷（哪些欄位重要、RD 回饋）</li>
+            <li>截圖 + 質疑式 UI 回饋</li>
+            <li>外部資訊輸入（RD 的 email、Excel 原檔）</li>
+            <li>最終驗收</li>
+          </ul>
         </div>
       </div>
 
       <div class="subsection">
-        <div class="subsection-label">如果你也要做，先問 AI 什麼</div>
-        <ol>
-          <li>「我的 DB 有這些欄位 [貼 schema]，幫我寫一個 AI prompt 讓 LLM 解析法規文件時能對應到這些欄位」</li>
-          <li>「這是我的 Dashboard 截圖 [貼圖]，哪些地方的資訊層級不清楚？怎麼改善？」</li>
-        </ol>
+        <div class="subsection-label">關鍵轉折一：RD 回信推翻了整個 Tier 架構</div>
+        <p>原本把 Chip Vendor SDK 定位成「Tier 0 &mdash; 最終決定者」。RD 回信說：</p>
+        <blockquote>各國法規 channel/band 不是 SDK 定義的，而是 EnGenius 自行維護。</blockquote>
+        <p>一句話直接改變了系統定位 &mdash; SDK 降級為 Manual Upload，Tier 0 移除，整個監控策略文件和前端都更新了。</p>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">&rarr;</span>
+        <div><strong>Insight：</strong>AI 再強也取代不了「問對人」。一封 RD 的 email 改變了整個系統架構，這是 AI 產出不了的。</div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">關鍵轉折二：AI Prompt 升級 &mdash; 從泛泛描述到精確欄位建議</div>
+        <p>把 35 個 DB 欄位定義塞進 Gemini 的 system prompt 後，AI 產出從「Ofcom authorized outdoor WiFi...」變成「<code>unii_outdoor</code> &rarr; UNII-5, 36 dBm, status: confirmed, action: update」。一樣的 PDF，完全不同的產出品質。</p>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">&rarr;</span>
+        <div><strong>Insight：</strong>把 DB schema 給 AI = 讓它知道「答案要長什麼樣」。這個 pattern 適用於任何需要結構化 AI 輸出的場景。</div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">關鍵轉折三：後台 JSON 驗證發現 RD 的腳本有 bug</div>
+        <p>比對 5,369 個欄位後發現 31 個 diff &mdash; 不是我們的問題，是 RD 的 backend 腳本沒做 6GHz bonding 過濾 + DFS power 漏填。這變成了一份給 RD 的正式驗證報告。</p>
       </div>
     </section>
 
+    <!-- ══ Section 6: 踩到的坑 ══ -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">踩到的坑</h2>
+      </div>
+
+      <!-- Bug 1 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">&#9888;</span>
+          <span class="bug-title">Bug 1：PDF Parser 在 Vercel 靜默失敗</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>上傳 FCC 的 PDF，AI 說「No WiFi keywords detected」&mdash; 但 PDF 裡滿滿都是 WiFi</div>
+          </div>
+          <p><strong>根本原因：</strong><code>pdf-parse</code> v2 的 API 在 Vercel serverless 壞掉，fallback 把 PDF 二進位直接 <code>.toString("utf8")</code> &rarr; 亂碼</p>
+          <p><strong>解法：</strong>換成 <code>unpdf</code>（pdf.js-based，serverless 相容）</p>
+        </div>
+      </div>
+
+      <!-- Bug 2 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">&#9888;</span>
+          <span class="bug-title">Bug 2：Gemini 2.0 Flash 已 deprecated</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>有 API key 但所有 AI 呼叫都走 keyword-fallback</div>
+          </div>
+          <p><strong>根本原因：</strong><code>gemini-2.0-flash</code> 被 Google deprecated，回 400</p>
+          <p><strong>解法：</strong>升級到 <code>gemini-2.5-flash</code> + 增加 timeout 到 90 秒</p>
+        </div>
+      </div>
+
+      <!-- Bug 3 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">&#9888;</span>
+          <span class="bug-title">Bug 3：CSS group-hover tooltip 撐爆表格</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>DFS channel 的 hover tooltip 出現時，表格多了一大塊空白</div>
+          </div>
+          <p><strong>根本原因：</strong>tooltip 用 <code>absolute</code> 定位但父元素有 <code>overflow: hidden</code></p>
+          <p><strong>解法：</strong>改成 click popover + <code>fixed</code> 定位</p>
+        </div>
+      </div>
+
+      <!-- Bug 4 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">&#9888;</span>
+          <span class="bug-title">Bug 4：eCFR alert renderer 不認 raw_data type</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>eCFR alert 展開後沒有結構化的 AI Analysis 區塊</div>
+          </div>
+          <p><strong>根本原因：</strong>renderer 檢查 <code>type === "amendment"</code> 但 eCFR sync 存的是 <code>"section"</code></p>
+          <p><strong>解法：</strong>改成兩個都 match</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ Section 7: Takeaway ══ -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Takeaway</h2>
+      </div>
+
+      <div class="takeaway">
+        <div class="takeaway-label">截圖驅動的 UI 迭代是最高效的協作模式</div>
+        <p>不需要看 code，不需要說 CSS 術語。截圖 + 「這裡很怪」就夠了。這讓非工程師也能深度參與產品設計。</p>
+      </div>
+
+      <div class="takeaway">
+        <div class="takeaway-label">AI 的輸出品質 = 你給它的 Context</div>
+        <p>最明顯的例子：同一份 PDF，舊 prompt 產出無用的文字，新 prompt（含 DB schema）產出精確到欄位的建議。把 schema 給 AI = 讓它知道「答案要長什麼樣」。</p>
+      </div>
+
+      <div class="takeaway">
+        <div class="takeaway-label">「先做再說」比「先討論再做」更快</div>
+        <p>Saved Views 的討論可以花一小時，但直接做一個 localStorage 版本只要 20 分鐘。AI 讓 prototype 的成本趨近於零。</p>
+      </div>
+
+      <div class="takeaway">
+        <div class="takeaway-label">可移植性</div>
+        <div class="matrix-row">
+          <span class="matrix-key">截圖驅動 UI</span>
+          <span class="matrix-arrow">&rarr;</span>
+          <span>適用於任何有 UI 的專案</span>
+        </div>
+        <div class="matrix-row">
+          <span class="matrix-key">Schema in Prompt</span>
+          <span class="matrix-arrow">&rarr;</span>
+          <span>適用於任何需要結構化 AI 輸出的場景</span>
+        </div>
+        <div class="matrix-row">
+          <span class="matrix-key">單一長 session 衝刺</span>
+          <span class="matrix-arrow">&rarr;</span>
+          <span>適用於功能密集的開發任務</span>
+        </div>
+      </div>
+
+      <div class="takeaway">
+        <div class="takeaway-label">如果你也要做，先問 AI 什麼</div>
+        <ol>
+          <li>「我的 DB 有這些欄位 [貼 schema]，幫我寫一個 AI prompt 讓 LLM 解析文件時能對應到這些欄位」</li>
+          <li>「這是我的 Dashboard 截圖 [貼圖]，資訊層級哪裡不清楚？怎麼改？」</li>
+        </ol>
+      </div>
+
+      <p style="font-size: 14px; color: var(--ink-4); margin-top: 32px; font-style: italic;">開發日期：2026-04-09 ~ 2026-04-10</p>
+    </section>
+
     <footer>
-      <span>整理自 AI 問答對話 · <strong>2026-04-10</strong></span>
-      <span>AI 協作型</span>
+      <span>整理自 AI 問答對話 &middot; <strong>2026-04-10</strong></span>
+      <span>AI 工具開發型</span>
     </footer>
   </main>
 </div>
 
-<button class="menu-toggle" id="menuToggle" aria-label="目錄">≡</button>
+<button class="menu-toggle" id="menuToggle" aria-label="目錄">&#8801;</button>
 
 <script>
   // Sidebar mobile toggle
@@ -981,7 +1181,7 @@
   const toggle = document.getElementById('menuToggle');
   toggle.addEventListener('click', () => {
     sidebar.classList.toggle('open');
-    toggle.textContent = sidebar.classList.contains('open') ? '✕' : '≡';
+    toggle.textContent = sidebar.classList.contains('open') ? '\u2715' : '\u2261';
   });
 
   // Active nav on scroll
@@ -999,7 +1199,7 @@
   sections.forEach(s => io.observe(s));
 
   // Syntax highlighting
-  hljs.highlightAll();
+  if (typeof hljs !== 'undefined') hljs.highlightAll();
 </script>
 </body>
 </html>
