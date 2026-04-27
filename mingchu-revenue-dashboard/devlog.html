@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MINGCHU 營收儀表板 — AI 協作開發紀錄</title>
+  <meta name="description" content="把營收追蹤的 Google Sheet 變成有篩選、樞紐分析、編輯、獎金結算的互動式儀表板" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Design Tokens ── */
+    :root {
+      --bg: #f7f5f0;                       /* Warm off-white */
+      --grid: rgba(0,0,0,0.04);            /* Engineering grid lines */
+      --grid-sm: rgba(0,0,0,0.02);
+      --surface: #ffffff;
+      --surface-warm: #faf9f6;
+      --ink: #18160f;                      /* Near-black, warm tint */
+      --ink-2: #3a3830;
+      --ink-3: #6b6860;
+      --ink-4: #9b9890;
+      --border: rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.14);
+      --gold: #b5872a;                     /* Single accent — warm gold */
+      --gold-light: rgba(181,135,42,0.10);
+      --gold-mid: rgba(181,135,42,0.20);
+      --sidebar-w: 240px;
+      --font: 'Inter', 'Noto Sans TC', sans-serif;
+      --serif: 'EB Garamond', 'Noto Sans TC', Georgia, serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Base ── */
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(var(--grid-sm) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-sm) 1px, transparent 1px);
+      background-size: 100px 100px, 100px 100px, 25px 25px, 25px 25px;
+      color: var(--ink);
+      line-height: 1.85;
+      font-size: 19px;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--surface);
+      border-right: 1px solid var(--border-strong);
+      padding: 0 0 60px;
+    }
+
+    .sidebar-top {
+      padding: 32px 24px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .sidebar-eyebrow {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .sidebar-top h2 {
+      font-family: var(--serif);
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .nav-section { padding: 0 16px; }
+
+    .nav-group { margin-top: 28px; }
+
+    .nav-group-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      padding: 0 8px;
+      margin-bottom: 6px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 15px;
+      color: var(--ink-3);
+      text-decoration: none;
+      padding: 7px 8px;
+      border-radius: 4px;
+      transition: color .15s, background .15s;
+      line-height: 1.4;
+    }
+
+    .nav-link:hover { color: var(--ink); background: rgba(0,0,0,0.03); }
+
+    .nav-link.active {
+      color: var(--ink);
+      background: var(--gold-light);
+      border-left: 2px solid var(--gold);
+      padding-left: 6px;
+    }
+
+    .nav-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ink-4);
+      flex-shrink: 0;
+    }
+
+    .nav-link.active .nav-num { color: var(--gold); }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      padding: 64px 80px 120px 80px;
+      min-width: 0;
+    }
+
+    /* ── Hero ── */
+    .hero { margin-bottom: 72px; }
+
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .hero-eyebrow::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-strong);
+    }
+
+    .eyebrow-text {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: 42px;
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--ink);
+      margin-bottom: 20px;
+      letter-spacing: -.01em;
+    }
+
+    .hero-rule {
+      width: 48px;
+      height: 2px;
+      background: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    .hero-desc {
+      font-size: 17px;
+      color: var(--ink-2);
+      line-height: 1.75;
+      max-width: 560px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--ink-4);
+      text-decoration: none;
+      letter-spacing: .03em;
+      margin-bottom: 24px;
+      transition: color .15s;
+    }
+    .back-link:hover { color: var(--gold); }
+    .back-link svg { width: 14px; height: 14px; }
+
+    .hero-meta {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--ink-4);
+      letter-spacing: .05em;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 72px;
+      scroll-margin-top: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: .05em;
+    }
+
+    .section-title {
+      font-family: var(--serif);
+      font-size: 24px;
+      font-weight: 400;
+      color: var(--ink);
+      letter-spacing: -.01em;
+    }
+
+    .subsection { margin-bottom: 32px; }
+
+    .subsection-label {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subsection-label::before {
+      content: '';
+      width: 20px;
+      height: 1px;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    /* ── Prose ── */
+    p { margin-bottom: 16px; color: var(--ink-2); font-size: 17px; line-height: 1.8; }
+    strong { font-weight: 600; color: var(--ink); }
+
+    code {
+      font-family: var(--mono);
+      font-size: 13px;
+      background: rgba(0,0,0,0.05);
+      color: var(--ink-2);
+      padding: 1px 6px;
+      border-radius: 3px;
+      border: 1px solid var(--border-strong);
+    }
+
+    ul, ol { padding-left: 20px; margin-bottom: 16px; }
+    li { margin-bottom: 8px; font-size: 17px; line-height: 1.75; color: var(--ink-2); }
+    li::marker { color: var(--gold); }
+
+    blockquote {
+      border-left: 2px solid var(--gold);
+      padding: 12px 24px;
+      margin: 0 0 20px;
+      font-family: var(--serif);
+      font-size: 20px;
+      font-style: italic;
+      color: var(--ink-2);
+      line-height: 1.6;
+    }
+
+    /* ── Table ── */
+    .table-wrap {
+      overflow-x: auto;
+      margin-bottom: 24px;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+
+    thead th {
+      background: var(--ink);
+      color: #fff;
+      font-weight: 500;
+      padding: 12px 18px;
+      text-align: left;
+      font-size: 12px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    tbody tr { background: var(--surface); transition: background .1s; }
+    tbody tr:nth-child(even) { background: var(--surface-warm); }
+    tbody tr:hover { background: var(--gold-light); }
+
+    td {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* ── Code blocks ── */
+    pre {
+      border-radius: 4px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+      font-size: 13.5px;
+      line-height: 1.65;
+    }
+
+    pre code { background: none; border: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* ── Callout ── */
+    .callout {
+      display: flex;
+      gap: 16px;
+      padding: 18px 22px;
+      border-radius: 4px;
+      margin-bottom: 24px;
+      font-size: 16px;
+      line-height: 1.75;
+      border-left: 3px solid;
+    }
+
+    .callout-icon { font-size: 18px; flex-shrink: 0; line-height: 1.75; }
+    .callout-tip { background: rgba(181,135,42,0.07); border-color: var(--gold); }
+    .callout-note { background: rgba(0,0,0,0.04); border-color: var(--ink-3); }
+
+    /* ── Route cards (3-col grid) ── */
+    .route-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      margin-bottom: 32px;
+      border: 1px solid var(--border-strong);
+      background: var(--border-strong);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .route-card { background: var(--surface); padding: 24px 22px; position: relative; }
+    .route-card.featured { background: var(--surface-warm); }
+
+    .route-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: .08em;
+      margin-bottom: 10px;
+    }
+
+    .route-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: var(--ink); }
+    .route-sub { font-size: 12px; color: var(--ink-4); margin-bottom: 14px; }
+
+    .pros-cons { list-style: none; padding: 0; font-size: 13.5px; color: var(--ink-3); }
+    .pros-cons li { margin-bottom: 6px; padding-left: 16px; position: relative; }
+    .pros-cons .pro::before { content: "✓"; position: absolute; left: 0; color: #5c8a5c; }
+    .pros-cons .con::before { content: "—"; position: absolute; left: 0; color: var(--ink-4); }
+
+    .rec-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: var(--gold);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 2px;
+    }
+
+    /* ── Tech pills ── */
+    .tech-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+
+    .tech-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      padding: 6px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-2);
+    }
+
+    .tech-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── Decision tree (dark terminal) ── */
+    .tree-block {
+      background: #111009;
+      border-radius: 4px;
+      padding: 28px 32px;
+      font-family: var(--mono);
+      font-size: 13.5px;
+      line-height: 2;
+      color: #c9c5b8;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .tq { color: #d4b483; }
+    .ta { color: #8fba8f; }
+    .tc { color: #9ab0c9; }
+
+    /* ── Takeaway boxes ── */
+    .takeaway {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-top: 3px solid var(--gold);
+      border-radius: 4px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+    }
+
+    .takeaway-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .matrix-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; font-size: 16px; }
+    .matrix-arrow { color: var(--gold); }
+    .matrix-key { color: var(--ink-3); font-size: 14px; min-width: 110px; }
+
+    /* ── Code compare grid ── */
+    .code-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .code-label { font-size: 12px; color: var(--ink-4); margin-bottom: 8px; font-weight: 500; letter-spacing: .04em; }
+
+    /* ── Case Card (opening hook — placed after Hero, before first section) ── */
+    .case-card {
+      border: 1px solid var(--border-strong);
+      border-top: 3px solid var(--gold);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 48px;
+    }
+
+    .case-card-row {
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+      padding: 15px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .case-card-row:last-child { border-bottom: none; }
+
+    .case-card-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      min-width: 140px;
+      flex-shrink: 0;
+    }
+
+    .case-card-value { font-size: 16px; color: var(--ink-2); line-height: 1.65; }
+
+    /* ── AI Role Card (2-col: AI vs Human) ── */
+    .ai-role-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      border: 1px solid var(--border-strong);
+      background: var(--border-strong);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .ai-role-col { background: var(--surface); padding: 22px 24px; }
+
+    .ai-role-header {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ai-role-ai .ai-role-header { color: #5c7abf; }
+    .ai-role-human .ai-role-header { color: #5c8a5c; }
+
+    .ai-role-col ul { padding-left: 0; list-style: none; margin: 0; }
+
+    .ai-role-col li {
+      font-size: 15px;
+      padding: 6px 0 6px 20px;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink-2);
+      line-height: 1.55;
+    }
+
+    .ai-role-col li:last-child { border-bottom: none; }
+    .ai-role-ai li::before { content: "≈"; position: absolute; left: 0; color: #5c7abf; font-family: var(--mono); }
+    .ai-role-human li::before { content: "✦"; position: absolute; left: 0; color: #5c8a5c; font-size: 10px; top: 10px; }
+
+    /* ── Bug Block (debug case study: dark header + white body) ── */
+    .bug-block {
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .bug-header {
+      background: #1e1b16;
+      padding: 13px 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bug-icon { font-size: 14px; color: #e8c97a; }
+
+    .bug-title {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: #e8c97a;
+      letter-spacing: .04em;
+    }
+
+    .bug-body { background: var(--surface); padding: 22px 24px; }
+
+    @media (max-width: 960px) {
+      .ai-role-card { grid-template-columns: 1fr; }
+    }
+
+    /* ── Result Preview (成果截圖) ── */
+    .result-preview {
+      margin: 32px 0;
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .result-preview img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .result-preview-caption {
+      background: var(--surface-warm);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      font-size: 14px;
+      color: var(--ink-3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.5;
+    }
+
+    .result-preview-badge {
+      background: var(--gold-light);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      padding: 2px 8px;
+      border: 1px solid var(--gold-mid);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    /* ── Screenshot Compare (Before / After) ── */
+    .screenshot-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 32px 0;
+    }
+
+    .screenshot-compare-item {
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .screenshot-compare-label {
+      background: var(--ink);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      padding: 6px 14px;
+      text-transform: uppercase;
+    }
+
+    .screenshot-compare-label.after {
+      background: var(--gold);
+      color: var(--surface);
+    }
+
+    .screenshot-compare img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    @media (max-width: 960px) {
+      .screenshot-compare { grid-template-columns: 1fr; }
+    }
+
+    /* ── Architecture Flow (arch-flow) ── */
+    .arch-flow {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      margin-bottom: 32px;
+      overflow-x: auto;
+      padding: 8px 0;
+    }
+
+    .arch-node {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-top: 3px solid var(--ink-3);
+      border-radius: 4px;
+      padding: 16px 20px;
+      min-width: 140px;
+      max-width: 200px;
+      flex-shrink: 0;
+    }
+
+    .arch-node-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .arch-node-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+
+    .arch-node-sub {
+      font-size: 12px;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
+
+    /* Color variants */
+    .arch-frontend { border-top-color: #61dafb; }
+    .arch-frontend .arch-node-label { color: #61dafb; }
+    .arch-backend { border-top-color: #68a063; }
+    .arch-backend .arch-node-label { color: #68a063; }
+    .arch-ai { border-top-color: #b5872a; }
+    .arch-ai .arch-node-label { color: #b5872a; }
+    .arch-storage { border-top-color: #9b72cf; }
+    .arch-storage .arch-node-label { color: #9b72cf; }
+    .arch-external { border-top-color: #5c7abf; }
+    .arch-external .arch-node-label { color: #5c7abf; }
+
+    .arch-arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      flex-shrink: 0;
+      color: var(--ink-4);
+      font-size: 18px;
+      align-self: center;
+    }
+
+    .arch-arrow svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--ink-4);
+      stroke-width: 1.5;
+      fill: none;
+    }
+
+    .arch-arrow-label {
+      font-size: 10px;
+      color: var(--ink-4);
+      text-align: center;
+      font-family: var(--mono);
+      letter-spacing: .05em;
+      margin-top: 2px;
+    }
+
+    /* Vertical variant */
+    .arch-flow.vertical {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .arch-flow.vertical .arch-arrow { transform: rotate(90deg); padding: 4px 0; }
+    .arch-flow.vertical .arch-node { max-width: 280px; width: 100%; }
+
+    /* Multi-row (wrap) */
+    .arch-flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .arch-flow-grid .arch-node { max-width: none; }
+
+    @media (max-width: 960px) {
+      .arch-flow { flex-direction: column; align-items: stretch; }
+      .arch-flow .arch-node { max-width: none; }
+      .arch-flow .arch-arrow { transform: rotate(90deg); align-self: center; padding: 4px 0; }
+    }
+
+    /* ── Credentials Block (外部服務與金鑰) ── */
+    .credentials-block {
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .credentials-header {
+      background: #1a1d2e;
+      padding: 13px 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .credentials-icon { font-size: 14px; }
+
+    .credentials-title {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: #a8b5d6;
+      letter-spacing: .04em;
+    }
+
+    .credentials-body { background: var(--surface); }
+
+    .credentials-row {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 1fr 1.5fr;
+      padding: 12px 22px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .credentials-row:last-child { border-bottom: none; }
+
+    .credentials-row.header-row {
+      background: var(--surface-warm);
+      font-weight: 500;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      padding: 10px 22px;
+    }
+
+    .credentials-service {
+      font-weight: 500;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .credentials-type-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .06em;
+      padding: 2px 6px;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    .badge-api-key { background: rgba(181,135,42,0.12); color: var(--gold); }
+    .badge-token { background: rgba(92,122,191,0.12); color: #5c7abf; }
+    .badge-secret { background: rgba(207,92,92,0.12); color: #cf5c5c; }
+    .badge-env { background: rgba(92,138,92,0.12); color: #5c8a5c; }
+    .badge-model { background: rgba(155,114,207,0.12); color: #9b72cf; }
+
+    .credentials-value {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ink-3);
+    }
+
+    .credentials-note {
+      font-size: 13px;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 960px) {
+      .credentials-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 72px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-strong);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--ink-4);
+      flex-wrap: wrap;
+      gap: 8px;
+      letter-spacing: .03em;
+    }
+
+    /* ── Mobile ── */
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 2px;
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 960px) {
+      .sidebar {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        z-index: 50;
+        transition: left .2s ease;
+        box-shadow: 4px 0 32px rgba(0,0,0,0.1);
+      }
+      .sidebar.open { left: 0; }
+      .main { padding: 40px 28px 80px; }
+      .hero h1 { font-size: 30px; }
+      .menu-toggle { display: flex; }
+      .route-grid { grid-template-columns: 1fr; }
+      .code-compare { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════════ -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-eyebrow">DEVLOG · 工具開發</div>
+      <h2>MINGCHU 營收儀表板</h2>
+    </div>
+    <div class="nav-section">
+      <div class="nav-group">
+        <div class="nav-group-label">背景</div>
+        <a class="nav-link" href="#s1"><span class="nav-num">01</span>為什麼要做</a>
+        <a class="nav-link" href="#s2"><span class="nav-num">02</span>最終樣貌</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">技術</div>
+        <a class="nav-link" href="#s3"><span class="nav-num">03</span>系統架構</a>
+        <a class="nav-link" href="#s4"><span class="nav-num">04</span>技術選型</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>金鑰與服務</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">過程</div>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span>推進方式</a>
+        <a class="nav-link" href="#s7"><span class="nav-num">07</span>踩到的坑</a>
+        <a class="nav-link" href="#s8"><span class="nav-num">08</span>AI 怎麼幫我做的</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">總結</div>
+        <a class="nav-link" href="#s9"><span class="nav-num">09</span>如果繼續往下</a>
+        <a class="nav-link" href="#s10"><span class="nav-num">10</span>Takeaway</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══ MAIN CONTENT ════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Back link -->
+    <a class="back-link" href="../">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      所有案例
+    </a>
+
+    <!-- Hero -->
+    <header class="hero">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-text">工具開發 · Google Sheets API · Next.js</span>
+      </div>
+      <h1>MINGCHU 營收儀表板</h1>
+      <div class="hero-rule"></div>
+      <p class="hero-desc">一個 8 人小團隊的營收儀表板，從業績追蹤、Pipeline 分析到結案後獎金分配，全流程在一個介面完成。</p>
+      <div class="hero-meta">整理日期：2026-04-27 &nbsp;·&nbsp; 類型：AI 協作工具開發</div>
+    </header>
+
+    <!-- Case Card -->
+    <div class="case-card">
+      <div class="case-card-row">
+        <span class="case-card-label">我用 AI 做了什麼</span>
+        <span class="case-card-value">把營收追蹤的 Google Sheet 變成有篩選、樞紐分析、編輯、獎金結算的互動式儀表板</span>
+      </div>
+      <div class="case-card-row">
+        <span class="case-card-label">沒有 AI 的話</span>
+        <span class="case-card-value">找開發團隊估計 2-3 個月、預算數十萬，需求變動每次都要重新溝通規格</span>
+      </div>
+      <div class="case-card-row">
+        <span class="case-card-label">最終成果</span>
+        <span class="case-card-value">儀表板已上線（mingchu-revenue.vercel.app），團隊每週用，獎金結算流程從手動算 4 小時降到 5 分鐘</span>
+      </div>
+    </div>
+
+
+    <!-- ─── Section 01: 為什麼要做 ─── -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">為什麼要做這件事</h2>
+      </div>
+      <p>MINGCHU 是一間 8-10 人的行銷公司，主要服務食品/餐飲品牌客戶。原本的工作流程是：</p>
+      <ul style="margin-left: 1.5em; line-height: 2;">
+        <li>業務在 Google Sheet 上維護「YYYY 營收」清單，記錄每個專案的金額、客戶、階段</li>
+        <li>每月、每季開會前，都要花時間手動 SUMIF / pivot 整理數字</li>
+        <li>結案後總經理要對 Sheet 算獎金（毛利率、池子計算、誰拿多少）</li>
+      </ul>
+
+      <div class="subsection">
+        <div class="subsection-label">真實痛點</div>
+        <ul style="margin-left: 1.5em; line-height: 2;">
+          <li>開會前都要花時間整理報表</li>
+          <li>同一份資料每個人想看的角度都不一樣（按客戶、按業務、按行銷、按類別）</li>
+          <li>沒有專案編號，多 PM 合作時績效歸屬不清楚</li>
+          <li>獎金計算規則複雜，每次結算總經理都要重新對 Sheet</li>
+          <li>資料容易打錯（PM 名字、類別等都是手填）</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">為什麼不用現成工具</div>
+        <ul style="margin-left: 1.5em; line-height: 2;">
+          <li>Salesforce 太貴、不適合這種規模</li>
+          <li>員工已經習慣 Google Sheet 編輯，換工具阻力大</li>
+          <li>需求很客製（行銷比例、結案獎金規則）</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">→</span>
+        <div>目標清楚：<strong>Sheet 留著當資料源，做一個介面把各種角度的分析、編輯、獎金結算包進去</strong></div>
+      </div>
+    </section>
+
+    <!-- ─── Section 02: 最終樣貌 ─── -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">最終樣貌</h2>
+      </div>
+      <p>主儀表板已上線於 <a href="https://mingchu-revenue.vercel.app/" target="_blank" style="color: var(--gold); text-decoration: underline;">mingchu-revenue.vercel.app</a>，包含四個主要頁面：</p>
+
+      <div class="subsection">
+        <div class="subsection-label">業績總覽 Tab</div>
+        <p>4 張 KPI 卡片（年度營收/現金/Pipeline/待收款）+ 季度進度條 + 月度趨勢圖。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">專案管理 Tab</div>
+        <p>5 種視角切換（列表 / 按客戶 / 業務 / 行銷 / 類別）、多維篩選、搜尋、欄位顯示切換。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">多年趨勢頁</div>
+        <p>歷年營收堆疊圖 + YoY + 客戶 YoY 表。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">獎金結算頁</div>
+        <p>「待分配 / 已分配 / 不符合」三 tab，毛利率審核 + 獎金池計算 + 人員分配，僅總經理可見。</p>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">→</span>
+        <div><strong>四個亮點功能</strong>：多行銷制（一案最多 3 位行銷各自比例）、專案編號（A 欄系統自動產生 P26-001）、URL 同步（切換視角會記在網址）、權限分層（總經理才能看獎金結算）。</div>
+      </div>
+    </section>
+
+    <!-- ─── Section 03: 系統架構 ─── -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">系統架構</h2>
+      </div>
+
+      <div class="arch-flow">
+        <div class="arch-node arch-storage">
+          <div class="arch-node-label">資料源</div>
+          <div class="arch-node-title">Google Sheet</div>
+          <div class="arch-node-sub">6 個固定 tab，業務資料 + master list</div>
+        </div>
+        <div class="arch-arrow">
+          <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="arch-node arch-backend">
+          <div class="arch-node-label">Backend</div>
+          <div class="arch-node-title">Next.js API Routes</div>
+          <div class="arch-node-sub">/api/revenue, /api/bonus, /api/auth</div>
+        </div>
+        <div class="arch-arrow">
+          <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="arch-node arch-frontend">
+          <div class="arch-node-label">Frontend</div>
+          <div class="arch-node-title">React (Next.js)</div>
+          <div class="arch-node-sub">/, /trends, /bonus, /guide.html</div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">Google Sheet 的 6 個固定 tab</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Tab 名稱</th><th>用途</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>YYYY 營收</td><td>專案明細（每年一個 tab，A 欄編號自動產生）</td></tr>
+              <tr><td>目標設定</td><td>年度 L/H 目標</td></tr>
+              <tr><td>歷年營收</td><td>各年度行銷+其他營收</td></tr>
+              <tr><td>人員設定</td><td>所有人員 + 角色 + 在職狀態</td></tr>
+              <tr><td>選項設定</td><td>階段 + 類別 master list</td></tr>
+              <tr><td>獎金分配</td><td>系統自動寫入，總經理透過 /bonus 操作</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">→</span>
+        <div><strong>關鍵架構決策</strong>：Google Sheet 當資料庫（不接 Supabase / MySQL）；Service Account 共享 Sheet，前端永遠透過後端 API 讀寫；權限三層（能登入 → 能看大部分頁面 → 能看獎金結算）。</div>
+      </div>
+    </section>
+
+    <!-- ─── Section 04: 技術選型 ─── -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">技術選型</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>工具 / 技術</th><th>選的理由</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Next.js 15 + React 19</strong></td><td>一套搞定前後端，AI 最熟悉的堆疊</td></tr>
+            <tr><td><strong>shadcn/ui (base-ui 版)</strong></td><td>元件夠用、能客製、樣式不會太「模板感」</td></tr>
+            <tr><td><strong>Tailwind CSS</strong></td><td>沒設計稿也能寫得快、看得過去</td></tr>
+            <tr><td><strong>Recharts</strong></td><td>React 生態最成熟的圖表庫</td></tr>
+            <tr><td><strong>Google Sheets API v4</strong></td><td>資料就在 Sheet，零搬遷成本</td></tr>
+            <tr><td><strong>Google Identity Services</strong></td><td>員工都有 Google 帳號，登入體驗好</td></tr>
+            <tr><td><strong>Vercel</strong></td><td>推 GitHub 就部署，環境變數好管</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">→</span>
+        <div><strong>選型原則</strong>：在 AI 最熟悉的範圍內選，不是選「最潮」的。陌生技術 = 每個 bug 都是地獄。</div>
+      </div>
+    </section>
+
+    <!-- ─── Section 05: 金鑰與服務 ─── -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">外部服務與金鑰</h2>
+      </div>
+
+      <div class="credentials-block">
+        <div class="credentials-header">
+          <span class="credentials-icon">🔑</span>
+          <span class="credentials-title">服務、API、Token、Model 一覽</span>
+        </div>
+        <div class="credentials-body">
+          <div class="credentials-row header-row">
+            <span>服務 / 模型</span>
+            <span>用途</span>
+            <span>類型</span>
+            <span>備註</span>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">Claude Sonnet</div>
+            <div class="credentials-note">全程協作撰寫程式碼</div>
+            <div><span class="credentials-type-badge badge-model">AI MODEL</span></div>
+            <div class="credentials-note">透過 Claude Code CLI</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">Google Sheets API v4</div>
+            <div class="credentials-note">讀寫 Sheet 資料</div>
+            <div><span class="credentials-type-badge badge-api-key">API</span></div>
+            <div class="credentials-note">Service Account 認證</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">GOOGLE_SHEET_ID</div>
+            <div class="credentials-note">識別目標 Sheet</div>
+            <div><span class="credentials-type-badge badge-env">ENV</span></div>
+            <div class="credentials-note">Vercel 設定</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">GOOGLE_SERVICE_ACCOUNT_KEY</div>
+            <div class="credentials-note">Sheet API 認證 JSON</div>
+            <div><span class="credentials-type-badge badge-secret">SECRET</span></div>
+            <div class="credentials-note">需把 service account email 加到 Sheet 共用</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">GOOGLE_CLIENT_ID</div>
+            <div class="credentials-note">前端 Google 登入</div>
+            <div><span class="credentials-type-badge badge-api-key">API KEY</span></div>
+            <div class="credentials-note">OAuth Client</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">ALLOWED_EMAILS</div>
+            <div class="credentials-note">儀表板存取白名單</div>
+            <div><span class="credentials-type-badge badge-env">ENV</span></div>
+            <div class="credentials-note">逗號分隔 emails</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">BONUS_ADMIN_EMAILS</div>
+            <div class="credentials-note">獎金結算權限白名單</div>
+            <div><span class="credentials-type-badge badge-env">ENV</span></div>
+            <div class="credentials-note">預設只有總經理 emails</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">Vercel</div>
+            <div class="credentials-note">部署 + DNS + env 管理</div>
+            <div><span class="credentials-type-badge badge-token">PLATFORM</span></div>
+            <div class="credentials-note">免費方案足夠</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Section 06: 推進方式 ─── -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">推進方式</h2>
+      </div>
+      <p>整個專案不是一次規劃完，而是<strong>根據實際使用 + 規則演化逐步加功能</strong>。重要的推進策略：</p>
+
+      <div class="subsection">
+        <div class="subsection-label">1. 從 Sheet 結構推回來</div>
+        <p>每加一個功能，都先問：Sheet 上要怎麼存？欄位該長什麼樣？這個邏輯讓資料源永遠是「正確答案」，UI 只是 view layer。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">2. 真實規則出現時才實作</div>
+        <p>獎金結算的規則一開始我以為是「固定率 × 個人貢獻」，做到一半才知道實際規則是「結案 + 毛利率 &gt; 30% → 池子 = 5%、總經理主觀分配」。直接重做，沒堅持沿用舊設計。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">3. 重要決策反轉時，把舊邏輯標記為「歷史」而不是直接刪</div>
+        <p>例如「按行銷樞紐」的金額一開始按 H 欄比例切（為了算獎金基數），但後來獎金獨立模組後，比例切分反而誤導使用者。改回完整案值，但保留「N 合作」案數標示。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">4. 先設計給人看，再優化給 AI 看</div>
+        <p>中途有大改 — PM → 行銷、Sales → 業務、新增營運總監/編輯/總經理角色。系統內部 key 維持英文（PM/Sales/CEO），UI 全用中文。這個語言映射讓未來 AI 能繼續寫 code 不混亂。</p>
+      </div>
+    </section>
+
+    <!-- ─── Section 07: 踩到的坑 ─── -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">踩到的坑，讓我更懂的事</h2>
+      </div>
+
+      <!-- Bug 1 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">坑一：多 PM 樞紐金額該不該按比例切？</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀</strong>：原本想說多 PM 案的金額按 H 欄比例切，這樣每個行銷的「個人貢獻」就是獎金基數。但後來獎金結算改成「總經理主觀分配」，比例切分反而讓樞紐數字變得無意義。</div>
+          </div>
+          <p>這個問題讓我意識到：<strong>UI 層的數字計算規則必須跟業務規則同步演化</strong>。當業務規則改了，原本「合理」的算法可能就變成誤導。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則</strong>：每個自動計算的數字背後都有一條業務規則。規則變了，數字呈現方式也要重新檢視，不要堅持沿用「歷史的正確答案」。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bug 2 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">坑二：Google Sheet 列號漂移 → 引入專案編號</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀</strong>：原本獎金分配 tab 用「年度-列號」當識別（例如 <code>2026-15</code>）。但團隊在 Sheet 上手動編輯時，會插入空白列、刪除列，列號就漂移了，獎金記錄對到錯的專案。</div>
+          </div>
+          <p><strong>洞察</strong>：使用者行為跟系統假設衝突時，<strong>修系統而不是教使用者</strong>。我們在 A 欄加「編號」（<code>P26-001</code> 自動產生），讓識別跟列號解耦。系統讀資料時自動 backfill 缺漏的編號，不需要手動維護。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則</strong>：把易變的東西（列號、列順序）跟穩定的東西（識別碼）分開。識別碼一旦發出去就不能重用、不能改，用「啟用 = 否」標記停用，而不是刪除。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bug 3 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">坑三：選項散落各處 → 統一到「選項設定」tab</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀</strong>：階段定義原本放在「目標設定」tab 的 H-J 欄（旁邊就是年度目標 A-F 欄）。要加 2027 目標時，視覺上很怪 —「下面就是空欄但右邊有另一張表卡著」。類別則完全沒中央定義，全靠手填，很容易打錯。</div>
+          </div>
+          <p><strong>洞察</strong>：master list（人員、階段、類別等）需要一個專屬地方，不要塞進業務資料 tab。讓使用者改設定時不要怕改壞別的。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則</strong>：「設定」跟「資料」要分開放。即使現在數量小，未來只會更多。一個統一的選項設定 tab 能涵蓋階段、類別、未來新增的任何 enum，schema 簡單（類型/名稱/排序/啟用/描述）。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bug 4 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">坑四：Modal 太擠 → 改成右側滑出 panel</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀</strong>：專案明細用置中 Modal，內容太多時被切掉。試過縮字體、縮間距，還是不夠。</div>
+          </div>
+          <p><strong>洞察</strong>：UI 的容器形式要符合內容性質。一個有 8-10 個欄位的詳細資訊頁面，本質上是「side detail view」，不是「dialog」。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則</strong>：Modal 適合「打斷主流程的決定」（例如確認刪除）。詳細資訊適合 side panel — 滑出、固定 header/footer、body 自然 scroll，捲軸合理出現。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bug 5 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">坑五：權限分層（看到 ≠ 能編輯 ≠ 能登入）</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀</strong>：所有員工都能登入儀表板沒問題，但獎金結算頁本來大家都看得到（雖然只有 admin 能編輯）。後來總經理要求只有他們能看到這個入口和頁面。</div>
+          </div>
+          <p><strong>洞察</strong>：權限要分多層。<code>ALLOWED_EMAILS</code> 是「能登入」，<code>BONUS_ADMIN_EMAILS</code> 是「能看獎金結算」。不只是 API 拒絕，連 UI 入口也對非 admin 隱藏。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則</strong>：權限的「不顯示」比「顯示但拒絕」更好。讓非 admin 連入口都看不到，避免他們嘗試點擊後遇到拒絕訊息（讓他們更想知道裡面是什麼）。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Section 08: AI 怎麼幫我做的 ─── -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">AI 怎麼幫我做的</h2>
+      </div>
+
+      <div class="ai-role-card">
+        <div class="ai-role-col ai-role-ai">
+          <div class="ai-role-header">AI 負責</div>
+          <ul>
+            <li>所有程式碼撰寫</li>
+            <li>API 設計與實作</li>
+            <li>UI 元件 + 樣式</li>
+            <li>debug 除錯</li>
+            <li>建議新做法（例如編號 backfill 機制）</li>
+          </ul>
+        </div>
+        <div class="ai-role-col ai-role-human">
+          <div class="ai-role-header">人負責</div>
+          <ul>
+            <li>業務規則的提供與澄清</li>
+            <li>UI 取捨（要不要某個功能）</li>
+            <li>優先順序判斷</li>
+            <li>看到 demo 後決定怎麼修</li>
+            <li>跟 Sheet 端整合的最終驗證</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">提問模式</div>
+        <ul style="margin-left: 1.5em; line-height: 2;">
+          <li><strong>症狀描述</strong>：截圖 + 描述「這個地方怪怪的」（不寫程式術語，AI 自己診斷）</li>
+          <li><strong>規則溝通</strong>：用業務語言講需求，讓 AI 翻譯成資料模型 + UI</li>
+          <li><strong>試錯確認</strong>：AI 改完後我截圖回報，再決定接受 / 修正方向</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">關鍵轉折（讓任務有重大推進的時刻）</div>
+        <ul style="margin-left: 1.5em; line-height: 2;">
+          <li><strong>獎金規則重做</strong>：我以為是固定率，實際是池子 + 主觀分配。AI 主動建議重新討論資料模型，避免硬塞舊設計</li>
+          <li><strong>多 PM 比例的用途反轉</strong>：AI 從程式角度問「比例現在不影響獎金，還要切金額嗎？」，幫我意識到該改回完整顯示</li>
+          <li><strong>編號 backfill 機制</strong>：我抱怨「列號會跑掉」，AI 提案「在 A 欄加編號 + 系統自動填」，比手動維護更穩</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ─── Section 09: 如果繼續往下 ─── -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">如果繼續往下</h2>
+      </div>
+      <ul style="margin-left: 1.5em; line-height: 2;">
+        <li><strong>新增/刪除專案</strong>：目前只能編輯既有專案，未來想從儀表板新增列、軟刪除（標記不顯示但保留歷史）</li>
+        <li><strong>自動刷新</strong>：目前手動點同步，可考慮 Sheets webhook 推播</li>
+        <li><strong>通知與提醒</strong>：待收款超過 N 天未收提醒、結案後 N 天未分配獎金提醒</li>
+        <li><strong>獎金分配自動推薦</strong>：累積足夠歷史資料後，AI 可以建議分配比例（總經理確認即可）</li>
+      </ul>
+    </section>
+
+    <!-- ─── Section 10: Takeaway ─── -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">Takeaway</h2>
+      </div>
+
+      <div class="takeaway">
+        <div class="takeaway-label">這個案例展示了什麼</div>
+        <p><strong>資料源不變、介面層客製</strong>：Google Sheet 留著當資料庫，介面層做所有複雜功能。團隊不用換工具。</p>
+        <p><strong>業務規則演化時，UI 邏輯跟著變</strong>：原本的設計如果跟新規則衝突，直接重做而不是疊加 patch。</p>
+        <p><strong>權限分層</strong>：能登入 ≠ 能看到所有頁面 ≠ 能編輯所有頁面，三層獨立白名單。</p>
+      </div>
+
+      <div class="takeaway">
+        <div class="takeaway-label">可移植性</div>
+        <div class="matrix-row">
+          <span class="matrix-key">適用於</span>
+          <span class="matrix-arrow">→</span>
+          <span>任何「資料在 Google Sheet、想要更好介面」的情境</span>
+        </div>
+        <div class="matrix-row">
+          <span class="matrix-key">特別適合</span>
+          <span class="matrix-arrow">→</span>
+          <span>業務規則複雜、會持續演化、團隊規模 5-30 人的公司</span>
+        </div>
+        <div class="matrix-row">
+          <span class="matrix-key">不適用</span>
+          <span class="matrix-arrow">→</span>
+          <span>資料量極大（&gt;10K 筆）、需要 row-level 權限、跨多個 app 共用資料</span>
+        </div>
+      </div>
+
+      <div class="takeaway">
+        <div class="takeaway-label">如果你也要做，先問 AI 什麼</div>
+        <p><strong>1.</strong> 「我有一個 Google Sheet，欄位是 [...]。我想做一個能讀取、篩選、編輯的儀表板。最簡單的技術組合是什麼？需要設定哪些金鑰？」</p>
+        <p><strong>2.</strong> 「業務規則是 [...]。你會怎麼設計 Sheet schema？哪些欄位該放主表，哪些該獨立成 master list？」</p>
+      </div>
+    </section>
+
+    <footer>
+      <span>整理自跨多 session 的 AI 協作開發紀錄 · <strong>2026-04-27</strong></span>
+      <span>工具開發 · 非工程師視角</span>
+    </footer>
+  </main>
+</div>
+
+<button class="menu-toggle" id="menuToggle" aria-label="目錄">≡</button>
+
+<script>
+  // Sidebar mobile toggle
+  const sidebar = document.getElementById('sidebar');
+  const toggle = document.getElementById('menuToggle');
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    toggle.textContent = sidebar.classList.contains('open') ? '✕' : '≡';
+  });
+
+  // Active nav on scroll
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  sections.forEach(s => io.observe(s));
+
+  // Syntax highlighting
+  hljs.highlightAll();
+</script>
+</body>
+</html>
