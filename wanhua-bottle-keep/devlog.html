@@ -585,6 +585,15 @@
       overflow: hidden;
     }
 
+    /* Mobile-shaped screenshots — constrain to phone-sized width so they
+       don't balloon to the whole content column on desktop viewports.
+       Add class="result-preview is-mobile" for portrait phone shots. */
+    .result-preview.is-mobile {
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     .result-preview img {
       width: 100%;
       height: auto;
@@ -966,7 +975,7 @@
     </div>
 
     <!-- 開場：splash hero (放在最前面) -->
-    <div class="result-preview">
+    <div class="result-preview is-mobile">
       <img src="./screenshots/00-splash.png" alt="開場 splash 動畫 — 米紙底 + 朱紅萬字印章 + 萬華寄酒 wordmark" />
       <div class="result-preview-caption">
         <span class="result-preview-badge">Brand Identity</span>
@@ -1015,7 +1024,7 @@
         <p>主畫面：問候語自動切換（午安/晚安/凌晨）+ 兩個 quick action card（找客人的酒 / 新增寄酒）+ 今日寄酒動態 feed。</p>
       </div>
 
-      <div class="result-preview">
+      <div class="result-preview is-mobile">
         <img src="./screenshots/03b-home-real.png" alt="員工首頁 — 黃色 quick action 主視覺" />
         <div class="result-preview-caption">
           <span class="result-preview-badge">員工首頁</span>
@@ -1025,7 +1034,7 @@
 
       <p>「找客人的酒」是員工最常用的功能。一個搜尋框 + 4 種排序 + 上方 alert banner 提示需要關注的酒：</p>
 
-      <div class="result-preview">
+      <div class="result-preview is-mobile">
         <img src="./screenshots/04-find.png" alt="找酒頁 — 搜尋 + 排序 + alert banner" />
         <div class="result-preview-caption">
           <span class="result-preview-badge">找客人的酒</span>
@@ -1035,7 +1044,7 @@
 
       <p>點任一瓶進酒款詳情：客人卡（含 VIP / 常帶朋友 tag）+ 剩餘量條 + 開瓶/到期 + 員工拍照記錄 + 完整事件時間軸。S7-9 是 Suntory 子分區，黃色 hero 是 Suntory 視覺、藍色 hero 是一般區：</p>
 
-      <div class="result-preview">
+      <div class="result-preview is-mobile">
         <img src="./screenshots/05-bottle-detail.png" alt="酒款詳情 — 山崎 12 年" />
         <div class="result-preview-caption">
           <span class="result-preview-badge">酒款詳情</span>
@@ -1045,7 +1054,7 @@
 
       <p>新增寄酒：頁底拆雙 CTA — 灰底 outline「完成登錄」（純存酒）vs 金色 primary「登錄並開瓶」（客人現場要喝，一鍵搞定）。</p>
 
-      <div class="result-preview">
+      <div class="result-preview is-mobile">
         <img src="./screenshots/07-register-dual-cta.png" alt="新增寄酒 — 雙 CTA 設計" />
         <div class="result-preview-caption">
           <span class="result-preview-badge">新增寄酒</span>
@@ -1071,7 +1080,7 @@
         <p>同事建議要區分正職 / PT / 外援，但又不希望跟現有的角色 / 可盤點 pill 衝突。設計成正職隱藏、只有 PT 跟外援會多顯示一個 pill：</p>
       </div>
 
-      <div class="result-preview">
+      <div class="result-preview is-mobile">
         <img src="./screenshots/11-staff-list.png" alt="員工列表 — 多 dimension 並列" />
         <div class="result-preview-caption">
           <span class="result-preview-badge">員工列表</span>
