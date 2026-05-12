@@ -579,10 +579,15 @@
 
     /* ── Result Preview (成果截圖) ── */
     .result-preview {
-      margin: 32px 0;
+      margin: 32px auto;
+      max-width: 70%;
       border: 1px solid var(--border-strong);
       border-radius: 2px;
       overflow: hidden;
+    }
+
+    @media (max-width: 720px) {
+      .result-preview { max-width: 100%; }
     }
 
     .result-preview img {
