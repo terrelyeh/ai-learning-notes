@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>cancan 團購管理系統 — AI 協作開發紀錄</title>
-  <meta name="description" content="把 cancan 食物設計工作室的每季團購訂單整理從下午 4 小時手動，做成全自動 Google Sheet + Apps Script Web App per-row 設計版宅配 PDF 出貨單。零月費。" />
+  <meta name="description" content="把 cancan 食物設計工作室的每季團購訂單整理從下午 4 小時手動，做成全自動 Google Sheet + Apps Script Web App per-row 設計版宅配 PDF 出貨單 + Telegram 群組即時通知。零月費。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
@@ -1143,7 +1143,7 @@
     <div class="case-card">
       <div class="case-card-row">
         <span class="case-card-label">我用 AI 做了什麼</span>
-        <span class="case-card-value">把每檔次團購訂單整理的痛苦從「下午 4 小時手動」變成「全自動」，加上每筆訂單一鍵生成的設計版宅配出貨單 PDF。</span>
+        <span class="case-card-value">把每檔次團購訂單整理的痛苦從「下午 4 小時手動」變成「全自動」，加上每筆訂單一鍵生成的設計版宅配出貨單 PDF，以及手機即時收到的 Telegram 訂單通知。</span>
       </div>
       <div class="case-card-row">
         <span class="case-card-label">沒有 AI 的話</span>
@@ -1151,7 +1151,7 @@
       </div>
       <div class="case-card-row">
         <span class="case-card-label">最終成果</span>
-        <span class="case-card-value">一份 Google Sheet 上自動跑 6 個分析分頁、即時 email 通知、設計版宅配 PDF（用 Apps Script Web App + HTML 模板，瀏覽器列印零月費）。</span>
+        <span class="case-card-value">一份 Google Sheet 上自動跑 6 個分析分頁、Telegram + email 雙管道通知、設計版宅配 PDF（用 Apps Script Web App + HTML 模板，瀏覽器列印零月費）。</span>
       </div>
     </div>
 
@@ -1243,7 +1243,7 @@
         <h2 class="section-title">外部服務與金鑰</h2>
       </div>
 
-      <p>全部服務 <strong>沒有付費 API、沒有信用卡、沒有 secret 要管</strong>：</p>
+      <p>整套零月費、零信用卡。唯一要管的 secret 是 <strong>Telegram Bot Token</strong>，但它存在 Apps Script 的 Script Properties，<strong>不會出現在 Code.gs</strong>：</p>
 
       <div class="credentials-block">
         <div class="credentials-header">
@@ -1287,6 +1287,18 @@
             <div><span class="credentials-type-badge badge-env">CDN LIB</span></div>
             <div class="credentials-note">免費</div>
           </div>
+          <div class="credentials-row">
+            <div class="credentials-service">Telegram Bot API</div>
+            <div class="credentials-note">手機即時通知（每筆訂單推到群組）</div>
+            <div><span class="credentials-type-badge badge-token">API</span></div>
+            <div class="credentials-note">@BotFather 申請，免費無上限</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">TELEGRAM_BOT_TOKEN</div>
+            <div class="credentials-note">呼叫 Telegram Bot API 的 secret</div>
+            <div><span class="credentials-type-badge badge-secret">SECRET</span></div>
+            <div class="credentials-note">存 Apps Script Script Properties，不寫進 Code.gs</div>
+          </div>
         </div>
       </div>
     </section>
@@ -1325,6 +1337,31 @@
           <div class="arch-node-sub">瀏覽器渲染 → Cmd+P → 設計版 PDF</div>
         </div>
       </div>
+
+      <p style="margin-top: 28px;">客人下單的同時，<strong>通知系統雙管道分流</strong>，避免重要訊息淹沒在每天的訂單裡：</p>
+      <div class="arch-flow">
+        <div class="arch-node arch-backend">
+          <div class="arch-node-label">Trigger</div>
+          <div class="arch-node-title">onFormSubmit</div>
+          <div class="arch-node-sub">客人按下送出的瞬間</div>
+        </div>
+        <div class="arch-arrow"><svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 12px; flex: 1; max-width: 480px;">
+          <div class="arch-node arch-external" style="background: rgba(56,139,253,0.08); border-color: rgba(56,139,253,0.32);">
+            <div class="arch-node-label">每筆都推</div>
+            <div class="arch-node-title">Telegram Bot → 工作群組</div>
+            <div class="arch-node-sub">手機即時收到含品項、金額、地址；同事可在訊息底下討論</div>
+          </div>
+          <div class="arch-node arch-external" style="background: rgba(207,92,92,0.08); border-color: rgba(207,92,92,0.32);">
+            <div class="arch-node-label">只推異常</div>
+            <div class="arch-node-title">Gmail Email</div>
+            <div class="arch-node-sub">異常／超量／快滿才寄，避免信箱被洗版</div>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top: 18px; font-size: 14px; color: var(--ink-3); font-style: italic;">
+        💡 雙管道分工原則 — Telegram = 即時行動、Email = 警示備案。兩種頻率混在同一個 channel 就會被忽略。
+      </p>
     </section>
 
     <!-- ══ Section 05：Code.gs 做了什麼（核心引擎）═════════════════ -->
@@ -1684,6 +1721,44 @@
         <div class="takeaway-label">核心架構觀念</div>
         <p>把所有<strong>「會變的東西」抽到 CONFIG</strong>、所有<strong>「規則式判斷」抽到 helper 函式</strong>（matchesLimit_ / matchesCured_ / detectStorageType_ / normalizeChannel_ ...）— 整套腳本變成「像 OS 一樣穩定的核心 + 像 plugin 一樣可換的規則」。這個觀念是這次 AI 協作最大的收穫。</p>
       </div>
+
+      <div class="subsection" style="margin-top: 40px;">
+        <div class="subsection-label">5-5 ｜ 通知層：Telegram + Email 雙管道分工</div>
+        <p>email 跑完一檔之後發現問題：<strong>email 還是要打開信箱才看得到</strong>。客人下單到我看到平均 30 分鐘到 2 小時。手機通知比 email push 即時太多。所以後來補上 Telegram bot，但設計策略是<strong>兩個管道分工</strong>、不是疊一份。</p>
+
+        <div class="table-wrap" style="margin: 18px 0;">
+          <table>
+            <thead><tr><th>管道</th><th>觸發條件</th><th>設計意圖</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Telegram bot（群組）</strong></td>
+                <td>每筆訂單都推</td>
+                <td>即時 / 手機 / 同事一起看 / 可以在訊息底下直接 @ 討論誰回客</td>
+              </tr>
+              <tr>
+                <td><strong>Email</strong></td>
+                <td>只推異常 ／ 超量 ／ 快滿</td>
+                <td>不被洗版；遇到真的要動的事才打開</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p><strong>為什麼選 Telegram 不選 LINE</strong>：</p>
+        <ul>
+          <li>LINE Notify 2025-03-31 停服了，舊教學全部不能用</li>
+          <li>LINE Messaging API 每月免費 200 通，但要建 Provider + Channel + Bot，步驟多 3-4 步，「收件人數 × 訊息數」算法搞不好就超出免費額度</li>
+          <li>Telegram 跟 BotFather 對話一句 <code>/newbot</code> 就建好 bot；<strong>完全免費無上限</strong></li>
+        </ul>
+
+        <p style="margin-top: 14px;"><strong>用群組通知，不是個人私訊</strong>。同事不用每個人都跟 bot 申請、不用蒐集每個人的 chat_id；把 bot 拉進工作群組就好。要加人 / 踢人直接在群組操作，<strong>完全不用改 code</strong>。</p>
+
+        <p><strong>Bot Token 一條重要原則</strong>：絕對不寫進 <code>Code.gs</code>，存在 Apps Script 的 Script Properties。任何有 Sheet 編輯權的人都看得到 source code，token 寫死等於外洩。透過選單對話框輸入一次，存進 <code>PropertiesService.getScriptProperties()</code>，code 裡只看得到 helper 函式去讀它。</p>
+
+        <div class="callout callout-tip" style="margin-top: 16px;">
+          <strong>帶走的原則</strong>：通知不是「加一條 channel」這麼簡單，要想清楚<strong>哪一條接收即時、哪一條接收警示</strong>，否則最後通知會被忽略。Bot 推給群組 vs 私訊也是不同的協作模式 — 群組讓討論留在訊息底下，比私訊好太多。
+        </div>
+      </div>
     </section>
 
     <!-- ══ Section 06：推進方式 ══════════════════════════════════ -->
@@ -1731,6 +1806,19 @@
           <li><code>@page :first</code> 處理跨頁列印（第一頁 full bleed、第二頁開頭加 margin）</li>
           <li>品名 nowrap + tag 欄位拉寬，防斷行</li>
         </ul>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">階段六（後續強化）：補上 Telegram，從「打開信箱才知道」變「手機鈴一下」</div>
+        <p>跑完第一檔之後，發現 email 通知雖然有用、但要打開信箱查才看得到。客人下單到我看到平均 30 分鐘到 2 小時。問 AI 「LINE 跟 Telegram 哪個適合」，得到結論：<strong>Telegram 完勝</strong>（LINE Notify 停服 + Messaging API 設定步驟多 + 計算方式坑）。</p>
+        <ul>
+          <li>新增 Telegram bot helper 函式（token 存 Script Properties、HTML 訊息格式 + escape 防破版、多 chat 同時推、HTTP 失敗不影響 email）</li>
+          <li>接到 <code>onFormSubmit</code>：客人按下送出 → 6 個分頁重整 + 推 Telegram + 該寄 email 就寄</li>
+          <li>設計雙管道分工：Telegram = 每筆都推、Email = 只推異常</li>
+          <li>加選單一條龍：設定 Bot Token → 抓 chat_id → 發測試訊息</li>
+          <li>推到群組而不是個人私訊 — 同事一起收到 + 訊息底下可即時討論</li>
+        </ul>
+        <p style="margin-top: 12px; font-size: 14px; color: var(--ink-3);">整段加了 ~300 行，但邏輯封裝在獨立 helper 函式裡，<strong>沒動到原本核心引擎跟 6 個分頁邏輯</strong>。</p>
       </div>
     </section>
 
@@ -1785,6 +1873,20 @@
           <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>裝飾性 emoji 只用在「沒有其他視覺暗示」的地方才有意義。功能性 icon（鎖頭）已表達狀態時，裝飾就多餘。</div></div>
         </div>
       </div>
+
+      <div class="bug-block">
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑六：Telegram bot 在群組「裝瞎」— 看不到我傳的話</span></div>
+        <div class="bug-body">
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>建好群組、把 bot 加進去、傳了一堆「hi」「測試」訊息，回試算表跑「抓 chat_id」<strong>每次都告訴我「沒看到訊息」</strong>。我以為 bot 壞了。</div></div>
+          <p><strong>根本原因：</strong>Telegram bot 預設開啟 <strong>Privacy Mode</strong> — 加進群組後只看得到「明確 @ 它」的訊息（Telegram 為了隱私的設計）。一般聊天 bot 根本看不見，所以 <code>getUpdates</code> 抓不到任何資料。</p>
+          <p style="margin-top: 10px;"><strong>解法（任選一）：</strong></p>
+          <ul>
+            <li>在群組裡傳 <code>@your_bot_username hi</code>（明確 @ 它，bot 才收得到那一次）</li>
+            <li>去 BotFather 跑 <code>/setprivacy</code> → Disable（一勞永逸，但 bot 之後看得到群組所有訊息）</li>
+          </ul>
+          <div class="callout callout-tip" style="margin-top: 12px;"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>第三方平台的「隱私預設」常常會讓功能<strong>看起來壞掉</strong>。debug 之前先查那個平台的 default 行為，比 trace code 還快。順手做的工程：選單對話框的提示文字，要主動把這種預設行為講白（「在群組記得 @ bot」），不然下個使用者一定會踩。</div></div>
+        </div>
+      </div>
     </section>
 
     <!-- ══ Section 08：最終樣貌 ══════════════════════════════════ -->
@@ -1802,7 +1904,7 @@
         <li><strong>看現況</strong> → 打開儀表板，KPI + Todos 一目瞭然</li>
         <li><strong>跟廠商叫貨</strong> → 看「品項採購總」分頁，自取 / 宅配分欄</li>
         <li><strong>包貨出宅配</strong> → 訂單明細點「📄 開啟」 → 設計版頁面 → Cmd+P 存 PDF（檔名自動是「葉丁綸_出貨單_#03」）→ 列印 → 夾進包裹</li>
-        <li><strong>異常通知</strong> → 異常訂單自動 email（地址漏填、酸種超量、選「其他」取貨等）</li>
+        <li><strong>即時通知</strong> → 每筆訂單<strong>手機 Telegram 群組秒收到</strong>（含品項、金額、地址、受限品項剩餘量）；異常訂單還會額外寄 email</li>
       </ol>
 
       <div class="subsection">
@@ -1830,9 +1932,9 @@
       <p>每個下一步都是「<strong>真的會繼續做的事</strong>」，不是空想：</p>
 
       <ul>
-        <li><strong>LINE / Telegram 即時通知</strong> — 補強 email 通知（LINE Notify 已停服，要走 LINE Messaging API 或 Telegram Bot）。目標：手機鈴一下就知道新訂單來了</li>
         <li><strong>跨檔次營運分析</strong> — 哪個品項回購率高、哪個通路客人忠誠度高、客戶 LTV 排行</li>
         <li><strong>自家團購網頁取代 Google Form</strong> — Form 做不到搶購進度條、品項照片預覽、品項分類 hover、行動裝置友善的選購流程。網頁送進來的訂單還是寫進同一份 Google Sheet，後端腳本繼續用</li>
+        <li><strong>LINE Messaging API（次要）</strong> — 雖然 Telegram 已經夠用，但如果未來客人 / 同事更習慣 LINE，可以再補一條通知管道。優先級低，等真的有人提才做</li>
       </ul>
     </section>
 
