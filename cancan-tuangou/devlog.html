@@ -920,10 +920,12 @@
         <a class="nav-link" href="#s2"><span class="nav-num">02</span>技術選型</a>
         <a class="nav-link" href="#s3"><span class="nav-num">03</span>外部服務</a>
         <a class="nav-link" href="#s4"><span class="nav-num">04</span>系統架構</a>
-        <a class="nav-link" href="#s5"><span class="nav-num">05</span>最終樣貌</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>Code.gs 做了什麼</a>
         <a class="nav-link" href="#s6"><span class="nav-num">06</span>推進方式</a>
         <a class="nav-link" href="#s7"><span class="nav-num">07</span>踩到的坑</a>
-        <a class="nav-link" href="#s8"><span class="nav-num">08</span>Takeaway</a>
+        <a class="nav-link" href="#s8"><span class="nav-num">08</span>最終樣貌</a>
+        <a class="nav-link" href="#s9"><span class="nav-num">09</span>如果繼續往下</a>
+        <a class="nav-link" href="#s10"><span class="nav-num">10</span>Takeaway</a>
       </div>
     </div>
   </nav>
@@ -963,9 +965,8 @@
       </div>
     </div>
 
-    <!-- 成果截圖 (放在 case-card 下方) -->
     <div class="result-preview">
-      <img src="./screenshots/packing-slip-final.png" alt="cancan 出貨單最終成果 — 真實 logo、Fraunces serif 大字招呼、4 欄品項清單、品牌橘色色塊" />
+      <img src="./screenshots/packing-slip-final.png" alt="cancan 出貨單最終成果" />
       <div class="result-preview-caption">
         <span class="result-preview-badge">成果截圖</span>
         宅配出貨單 PDF — 透過 Apps Script Web App 動態渲染，瀏覽器 Cmd+P 存成 PDF（檔名自動帶客戶名 + 訂單編號）
@@ -979,25 +980,43 @@
         <h2 class="section-title">為什麼要做這件事</h2>
       </div>
 
-      <p>cancan 的團購流程一直長這樣：開 Google Form 給客人填、Form 回應自動進 Google Sheet — <strong>然後就卡住了</strong>。後面全是手動工作：</p>
+      <p>cancan 一直用 Google Form 收團購訂單。Form 結束、回應自動進 Google Sheet — <strong>然後就卡住了</strong>。Sheet 上的原始資料完全不是「可用的」狀態，後面全是手動工作。</p>
 
-      <ul>
-        <li>加總每個品項的買賣量（要跟廠商叫貨）</li>
-        <li>加總每筆訂單的金額（要算給客人匯款）</li>
-        <li>套折扣規則（乾熟老朋友滿 6 項折 $100）</li>
-        <li>監控酸種麵包總量（150 顆上限）跟紅隼三號白酒（12 瓶上限）</li>
-        <li>追蹤誰匯款了、誰沒匯（後五碼對帳）</li>
-        <li>整理出貨資料給包貨同仁</li>
-        <li><strong>每筆宅配訂單要做一張包裹清單</strong></li>
-      </ul>
+      <div class="subsection">
+        <div class="subsection-label">Sheet 原始資料的問題</div>
+        <p>打開「表單回應」分頁，你看到的是：</p>
+        <ul>
+          <li>每個品項佔一欄（A B C D...AJ 一路排到 36 欄），每格是「客人勾的數量」</li>
+          <li>多選方格在 sheet 裡長這樣：「2, 3」← 客人勾了 2 跟 3，意思是要買 5 份</li>
+          <li>沒有金額、沒有小計、沒有警示</li>
+          <li>沒有任何「客人應付多少錢」的計算</li>
+          <li>沒有任何「某個品項總共賣了多少」的彙總</li>
+        </ul>
+      </div>
 
-      <p>每檔次 30–50 筆訂單，這套流程大概要花一個下午（4 小時左右）整理。而且出錯率很高 — 某個品項加錯、某個客人少匯款沒抓到、出貨單寫錯地址。</p>
+      <p>要產出可用資訊，每檔次團購（30-50 筆訂單）我們要手動做這些事：</p>
 
-      <p>最痛的是「宅配出貨單」。同仁要一筆一筆從 Sheet 抓資料、填到一個範本上、印出來夾進包裹。沒有設計感、容易出錯、也不像 cancan 品牌會送出去的東西。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>痛點</th><th>具體要做的事</th><th>出錯機率</th></tr></thead>
+          <tbody>
+            <tr><td><strong>加總每個品項買賣量</strong></td><td>36 欄逐欄 SUM，給廠商叫貨用</td><td>中 — 漏一格就少叫</td></tr>
+            <tr><td><strong>算每筆訂單金額</strong></td><td>每筆訂單橫向逐欄 × 單價、加總</td><td>高 — 心算容易錯</td></tr>
+            <tr><td><strong>套折扣規則</strong></td><td>「乾熟老朋友滿 6 項折 $100」要手動算</td><td>高 — 容易忘記套</td></tr>
+            <tr><td><strong>監控上限</strong></td><td>酸種麵包 150 顆、紅隼 12 瓶 — 不知道哪筆讓總量超過</td><td>高 — 通常事後才發現超賣</td></tr>
+            <tr><td><strong>對帳追後五碼</strong></td><td>客人 LINE 私訊後五碼，要 cross-check Sheet</td><td>中 — 容易漏一兩個</td></tr>
+            <tr><td><strong>異常檢查</strong></td><td>地址欄漏填？電話格式怪？選「其他」取貨？</td><td>高 — 出貨後才發現</td></tr>
+            <tr><td><strong>通路分析</strong></td><td>4 個通路各自帶多少單？平均單價？</td><td>— 通常不做，因為太麻煩</td></tr>
+            <tr><td><strong>宅配出貨單</strong></td><td>每筆宅配要從 Sheet 抓 → 填到範本 → 印出夾進包裹</td><td>高 — 地址抄錯、品項漏</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>整個下午（<strong>約 4 小時</strong>）就在做這些「機械工」。最痛的是宅配出貨單 — 同仁的時間花在抄資料、不是花在 cancan 真正擅長的事情上。</p>
 
       <div class="callout callout-tip">
         <span class="callout-icon">→</span>
-        <div>目標：訂單整理全自動 + 一鍵產生品牌設計版出貨單 + <strong>零月費</strong>。</div>
+        <div><strong>目標：</strong>訂單整理全自動 + 一鍵產生品牌設計版出貨單 + <strong>零月費</strong>。</div>
       </div>
     </section>
 
@@ -1012,26 +1031,11 @@
         <table>
           <thead><tr><th>工具 / 技術</th><th>選的理由</th></tr></thead>
           <tbody>
-            <tr>
-              <td><strong>Google Apps Script</strong></td>
-              <td>跟現有 Google Form / Sheet 完全整合、免費、無伺服器、沒有額外帳號要管</td>
-            </tr>
-            <tr>
-              <td><strong>Apps Script Web App</strong></td>
-              <td>想做出貨單 PDF，這是<strong>唯一</strong>能不付 PDF 轉換服務（PDFShift 月費 $9）下做到設計版輸出的路徑</td>
-            </tr>
-            <tr>
-              <td><strong>HTML + 內嵌 CSS</strong></td>
-              <td>設計版出貨單的「設計力」靠這個。用瀏覽器原生列印（Cmd+P）轉 PDF 品質完美</td>
-            </tr>
-            <tr>
-              <td><strong>Claude Design</strong></td>
-              <td>出貨單視覺由 claude.ai 的 artifact 模式產出（Fraunces serif + Noto Sans TC + 品牌橘 #BD4218），再請 AI 套上 placeholder 變模板</td>
-            </tr>
-            <tr>
-              <td><strong>html2canvas</strong></td>
-              <td>「存為圖片」按鈕用這個 CDN lib，把整張 sheet 轉 PNG（方便貼 IG / LINE）</td>
-            </tr>
+            <tr><td><strong>Google Apps Script</strong></td><td>跟現有 Google Form / Sheet 完全整合、免費、無伺服器、沒有額外帳號要管</td></tr>
+            <tr><td><strong>Apps Script Web App</strong></td><td>想做出貨單 PDF，這是<strong>唯一</strong>能不付 PDF 轉換服務（PDFShift 月費 $9）下做到設計版輸出的路徑</td></tr>
+            <tr><td><strong>HTML + 內嵌 CSS</strong></td><td>設計版出貨單的「設計力」靠這個。用瀏覽器原生列印（Cmd+P）轉 PDF 品質完美</td></tr>
+            <tr><td><strong>Claude Design</strong></td><td>出貨單視覺由 claude.ai 的 artifact 模式產出（Fraunces serif + Noto Sans TC + 品牌橘 #BD4218），再請 AI 套上 placeholder 變模板</td></tr>
+            <tr><td><strong>html2canvas</strong></td><td>「存為圖片」按鈕用這個 CDN lib，把整張 sheet 轉 PNG（方便貼 IG / LINE）</td></tr>
           </tbody>
         </table>
       </div>
@@ -1112,81 +1116,96 @@
           <div class="arch-node-title">Google Form</div>
           <div class="arch-node-sub">客人下單入口</div>
         </div>
-        <div class="arch-arrow">
-          <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
+        <div class="arch-arrow"><svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="arch-node arch-storage">
           <div class="arch-node-label">Data</div>
           <div class="arch-node-title">Google Sheet</div>
           <div class="arch-node-sub">表單回應分頁 + 6 個衍生分析分頁</div>
         </div>
-        <div class="arch-arrow">
-          <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
+        <div class="arch-arrow"><svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="arch-node arch-backend">
           <div class="arch-node-label">Backend</div>
-          <div class="arch-node-title">Apps Script</div>
+          <div class="arch-node-title">Apps Script (Code.gs)</div>
           <div class="arch-node-sub">onFormSubmit + onEdit + doGet — 自動整理 / 同步 / 渲染</div>
         </div>
-        <div class="arch-arrow">
-          <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
+        <div class="arch-arrow"><svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="arch-node arch-external">
           <div class="arch-node-label">Output</div>
           <div class="arch-node-title">Web App + HTML 模板</div>
           <div class="arch-node-sub">瀏覽器渲染 → Cmd+P → 設計版 PDF</div>
         </div>
       </div>
+    </section>
+
+    <!-- ══ Section 05：Code.gs 做了什麼（核心引擎）═════════════════ -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Code.gs 做了什麼 — 4 小時變 0 的核心引擎</h2>
+      </div>
+
+      <p>整個系統的大腦是一份 <strong>~2000 行的 Google Apps Script</strong>（<code>Code.gs</code>）。它做的事可以分四層：</p>
 
       <div class="subsection">
-        <div class="subsection-label">6 個衍生分頁</div>
-        <p>每筆 form 提交都會自動同步重建這 6 個分頁，每個分頁的角色：</p>
+        <div class="subsection-label">5-1 ｜ 解析層：把原始 form 資料變成「可用資料」</div>
+        <p>每次 form 提交（或手動觸發），核心函式 <code>computeAllOrders_()</code> 會做這些事：</p>
+        <ol>
+          <li><strong>動態找到標題列</strong>：不假設 row 1 就是標題。腳本用 <code>findHeaderRow_()</code> 掃前 20 列，找到含「題目 [選項 $價格]」格式的那列才認定 — 因為同仁可能在表單回應分頁上方加手動統計列</li>
+          <li><strong>解析 36 欄品項資料</strong>：每欄抓出「題組標題 / 選項 / 單價」三個資訊</li>
+          <li><strong>多選方格加總</strong>：客人勾「2, 3」→ 自動算成 5 份</li>
+          <li><strong>算每筆訂單小計 / 折扣 / 總額</strong>：橫向加總、套規則折扣、得到應付金額</li>
+          <li><strong>追蹤上限累計</strong>：按時間順序累加酸種、紅隼數量，超過 150 顆 / 12 瓶就標記哪一筆「跨界」</li>
+          <li><strong>欄位標準化</strong>：電話補回前導 0、取貨方式拿掉括號內贅字、通路名稱合併同類項</li>
+          <li><strong>異常檢查</strong>：地址空、電話格式怪、選「其他」、跨界超量 — 全部標紅</li>
+        </ol>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">5-2 ｜ 輸出層：6 個分頁，每個解一個痛點</div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>分頁</th><th>用途</th></tr></thead>
+            <thead><tr><th>分頁</th><th>解了什麼痛點</th><th>自動化亮點</th></tr></thead>
             <tbody>
-              <tr><td>儀表板</td><td>KPI + 上限警示 + Todos（看當下狀況）</td></tr>
-              <tr><td>訂單明細</td><td>每筆訂單一列；最右邊「📄 出貨單」HYPERLINK</td></tr>
-              <tr><td>品項採購總</td><td>跟廠商叫貨用（自取 / 宅配分欄）</td></tr>
-              <tr><td>通路分析</td><td>cancan / Boggy / 阿凱 各通路訂單數 + 圓餅圖</td></tr>
-              <tr><td>匯款對帳</td><td>已收款 / 待收款分類</td></tr>
-              <tr><td>異常清單</td><td>需要主動聯絡客人的訂單</td></tr>
+              <tr><td><strong>儀表板</strong></td><td>「現在狀況怎樣？」要一直 query 才知道</td><td>KPI（訂單數 / 預估營業額 / 總折扣 / 待對帳人數）+ 上限剩餘量 + 智能 Todos</td></tr>
+              <tr><td><strong>訂單明細</strong></td><td>客人資料散在 36 欄要橫向掃</td><td>一筆一列、總額計算好、地址 / 電話 / 後五碼 / 異常並排可看</td></tr>
+              <tr><td><strong>品項採購總</strong></td><td>每個品項要逐欄 SUM、且要分自取/宅配</td><td>自動分「累計 / 自取 / 宅配 / 其他」4 欄 — 直接給廠商叫貨用</td></tr>
+              <tr><td><strong>通路分析</strong></td><td>沒人有時間做交叉分析</td><td>4 個通路自動分組 + 兩個甜甜圈圖 + 各通路客戶 drill-down</td></tr>
+              <tr><td><strong>匯款對帳</strong></td><td>LINE 上找後五碼跟 Sheet cross-check 容易漏</td><td>自動依後五碼分類「已對帳 / 待對帳」+ 待對帳排前面 + 統計列</td></tr>
+              <tr><td><strong>異常清單</strong></td><td>出貨後才發現問題</td><td>即時把有疑問的訂單獨立列出來，紅底警示</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-    </section>
-
-    <!-- ══ Section 05：最終樣貌 ══════════════════════════════════ -->
-    <section class="section" id="s5">
-      <div class="section-header">
-        <span class="section-num">05</span>
-        <h2 class="section-title">最終樣貌</h2>
-      </div>
-
-      <p>同仁的日常流程：</p>
-
-      <ol>
-        <li><strong>客人填 Form</strong> → 後台自動建好訂單、計算金額、套折扣、檢查上限</li>
-        <li><strong>客人匯款</strong> → 同仁在「表單回應分頁」的「後五碼」欄填 5 位數 → 2 秒內訂單明細 / 匯款對帳 / 儀表板全部同步</li>
-        <li><strong>看現況</strong> → 打開儀表板，KPI + Todos 一目瞭然</li>
-        <li><strong>跟廠商叫貨</strong> → 看「品項採購總」分頁，自取 / 宅配分欄</li>
-        <li><strong>包貨出宅配</strong> → 訂單明細點「📄 開啟」 → 設計版頁面 → Cmd+P 存 PDF（檔名自動是「葉丁綸_出貨單_#03」）→ 列印 → 夾進包裹</li>
-        <li><strong>異常通知</strong> → 異常訂單自動 email（地址漏填、酸種超量、選「其他」取貨等）</li>
-      </ol>
 
       <div class="subsection">
-        <div class="subsection-label">出貨單細節</div>
+        <div class="subsection-label">5-3 ｜ 自動同步層：3 個觸發器讓資料活著</div>
         <ul>
-          <li>左上角真實 cancan logo（米色紙底、輕微紙紋背景）</li>
-          <li>右上 colophon「Food Design Studio · TAIPEI · EST. 2024」+ 檔次標籤</li>
-          <li>大字 italic「{客戶名}，你好。」+ ORDER NO.</li>
-          <li>tasting menu 風格品項清單（品名 / 數量 / 單價 / 保存方式有色點）</li>
-          <li>自動折扣 block（有觸發折扣才出現）</li>
-          <li>大字斜體 TOTAL</li>
-          <li>底部地址 + IG QR code（真實可掃）</li>
-          <li>印刷對位記號（四角小直角線）</li>
+          <li><strong><code>onFormSubmit</code></strong>（installable trigger）：客人按下 form 送出 → 6 個分頁全部 rebuild + 該寄通知就寄 email。同仁不需要按任何按鈕</li>
+          <li><strong><code>onEdit</code></strong>（simple trigger，雙分頁監聽）：
+            <ul>
+              <li>同仁在「表單回應分頁」的「後五碼」欄打字 → 訂單明細 / 匯款對帳 / 儀表板 2 秒內全部同步</li>
+              <li>訂單明細的「收款備註」欄打字 → 同步匯款對帳 + 儀表板</li>
+            </ul>
+          </li>
+          <li><strong><code>doGet(e)</code></strong>（Web App entry point）：訂單明細的「📄 開啟」連結點下去 → 即時渲染該筆訂單的設計版出貨單</li>
         </ul>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">5-4 ｜ 防呆 + 協作層</div>
+        <p>不只自動化，還做了幾個對「<strong>多人共用</strong>」很重要的事：</p>
+        <ul>
+          <li><strong>分頁保護（Warning Only）</strong>：每個自動產生的分頁加上「修改前跳警告」保護，避免同事不小心改到那些會被下次 rebuild 覆蓋的 cell。但不是強鎖 — 真的要改還是可以</li>
+          <li><strong>訂單明細只開放 4 個可編輯欄位</strong>：電話 / 取貨方式 / 地址 / 收款備註。標頭用深棕色標示，視覺上分得清楚。這 4 欄的修改會跨 rebuild 保留（用時間戳當 kept 字典的 key — 因為連電話本身都可能被改）</li>
+          <li><strong>後五碼的 source of truth 在表單回應分頁</strong>：同仁在那邊填，訂單明細的後五碼欄變唯讀（自動同步），避免兩邊填造成不一致。col 17 的「📄 開啟」用 IF 公式判斷「有後五碼才能點」— 防止對未匯款客人出貨</li>
+          <li><strong>email 通知支援多收件人</strong>：CONFIG 設 <code>NOTIFY_EMAILS: ['a@x.com', 'b@x.com']</code> 即可</li>
+          <li><strong>新團購只動 CONFIG</strong>：受限品項、折扣規則、通知收件人、檔次標籤都在 Code.gs 最上方 CONFIG 區塊。新檔次團購不需要動到任何業務邏輯，10 分鐘就能設定好</li>
+        </ul>
+      </div>
+
+      <div class="takeaway">
+        <div class="takeaway-label">核心架構觀念</div>
+        <p>把所有<strong>「會變的東西」抽到 CONFIG</strong>、所有<strong>「規則式判斷」抽到 helper 函式</strong>（matchesLimit_ / matchesCured_ / detectStorageType_ / normalizeChannel_ ...）— 整套腳本變成「像 OS 一樣穩定的核心 + 像 plugin 一樣可換的規則」。這個觀念是這次 AI 協作最大的收穫。</p>
       </div>
     </section>
 
@@ -1197,17 +1216,17 @@
         <h2 class="section-title">推進方式（怎麼跟 AI 一起做）</h2>
       </div>
 
-      <p>整個系統是 5–6 個 session 逐步堆疊起來的，不是一次到位。每個 session 解一塊痛點，新東西先 PoC、確認 OK 再加進主腳本。</p>
+      <p>整個系統是 5-6 個 session 逐步堆疊起來的，不是一次到位。每個 session 解一塊痛點，新東西先 PoC、確認 OK 再加進主腳本。</p>
 
       <div class="subsection">
         <div class="subsection-label">階段一：先把 Google Sheet 整理自動化</div>
         <p>第一句我給 AI 是：「我有一份 Google Form，回應放在 Google Sheet，可以幫我做 Apps Script 自動整理嗎？」</p>
-        <p>AI 第一輪沒急著寫 code，反而問了好幾個關鍵問題：有沒有折扣規則？怎麼套？上限品項是哪些？怎麼算？這把我逼著想清楚<strong>規則本身</strong>。CONFIG 區塊就是這次對話的產物，把所有「會變的東西」抽出來放最上面。</p>
+        <p>AI 第一輪沒急著寫 code，反而問了好幾個關鍵問題：有沒有折扣規則？怎麼套？上限品項是哪些？怎麼算？這把我逼著想清楚<strong>規則本身</strong>。CONFIG 區塊就是這次對話的產物。</p>
       </div>
 
       <div class="subsection">
         <div class="subsection-label">階段二：Form 標題抓不到的玄機</div>
-        <p>第一次跑時「酸種麵包」這個品項抓不到。一查發現 Google Form 上的「題組標題」跟「sheet 上看到的欄位名稱」不一定一樣。AI 想出的解法：<strong>容錯式比對</strong>——比對題目關鍵字、選項關鍵字、實際資料內容三層 fallback，總有一層會中。</p>
+        <p>第一次跑時「酸種麵包」這個品項抓不到。一查發現 Google Form 上的「題組標題」跟「sheet 上看到的欄位名稱」不一定一樣。AI 想出的解法：<strong>容錯式比對</strong> — 比對題目關鍵字、選項關鍵字、實際資料內容三層 fallback，總有一層會中。</p>
       </div>
 
       <div class="subsection">
@@ -1246,112 +1265,116 @@
       </div>
 
       <div class="bug-block">
-        <div class="bug-header">
-          <span class="bug-icon">⚠</span>
-          <span class="bug-title">坑一：Apps Script Web App 兩種「部署」差很多</span>
-        </div>
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑一：Apps Script Web App 兩種「部署」差很多</span></div>
         <div class="bug-body">
-          <div class="callout callout-note">
-            <span class="callout-icon">!</span>
-            <div><strong>症狀：</strong>連續發生 URL 變來變去、HYPERLINK 全部失效，點下去看到 Drive 的「無法開啟」錯誤頁。</div>
-          </div>
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>連續發生 URL 變來變去、HYPERLINK 全部失效，點下去看到 Drive 的「無法開啟」錯誤頁。</div></div>
           <p><strong>根本原因：</strong>「新增部署作業」每次都建新 URL；舊的 URL 失效後就壞。我以為「重新部署」就好。</p>
-          <div class="callout callout-tip">
-            <span class="callout-icon">→</span>
-            <div><strong>帶走的原則：</strong>第一次部署用「新增」，<strong>之後永遠用「管理部署作業 → 編輯 → 新版本」</strong>（URL 不變）。</div>
-          </div>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>第一次部署用「新增」，<strong>之後永遠用「管理部署作業 → 編輯 → 新版本」</strong>（URL 不變）。</div></div>
         </div>
       </div>
 
       <div class="bug-block">
-        <div class="bug-header">
-          <span class="bug-icon">⚠</span>
-          <span class="bug-title">坑二：ScriptApp.getService().getUrl() 多 deployment 時抓錯</span>
-        </div>
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑二：ScriptApp.getService().getUrl() 多 deployment 時抓錯</span></div>
         <div class="bug-body">
-          <div class="callout callout-note">
-            <span class="callout-icon">!</span>
-            <div><strong>症狀：</strong>訂單明細的 HYPERLINK 指向已死掉的舊 URL，點下去 Drive 錯誤。</div>
-          </div>
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>訂單明細的 HYPERLINK 指向已死掉的舊 URL，點下去 Drive 錯誤。</div></div>
           <p><strong>根本原因：</strong>有多個 deployment 時，<code>ScriptApp.getService().getUrl()</code> 會回傳哪一個是不確定的（可能是已封存的舊版）。</p>
-          <div class="callout callout-tip">
-            <span class="callout-icon">→</span>
-            <div><strong>帶走的原則：</strong>Web App URL 不要依賴 auto-detect，<strong>hardcode 進 CONFIG.WEB_APP_URL</strong>。</div>
-          </div>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>Web App URL 不要依賴 auto-detect，<strong>hardcode 進 CONFIG.WEB_APP_URL</strong>。</div></div>
         </div>
       </div>
 
       <div class="bug-block">
-        <div class="bug-header">
-          <span class="bug-icon">⚠</span>
-          <span class="bug-title">坑三：HtmlService iframe 沙盒 → PDF 預設檔名抓錯</span>
-        </div>
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑三：HtmlService iframe 沙盒 → PDF 預設檔名抓錯</span></div>
         <div class="bug-body">
-          <div class="callout callout-note">
-            <span class="callout-icon">!</span>
-            <div><strong>症狀：</strong>在 HTML 內寫 <code>document.title = '葉丁綸_出貨單_#03'</code>，但 Cmd+P 列印對話框還是顯示「cancan 出貨單」。</div>
-          </div>
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>在 HTML 內寫 <code>document.title = '葉丁綸_出貨單_#03'</code>，但 Cmd+P 列印對話框還是顯示「cancan 出貨單」。</div></div>
           <p><strong>根本原因：</strong>Apps Script Web App 把 HTML 包在 <code>googleusercontent.com</code> 的 iframe 裡。瀏覽器列印用的是<strong>外框 title</strong>，不是 iframe 內 <code>document.title</code>。</p>
-          <div class="callout callout-tip">
-            <span class="callout-icon">→</span>
-            <div><strong>帶走的原則：</strong>Apps Script Web App 要動態檔名，<strong>必須在 doGet 用 <code>setTitle()</code> 設外框 title</strong>。</div>
-          </div>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>Apps Script Web App 要動態檔名，<strong>必須在 doGet 用 <code>setTitle()</code> 設外框 title</strong>。</div></div>
         </div>
       </div>
 
       <div class="bug-block">
-        <div class="bug-header">
-          <span class="bug-icon">⚠</span>
-          <span class="bug-title">坑四：列印跨頁時樣式破版</span>
-        </div>
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑四：列印跨頁時樣式破版</span></div>
         <div class="bug-body">
-          <div class="callout callout-note">
-            <span class="callout-icon">!</span>
-            <div><strong>症狀：</strong>品項多的訂單會佔兩頁。第一頁底部把 TOTAL 標籤切走、第二頁開頭只有「NT$ 4,660」金額，加上 footer-wrap 的 <code>margin-top: auto</code> 把地址區塊推到 sheet 底部，造成第二頁中間一片空白。</div>
-          </div>
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>品項多的訂單佔兩頁。第一頁底部把 TOTAL 標籤切走、第二頁開頭只有「NT$ 4,660」金額，加上 footer-wrap 的 <code>margin-top: auto</code> 把地址區塊推到 sheet 底部，造成第二頁中間一片空白。</div></div>
           <p><strong>根本原因：</strong>列印 CSS 跟螢幕 CSS 是兩套規則。<code>margin-top: auto</code> 在 sheet 跨頁時會把 footer 推到很奇怪的位置。</p>
-          <div class="callout callout-tip">
-            <span class="callout-icon">→</span>
-            <div><strong>帶走的原則：</strong>給關鍵 block 加 <code>page-break-inside: avoid</code>；列印用 <code>@page :first</code> 區分第一頁跟後續頁。</div>
-          </div>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>給關鍵 block 加 <code>page-break-inside: avoid</code>；列印用 <code>@page :first</code> 區分第一頁跟後續頁。</div></div>
         </div>
       </div>
 
       <div class="bug-block">
-        <div class="bug-header">
-          <span class="bug-icon">⚠</span>
-          <span class="bug-title">坑五：分頁名稱加 emoji 跟鎖頭 icon 重複</span>
-        </div>
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑五：分頁名稱加 emoji 跟鎖頭 icon 重複</span></div>
         <div class="bug-body">
-          <div class="callout callout-note">
-            <span class="callout-icon">!</span>
-            <div><strong>症狀：</strong>幫每個分頁加了 emoji（📊 訂單明細、📦 品項採購總…）覺得有設計感。啟用「Warning Only 保護」後，每個分頁名旁邊都多了 🔒 鎖頭 icon。鎖頭 + emoji + 文字 = 太雜亂。</div>
-          </div>
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>幫每個分頁加了 emoji（📊 訂單明細、📦 品項採購總...）覺得有設計感。啟用「Warning Only 保護」後，每個分頁名旁邊都多了 🔒 鎖頭 icon。鎖頭 + emoji + 文字 = 太雜亂。</div></div>
           <p><strong>根本原因：</strong>裝飾性 emoji 用在已經有其他視覺暗示的位置上 = 視覺噪音。</p>
-          <div class="callout callout-tip">
-            <span class="callout-icon">→</span>
-            <div><strong>帶走的原則：</strong>裝飾性 emoji 只用在「沒有其他視覺暗示」的地方才有意義。功能性 icon（鎖頭）已表達狀態時，裝飾就多餘。</div>
-          </div>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>裝飾性 emoji 只用在「沒有其他視覺暗示」的地方才有意義。功能性 icon（鎖頭）已表達狀態時，裝飾就多餘。</div></div>
         </div>
       </div>
     </section>
 
-    <!-- ══ Section 08：Takeaway ══════════════════════════════════ -->
+    <!-- ══ Section 08：最終樣貌 ══════════════════════════════════ -->
     <section class="section" id="s8">
       <div class="section-header">
         <span class="section-num">08</span>
+        <h2 class="section-title">最終樣貌</h2>
+      </div>
+
+      <p>同仁的日常流程：</p>
+
+      <ol>
+        <li><strong>客人填 Form</strong> → 後台自動建好訂單、計算金額、套折扣、檢查上限</li>
+        <li><strong>客人匯款</strong> → 同仁在「表單回應分頁」的「後五碼」欄填 5 位數 → 2 秒內訂單明細 / 匯款對帳 / 儀表板全部同步</li>
+        <li><strong>看現況</strong> → 打開儀表板，KPI + Todos 一目瞭然</li>
+        <li><strong>跟廠商叫貨</strong> → 看「品項採購總」分頁，自取 / 宅配分欄</li>
+        <li><strong>包貨出宅配</strong> → 訂單明細點「📄 開啟」 → 設計版頁面 → Cmd+P 存 PDF（檔名自動是「葉丁綸_出貨單_#03」）→ 列印 → 夾進包裹</li>
+        <li><strong>異常通知</strong> → 異常訂單自動 email（地址漏填、酸種超量、選「其他」取貨等）</li>
+      </ol>
+
+      <div class="subsection">
+        <div class="subsection-label">出貨單細節</div>
+        <ul>
+          <li>左上角真實 cancan logo（米色紙底、輕微紙紋背景）</li>
+          <li>右上 colophon「Food Design Studio · TAIPEI · EST. 2024」+ 檔次標籤</li>
+          <li>大字 italic「{客戶名}，你好。」+ ORDER NO.</li>
+          <li>tasting menu 風格品項清單（品名 / 數量 / 單價 / 保存方式有色點）</li>
+          <li>自動折扣 block（有觸發折扣才出現）</li>
+          <li>大字斜體 TOTAL</li>
+          <li>底部地址 + IG QR code（真實可掃）</li>
+          <li>印刷對位記號（四角小直角線）</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ══ Section 09：如果繼續往下 ══════════════════════════════ -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">如果繼續往下</h2>
+      </div>
+
+      <p>每個下一步都是「<strong>真的會繼續做的事</strong>」，不是空想：</p>
+
+      <ul>
+        <li><strong>LINE / Telegram 即時通知</strong> — 補強 email 通知（LINE Notify 已停服，要走 LINE Messaging API 或 Telegram Bot）。目標：手機鈴一下就知道新訂單來了</li>
+        <li><strong>跨檔次營運分析</strong> — 哪個品項回購率高、哪個通路客人忠誠度高、客戶 LTV 排行</li>
+        <li><strong>自家團購網頁取代 Google Form</strong> — Form 做不到搶購進度條、品項照片預覽、品項分類 hover、行動裝置友善的選購流程。網頁送進來的訂單還是寫進同一份 Google Sheet，後端腳本繼續用</li>
+      </ul>
+    </section>
+
+    <!-- ══ Section 10：Takeaway ══════════════════════════════════ -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
         <h2 class="section-title">Takeaway</h2>
       </div>
 
       <div class="subsection">
         <div class="subsection-label">這個案例展示了什麼</div>
         <p><strong>把 AI 當「整個團隊」用，不只是 code generator。</strong></p>
-        <p>5–6 個 session 的開發過程，AI 扮演了：</p>
+        <p>5-6 個 session 的開發過程，AI 扮演了：</p>
         <ul>
           <li><strong>業務分析師</strong>：第一輪追問規則細節，逼我想清楚 source of truth</li>
           <li><strong>架構師</strong>：設計 CONFIG 抽象、kept 字典用時間戳當 key、normalize at source pattern</li>
           <li><strong>設計師</strong>：用 claude.ai artifact 出 HTML 模板雛形，含字體選擇 + 版面決策理由</li>
-          <li><strong>Debug 夥伴</strong>：4 個坑都是 AI 跟我一起 trace 出來的</li>
+          <li><strong>Debug 夥伴</strong>：5 個坑都是 AI 跟我一起 trace 出來的</li>
           <li><strong>文件撰寫</strong>：CLAUDE.md / README.md 都是 AI 寫的，含 12 條 Common Pitfalls</li>
         </ul>
         <p>我的角色：判斷邊界（這視覺夠精品嗎？這防呆 OK 嗎？）、提供現場反饋（截圖告訴哪裡破版）、做最終取捨（付費 vs 自架、保留 vs 移除某些設計元素）。</p>
