@@ -852,6 +852,191 @@
       .credentials-row { grid-template-columns: 1fr 1fr; gap: 8px; }
     }
 
+    /* ── Sheet Preview (privacy-safe mock visualizations) ── */
+    .sheet-stack { display: flex; flex-direction: column; gap: 28px; margin: 24px 0 8px; }
+
+    .sheet-preview {
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      background: var(--surface);
+      overflow: hidden;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+    }
+
+    .sheet-preview-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: var(--surface-warm);
+      border-bottom: 1px solid var(--border);
+    }
+    .sheet-tab-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      background: #BD4218;
+      color: #fff;
+      border-radius: 2px;
+      letter-spacing: .04em;
+    }
+    .sheet-tab-label.alt-1 { background: #2C3345; }
+    .sheet-tab-label.alt-2 { background: #5c7abf; }
+    .sheet-tab-label.alt-3 { background: #5c8a5c; }
+    .sheet-tab-label.alt-4 { background: var(--gold); }
+    .sheet-tab-label.alt-5 { background: #cf5c5c; }
+    .sheet-tab-pain {
+      font-size: 13px;
+      color: var(--ink-3);
+      margin-left: 4px;
+    }
+    .sheet-tab-pain strong { color: var(--ink-2); font-weight: 500; }
+
+    .sheet-preview-body { padding: 18px; font-variant-numeric: tabular-nums; }
+
+    /* Mini-sheet table */
+    .mini-sheet { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .mini-sheet th, .mini-sheet td {
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .mini-sheet thead th {
+      background: #f3f1ea;
+      font-weight: 500;
+      color: var(--ink-2);
+      font-size: 11.5px;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+    .mini-sheet thead th.editable {
+      background: #4a2f1f;
+      color: #fff;
+    }
+    .mini-sheet td.num { text-align: right; font-family: var(--mono); }
+    .mini-sheet tr.row-warn td { background: #fdf0ec; }
+    .mini-sheet tr.row-paid td { background: #f0f7ee; color: var(--ink-2); }
+    .mini-sheet tr.divider-row td {
+      background: var(--ink);
+      color: var(--surface-warm);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 6px;
+    }
+    .cell-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      padding: 1px 6px;
+      border-radius: 2px;
+      letter-spacing: .03em;
+    }
+    .cell-tag.ok { background: rgba(92,138,92,0.14); color: #4a6d4a; }
+    .cell-tag.warn { background: rgba(207,92,92,0.14); color: #b34646; }
+    .cell-tag.pending { background: rgba(155,135,42,0.14); color: var(--gold); }
+    .cell-tag.muted { background: rgba(0,0,0,0.06); color: var(--ink-3); }
+    .cell-link { color: var(--gold); font-weight: 500; }
+    .cell-link.disabled { color: var(--ink-4); }
+
+    /* KPI tiles for dashboard preview */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .kpi-tile {
+      border: 1px solid var(--border);
+      padding: 14px 14px 12px;
+      background: var(--surface);
+      border-radius: 3px;
+    }
+    .kpi-tile.brand { background: #BD4218; color: #fff; border-color: #BD4218; }
+    .kpi-label {
+      font-size: 10.5px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 6px;
+    }
+    .kpi-tile.brand .kpi-label { color: rgba(255,255,255,0.78); }
+    .kpi-val {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -.01em;
+    }
+    .kpi-tile.brand .kpi-val { color: #fff; }
+    .kpi-sub { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+    .kpi-tile.brand .kpi-sub { color: rgba(255,255,255,0.7); }
+
+    .limit-bars { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .limit-bar-row { font-size: 12.5px; }
+    .limit-bar-head {
+      display: flex; justify-content: space-between;
+      margin-bottom: 4px; color: var(--ink-2);
+    }
+    .limit-bar-track {
+      height: 8px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden;
+    }
+    .limit-bar-fill { height: 100%; background: var(--gold); }
+    .limit-bar-fill.ok { background: #5c8a5c; }
+    .limit-bar-fill.warn { background: #cf5c5c; }
+
+    /* Donut for channel analysis */
+    .donut-row { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+    .donut {
+      width: 130px; height: 130px; border-radius: 50%;
+      background: conic-gradient(
+        #BD4218 0 38%,
+        #5c7abf 38% 64%,
+        #5c8a5c 64% 84%,
+        var(--gold) 84% 100%
+      );
+      position: relative;
+      flex-shrink: 0;
+    }
+    .donut::after {
+      content: '';
+      position: absolute; inset: 28px;
+      background: var(--surface); border-radius: 50%;
+    }
+    .donut-legend { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+    .donut-legend-row { display: flex; align-items: center; gap: 10px; }
+    .donut-swatch { width: 12px; height: 12px; border-radius: 2px; }
+
+    .sheet-caption {
+      font-size: 12.5px;
+      color: var(--ink-3);
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+      line-height: 1.6;
+    }
+    .sheet-caption strong { color: var(--ink-2); }
+
+    .privacy-note {
+      font-size: 12px;
+      color: var(--ink-4);
+      font-style: italic;
+      margin: 8px 0 22px;
+      letter-spacing: .02em;
+    }
+
+    @media (max-width: 720px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .mini-sheet { font-size: 11.5px; }
+      .mini-sheet th, .mini-sheet td { padding: 6px 7px; }
+    }
+
     /* ── Footer ── */
     footer {
       margin-top: 72px;
@@ -1162,18 +1347,305 @@
 
       <div class="subsection">
         <div class="subsection-label">5-2 ｜ 輸出層：6 個分頁，每個解一個痛點</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>分頁</th><th>解了什麼痛點</th><th>自動化亮點</th></tr></thead>
-            <tbody>
-              <tr><td><strong>儀表板</strong></td><td>「現在狀況怎樣？」要一直 query 才知道</td><td>KPI（訂單數 / 預估營業額 / 總折扣 / 待對帳人數）+ 上限剩餘量 + 智能 Todos</td></tr>
-              <tr><td><strong>訂單明細</strong></td><td>客人資料散在 36 欄要橫向掃</td><td>一筆一列、總額計算好、地址 / 電話 / 後五碼 / 異常並排可看</td></tr>
-              <tr><td><strong>品項採購總</strong></td><td>每個品項要逐欄 SUM、且要分自取/宅配</td><td>自動分「累計 / 自取 / 宅配 / 其他」4 欄 — 直接給廠商叫貨用</td></tr>
-              <tr><td><strong>通路分析</strong></td><td>沒人有時間做交叉分析</td><td>4 個通路自動分組 + 兩個甜甜圈圖 + 各通路客戶 drill-down</td></tr>
-              <tr><td><strong>匯款對帳</strong></td><td>LINE 上找後五碼跟 Sheet cross-check 容易漏</td><td>自動依後五碼分類「已對帳 / 待對帳」+ 待對帳排前面 + 統計列</td></tr>
-              <tr><td><strong>異常清單</strong></td><td>出貨後才發現問題</td><td>即時把有疑問的訂單獨立列出來，紅底警示</td></tr>
-            </tbody>
-          </table>
+        <p>解析完成的訂單資料同時被寫入 6 個分頁，<strong>每一頁都不是純資料列表，而是針對一個營運場景設計的視圖</strong>：</p>
+        <p class="privacy-note">※ 以下示意圖均為結構示範，所有客戶名稱、電話、地址、後五碼皆為虛構資料；版面與顏色邏輯與實際 sheet 一致。</p>
+
+        <div class="sheet-stack">
+
+          <!-- 1. 儀表板 -->
+          <div class="sheet-preview">
+            <div class="sheet-preview-head">
+              <span class="sheet-tab-label">🏠 儀表板</span>
+              <span class="sheet-tab-pain"><strong>痛點：</strong>「現在狀況怎樣？」每次都要打開好幾個 sheet 才知道</span>
+            </div>
+            <div class="sheet-preview-body">
+              <div class="kpi-grid">
+                <div class="kpi-tile brand">
+                  <div class="kpi-label">訂單總數</div>
+                  <div class="kpi-val">53</div>
+                  <div class="kpi-sub">筆</div>
+                </div>
+                <div class="kpi-tile brand">
+                  <div class="kpi-label">預估營業額</div>
+                  <div class="kpi-val">$121,040</div>
+                  <div class="kpi-sub">已扣折扣</div>
+                </div>
+                <div class="kpi-tile">
+                  <div class="kpi-label">總折扣金額</div>
+                  <div class="kpi-val">−$1,300</div>
+                  <div class="kpi-sub">乾熟老朋友滿 6 折 100</div>
+                </div>
+                <div class="kpi-tile">
+                  <div class="kpi-label">待對帳人數</div>
+                  <div class="kpi-val">34</div>
+                  <div class="kpi-sub">未填後五碼</div>
+                </div>
+              </div>
+              <div class="limit-bars">
+                <div class="limit-bar-row">
+                  <div class="limit-bar-head"><span>受限品項 ｜ 酸種麵包</span><span>116 / 150 ・剩 34 顆</span></div>
+                  <div class="limit-bar-track"><div class="limit-bar-fill" style="width: 77.3%"></div></div>
+                </div>
+                <div class="limit-bar-row">
+                  <div class="limit-bar-head"><span>受限品項 ｜ 紅隼三號白酒</span><span>3 / 12 ・剩 9 瓶</span></div>
+                  <div class="limit-bar-track"><div class="limit-bar-fill ok" style="width: 25%"></div></div>
+                </div>
+              </div>
+              <div class="sheet-caption">
+                <strong>智能 Todos</strong>：腳本會根據「受限品項剩多少 / 異常訂單幾筆 / 待對帳人數」自動產生一句句白話建議（如「⚠ 酸種剩 34 顆，可開放補單」），不是死的待辦清單。
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. 訂單明細 -->
+          <div class="sheet-preview">
+            <div class="sheet-preview-head">
+              <span class="sheet-tab-label alt-1">📊 訂單明細</span>
+              <span class="sheet-tab-pain"><strong>痛點：</strong>客人資料散在 form 的 36 欄，要橫向掃才看得到一筆完整訂單</span>
+            </div>
+            <div class="sheet-preview-body">
+              <table class="mini-sheet">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>客戶</th>
+                    <th class="editable">電話</th>
+                    <th class="editable">取貨</th>
+                    <th class="editable">地址</th>
+                    <th>後五碼</th>
+                    <th>總額</th>
+                    <th>狀態</th>
+                    <th>📄 出貨單</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="num">001</td>
+                    <td>客戶 A</td>
+                    <td>0912-***-***</td>
+                    <td>宅配</td>
+                    <td>台北市…</td>
+                    <td class="num">12345</td>
+                    <td class="num">$2,840</td>
+                    <td><span class="cell-tag ok">正常</span></td>
+                    <td><span class="cell-link">📄 開啟</span></td>
+                  </tr>
+                  <tr>
+                    <td class="num">002</td>
+                    <td>客戶 B</td>
+                    <td>0987-***-***</td>
+                    <td>自取</td>
+                    <td>—</td>
+                    <td class="num">—</td>
+                    <td class="num">$1,560</td>
+                    <td><span class="cell-tag pending">待對帳</span></td>
+                    <td><span class="cell-link disabled">⏳ 待收款</span></td>
+                  </tr>
+                  <tr class="row-warn">
+                    <td class="num">003</td>
+                    <td>客戶 C</td>
+                    <td>09xxx-?</td>
+                    <td>其他</td>
+                    <td>（缺）</td>
+                    <td class="num">—</td>
+                    <td class="num">$3,200</td>
+                    <td><span class="cell-tag warn">異常</span></td>
+                    <td><span class="cell-link disabled">⏳ 待收款</span></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="sheet-caption">
+                <strong>深棕色標頭（電話 / 取貨 / 地址）</strong>是少數放開的人工編輯欄；這幾欄被改後會用<em>時間戳當 key 的 kept 字典</em>跨 rebuild 保留。<strong>📄 出貨單</strong>欄用 IF 公式判斷後五碼有值才顯示「📄 開啟」，沒值的訂單只看到「⏳ 待收款」— 防止對未匯款客人出貨。
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. 品項採購總 -->
+          <div class="sheet-preview">
+            <div class="sheet-preview-head">
+              <span class="sheet-tab-label alt-3">📦 品項採購總</span>
+              <span class="sheet-tab-pain"><strong>痛點：</strong>要分自取／宅配跟廠商叫貨；以前要逐欄 SUMIF</span>
+            </div>
+            <div class="sheet-preview-body">
+              <table class="mini-sheet">
+                <thead>
+                  <tr>
+                    <th>品項</th>
+                    <th>累計</th>
+                    <th>自取</th>
+                    <th>宅配</th>
+                    <th>其他</th>
+                    <th>備註</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>酸種麵包</td>
+                    <td class="num">116</td>
+                    <td class="num">42</td>
+                    <td class="num">74</td>
+                    <td class="num">0</td>
+                    <td><span class="cell-tag pending">上限 150</span></td>
+                  </tr>
+                  <tr>
+                    <td>乾熟老朋友・原味</td>
+                    <td class="num">28</td>
+                    <td class="num">11</td>
+                    <td class="num">17</td>
+                    <td class="num">0</td>
+                    <td><span class="cell-tag muted">折扣品</span></td>
+                  </tr>
+                  <tr>
+                    <td>紅隼三號白酒</td>
+                    <td class="num">3</td>
+                    <td class="num">1</td>
+                    <td class="num">2</td>
+                    <td class="num">0</td>
+                    <td><span class="cell-tag pending">上限 12</span></td>
+                  </tr>
+                  <tr>
+                    <td>ESKE 咖啡掛耳・淺焙</td>
+                    <td class="num">54</td>
+                    <td class="num">22</td>
+                    <td class="num">32</td>
+                    <td class="num">0</td>
+                    <td><span class="cell-tag muted">滿件免運</span></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="sheet-caption">
+                把 36 欄品項依「自取 / 宅配 / 其他」三種出貨方式分欄加總 — 同一份表可以直接傳給麵包廠商、酒商、咖啡焙師看訂貨量，<strong>不需要再過濾</strong>。
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. 通路分析 -->
+          <div class="sheet-preview">
+            <div class="sheet-preview-head">
+              <span class="sheet-tab-label alt-2">📈 通路分析</span>
+              <span class="sheet-tab-pain"><strong>痛點：</strong>4 個推廣管道各自帶單，但沒人有時間做交叉分析</span>
+            </div>
+            <div class="sheet-preview-body">
+              <div class="donut-row">
+                <div class="donut" aria-hidden="true"></div>
+                <div class="donut-legend">
+                  <div class="donut-legend-row"><span class="donut-swatch" style="background:#BD4218"></span><span>cancan（直客）— 38% ・$45,996</span></div>
+                  <div class="donut-legend-row"><span class="donut-swatch" style="background:#5c7abf"></span><span>Boggy — 26% ・$31,470</span></div>
+                  <div class="donut-legend-row"><span class="donut-swatch" style="background:#5c8a5c"></span><span>阿凱 — 20% ・$24,208</span></div>
+                  <div class="donut-legend-row"><span class="donut-swatch" style="background:var(--gold)"></span><span>其他 — 16% ・$19,366</span></div>
+                </div>
+              </div>
+              <div class="sheet-caption">
+                每個通路下方還會列出該通路帶來的<strong>所有客戶清單</strong> + <strong>客單價排行</strong>，方便季末和分潤對象核帳。所有計算都從訂單明細自動 rollup — 不需要在通路欄上做任何 filter / pivot。
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. 匯款對帳 -->
+          <div class="sheet-preview">
+            <div class="sheet-preview-head">
+              <span class="sheet-tab-label alt-4">💰 匯款對帳</span>
+              <span class="sheet-tab-pain"><strong>痛點：</strong>LINE 上比對後五碼跟 Sheet 容易漏，已收 / 未收混在一起</span>
+            </div>
+            <div class="sheet-preview-body">
+              <table class="mini-sheet">
+                <thead>
+                  <tr>
+                    <th>客戶</th>
+                    <th>金額</th>
+                    <th>後五碼</th>
+                    <th>狀態</th>
+                    <th>備註</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="divider-row"><td colspan="5">⏳ 待對帳 ・ 34 筆 ・ $78,210</td></tr>
+                  <tr>
+                    <td>客戶 B</td>
+                    <td class="num">$1,560</td>
+                    <td>—</td>
+                    <td><span class="cell-tag pending">待對帳</span></td>
+                    <td>—</td>
+                  </tr>
+                  <tr>
+                    <td>客戶 D</td>
+                    <td class="num">$3,420</td>
+                    <td>—</td>
+                    <td><span class="cell-tag pending">待對帳</span></td>
+                    <td>已寄信</td>
+                  </tr>
+                  <tr class="divider-row"><td colspan="5">✓ 已對帳 ・ 19 筆 ・ $42,830</td></tr>
+                  <tr class="row-paid">
+                    <td>客戶 A</td>
+                    <td class="num">$2,840</td>
+                    <td>12345</td>
+                    <td><span class="cell-tag ok">已對帳</span></td>
+                    <td>—</td>
+                  </tr>
+                  <tr class="row-paid">
+                    <td>客戶 E</td>
+                    <td class="num">$2,180</td>
+                    <td>67890</td>
+                    <td><span class="cell-tag ok">已對帳</span></td>
+                    <td>少送一份</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="sheet-caption">
+                <strong>待對帳排前面，已對帳排後面</strong>，每組前面有小計列。<strong>後五碼的 source of truth 在「表單回應」分頁</strong> — 同仁在那邊打字，2 秒內這頁的狀態欄、總統計、儀表板都同步更新。
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. 異常清單 -->
+          <div class="sheet-preview">
+            <div class="sheet-preview-head">
+              <span class="sheet-tab-label alt-5">⚠️ 異常清單</span>
+              <span class="sheet-tab-pain"><strong>痛點：</strong>出貨後才發現「地址沒填」「電話格式怪」，已經來不及補</span>
+            </div>
+            <div class="sheet-preview-body">
+              <table class="mini-sheet">
+                <thead>
+                  <tr>
+                    <th>客戶</th>
+                    <th>異常類型</th>
+                    <th>原始值</th>
+                    <th>建議動作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="row-warn">
+                    <td>客戶 C</td>
+                    <td><span class="cell-tag warn">地址空白</span></td>
+                    <td>（缺）</td>
+                    <td>LINE 客戶補地址</td>
+                  </tr>
+                  <tr class="row-warn">
+                    <td>客戶 F</td>
+                    <td><span class="cell-tag warn">電話格式</span></td>
+                    <td>09xxx-?</td>
+                    <td>確認電話正確</td>
+                  </tr>
+                  <tr class="row-warn">
+                    <td>客戶 G</td>
+                    <td><span class="cell-tag warn">取貨方式：其他</span></td>
+                    <td>「面交」</td>
+                    <td>跟客人確認取貨方式</td>
+                  </tr>
+                  <tr class="row-warn">
+                    <td>客戶 H</td>
+                    <td><span class="cell-tag warn">超量</span></td>
+                    <td>酸種 +3 顆跨界</td>
+                    <td>告知 + 改訂或退費</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="sheet-caption">
+                客人提交當下，如果觸發任何一條異常規則，<strong>同仁信箱會在 30 秒內收到 email</strong>（含訂單細節 + 試算表連結），這頁則是長期累積的問題清單；一切正常的訂單<strong>不寄信</strong>避免雜訊。
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
