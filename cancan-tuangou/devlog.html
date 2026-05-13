@@ -1114,8 +1114,9 @@
         <a class="nav-link" href="#s6"><span class="nav-num">06</span>推進方式</a>
         <a class="nav-link" href="#s7"><span class="nav-num">07</span>踩到的坑</a>
         <a class="nav-link" href="#s8"><span class="nav-num">08</span>最終樣貌</a>
-        <a class="nav-link" href="#s9"><span class="nav-num">09</span>如果繼續往下</a>
-        <a class="nav-link" href="#s10"><span class="nav-num">10</span>Takeaway</a>
+        <a class="nav-link" href="#s9"><span class="nav-num">09</span>重複利用前要先知道的事</a>
+        <a class="nav-link" href="#s10-future"><span class="nav-num">10</span>如果繼續往下</a>
+        <a class="nav-link" href="#s11"><span class="nav-num">11</span>Takeaway</a>
       </div>
     </div>
   </nav>
@@ -1887,6 +1888,42 @@
           <div class="callout callout-tip" style="margin-top: 12px;"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>第三方平台的「隱私預設」常常會讓功能<strong>看起來壞掉</strong>。debug 之前先查那個平台的 default 行為，比 trace code 還快。順手做的工程：選單對話框的提示文字，要主動把這種預設行為講白（「在群組記得 @ bot」），不然下個使用者一定會踩。</div></div>
         </div>
       </div>
+
+      <div class="bug-block">
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑七：source of truth 用 <code>||</code> fallback，會把「清空」操作吃掉</span></div>
+        <div class="bug-body">
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>同仁在「表單回應」的後五碼欄輸入 <code>LINEPAY</code> 測試是否可填非數字 → 確認可以 → 把 <code>LINEPAY</code> 刪掉 → 跑「全部重新整理」 → 但「匯款對帳」那邊許家榕<strong>還是顯示 LINEPAY / 已對帳</strong>。</div></div>
+          <p><strong>根本原因：</strong>套用後五碼時用了 <code>o.last5 || k.last5 || ''</code>。JS 的 <code>||</code> 是 falsy 短路 — 空字串 <code>""</code> 跟 <code>null</code>、<code>undefined</code> 都會直接跳到 fallback。所以「使用者主動清空」被系統當成「沒有新值，用回舊的」。</p>
+          <p style="margin-top: 10px;"><strong>解法：</strong>把欄位的狀態做三分：</p>
+          <ul>
+            <li><code>null</code> → 表單回應根本沒這個欄位 → 才 fallback 到 kept</li>
+            <li><code>""</code> → 有欄位但目前是空的 → <strong>視為「清空」，覆蓋 kept</strong></li>
+            <li><code>"12345"</code> → 已填的後五碼</li>
+          </ul>
+          <div class="callout callout-tip" style="margin-top: 12px;"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>source of truth 的欄位，要明確區分「<strong>沒這個欄位</strong>」vs「<strong>有但是空的</strong>」。<code>||</code> falsy 短路會把這兩種混為一談。這個教訓<strong>不只給後五碼用</strong> — 任何「下游分頁鏡像上游欄位」的設計都通用。</div></div>
+          <p style="margin-top: 14px; font-size: 14px; color: var(--ink-3);">這個 bug 也意外讓我釐清整套系統的雙模式：<strong>表單回應</strong>是 SoT 給訂購時間、姓名、金額、品項、後五碼（下游純粹鏡像，使用者刪掉就是刪掉）；<strong>訂單明細</strong>是 SoT 給電話、取貨、地址、收款備註（同仁手動 enrich、跨重整保留）。之前兩種模式模糊地混在一起，bug 把界線釐清了。</p>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑八：Telegram basic group 偷偷升級成 supergroup，原 chat_id 失效</span></div>
+        <div class="bug-body">
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>跑了幾天之後突然發測試訊息收到 API error 400：<code>"description": "Bad Request: group chat was upgraded to a supergroup chat"</code>。</div></div>
+          <p><strong>根本原因：</strong>Telegram 的「basic group」在達到某些條件（加 admin、設 username、人數成長）會被 Telegram <strong>自動升級成 supergroup</strong>。升級後 chat_id 從 10 位左右的 <code>-1234567890</code>，<strong>永久變成</strong> 14 位 <code>-100</code> 開頭的 <code>-1001234567890</code>。舊 ID 失效。</p>
+          <p style="margin-top: 10px;"><strong>解法：</strong>Telegram API 在錯誤訊息裡直接附上新 chat_id 在 <code>migrate_to_chat_id</code> 欄位。複製貼回 CONFIG，立刻就好 — 不用重新跑「抓 chat_id」、不用重邀 bot。</p>
+          <div class="callout callout-tip" style="margin-top: 12px;"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>第三方平台的「<strong>自動升級</strong>」是隱性的維運挑戰。系統用一段時間後突然壞掉，<strong>先看 API 錯誤訊息會不會直接告訴你修法</strong>。Telegram 在這點做得很好。另外：chat_id 寫進 CONFIG 時<strong>一定要用字串</strong>（單引號包起來），14 位數已超過 <code>Number.MAX_SAFE_INTEGER</code> 範圍，用 number 會有精度風險。</div></div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑九：CONFIG 裡 email 沒加引號 → 整個 script 死翹翹</span></div>
+        <div class="bug-body">
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>把 <code>NOTIFY_EMAILS</code> 改成 <code>[terrel.yeh@gmail.com, cancancan.foodesign@gmail.com]</code>（忘了加引號）→ 存檔 → 系統<strong>整個</strong>不動：onFormSubmit 不跑、選單不出、Web App 也壞。</div></div>
+          <p><strong>根本原因：</strong>JS 字串必須有引號，<code>@</code> 不是合法的 identifier 字元 → parser 直接 throw SyntaxError → Apps Script <strong>整個檔案 load 失敗 → 所有觸發器同時停擺</strong>。</p>
+          <p style="margin-top: 10px;"><strong>解法：</strong>就是加引號，<code>['terrel.yeh@gmail.com', 'cancancan.foodesign@gmail.com']</code>。</p>
+          <div class="callout callout-tip" style="margin-top: 12px;"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>「壞掉」的 <strong>silent failure 比 crash 還可怕</strong>。Apps Script 編輯器沒有實時 ESLint，syntax error 不會在 UI 上提醒，整個系統靜悄悄地停了 — 下一筆訂單進來才會發現「咦怎麼沒寄通知？」<strong>存檔後主動測一次</strong>（跑「✨ 全部重新整理」）就能即時抓到。</div></div>
+        </div>
+      </div>
     </section>
 
     <!-- ══ Section 08：最終樣貌 ══════════════════════════════════ -->
@@ -1922,10 +1959,82 @@
       </div>
     </section>
 
-    <!-- ══ Section 09：如果繼續往下 ══════════════════════════════ -->
+    <!-- ══ Section 09：重複利用前要先知道的事 ══════════════════════════════ -->
     <section class="section" id="s9">
       <div class="section-header">
         <span class="section-num">09</span>
+        <h2 class="section-title">重複利用前要先知道的事</h2>
+      </div>
+
+      <p>跑了一檔之後，下一檔（或拿這套腳本套到別的營運工具）我整理出幾條「<strong>貼 code 前要先想到</strong>」的注意事項。這份維運紀要對於想複製這套系統的人特別有用。</p>
+
+      <div class="subsection">
+        <div class="subsection-label">9-1 ｜ 哪些東西會跟著 Code.gs 走、哪些不會</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>設定</th><th>存哪裡</th><th>重新貼 Code.gs 會怎樣</th></tr></thead>
+            <tbody>
+              <tr><td><code>NOTIFY_EMAILS</code>（通知信收件人）</td><td>Code.gs CONFIG</td><td>✅ 跟著走</td></tr>
+              <tr><td><code>TELEGRAM_CHAT_IDS</code>（推到的群組）</td><td>Code.gs CONFIG</td><td>✅ 跟著走</td></tr>
+              <tr><td><code>TELEGRAM_ENABLED / ALERTS_ONLY</code></td><td>Code.gs CONFIG</td><td>✅ 跟著走</td></tr>
+              <tr><td><code>LIMITS</code>、<code>CURED</code>、<code>PACKING_SLIP_HEADER</code></td><td>Code.gs CONFIG</td><td>✅ 跟著走</td></tr>
+              <tr><td><code>WEB_APP_URL</code>（per-row 出貨單連結）</td><td>Code.gs CONFIG</td><td>✅ 跟著走，但部署到新試算表要重新填</td></tr>
+              <tr><td><strong>Telegram Bot Token</strong></td><td><strong>Script Properties</strong>（不在 code 裡）</td><td>❌ <strong>不會跟著走</strong>，新試算表要重新設定</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-tip" style="margin-top: 14px;">
+          <span class="callout-icon">→</span>
+          <div><strong>故意設計的：</strong>Bot Token 是 secret，不能存在 code 裡（任何有試算表編輯權的人都看得到 source）。Email 跟 chat_id 不算 secret，放 CONFIG 沒問題。</div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">9-2 ｜ 每次更新 Code.gs 之前的 checklist</div>
+        <p><strong>就地小修</strong>（像修 LINEPAY bug 那種改幾行）：用 Apps Script 編輯器的 <code>Cmd+F</code> 搜尋取代，只動 1-2 行 — 最安全，CONFIG 完全不會被動到。</p>
+        <p style="margin-top: 14px;"><strong>整份重貼</strong>（套到新試算表 / 升級到新版）：</p>
+        <ol>
+          <li>先打開 Apps Script 把 CONFIG 區塊<strong>截圖</strong>或抄下來</li>
+          <li>貼新版</li>
+          <li>比對 CONFIG，把這些值填回（如果新版預設不對）：
+            <ul style="margin-top: 6px;">
+              <li><code>NOTIFY_EMAILS</code></li>
+              <li><code>TELEGRAM_CHAT_IDS</code>（記得 chat_id 用字串、群組要負數）</li>
+              <li><code>TELEGRAM_ENABLED</code>、<code>TELEGRAM_ALERTS_ONLY</code></li>
+              <li><code>WEB_APP_URL</code>（per-row 出貨單）</li>
+              <li><code>PACKING_SLIP_HEADER</code>（當期檔次名稱）</li>
+              <li><code>LIMITS</code>、<code>CURED</code>（如果當期規則不同）</li>
+            </ul>
+          </li>
+          <li><strong>存檔後</strong>：跑一次「✨ 全部重新整理」確認<strong>沒有 syntax error</strong>（坑九的教訓）</li>
+          <li>跑「🤖 Telegram → ③ 發測試訊息」確認 chat_id 還有效（坑八的教訓 — group 可能升級了）</li>
+        </ol>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">9-3 ｜ 哪些情況要重新「部署」Web App</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>情況</th><th>要不要重新部署？</th></tr></thead>
+            <tbody>
+              <tr><td>改 CONFIG 值（email、chat_id、規則）</td><td>❌ 不用</td></tr>
+              <tr><td>改 <code>buildOrders</code> 等內部函式</td><td>❌ 不用，存檔就生效</td></tr>
+              <tr><td>改 <code>doGet(e)</code> 或 <code>packing_slip_template</code>（出貨單 HTML）</td><td>✅ <strong>要</strong></td></tr>
+              <tr><td>想換新 chat_id 推 Telegram</td><td>❌ 不用</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-note" style="margin-top: 14px;">
+          <span class="callout-icon">!</span>
+          <div><strong>要重新部署時，用「管理部署作業 → 編輯 → 新版本」</strong>，<strong>不是</strong>「新增部署作業」（會產生新 URL，所有訂單明細的連結要重設）。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ Section 10：如果繼續往下 ══════════════════════════════ -->
+    <section class="section" id="s10-future">
+      <div class="section-header">
+        <span class="section-num">10</span>
         <h2 class="section-title">如果繼續往下</h2>
       </div>
 
@@ -1938,10 +2047,10 @@
       </ul>
     </section>
 
-    <!-- ══ Section 10：Takeaway ══════════════════════════════════ -->
-    <section class="section" id="s10">
+    <!-- ══ Section 11：Takeaway ══════════════════════════════════ -->
+    <section class="section" id="s11">
       <div class="section-header">
-        <span class="section-num">10</span>
+        <span class="section-num">11</span>
         <h2 class="section-title">Takeaway</h2>
       </div>
 
@@ -1953,8 +2062,8 @@
           <li><strong>業務分析師</strong>：第一輪追問規則細節，逼我想清楚 source of truth</li>
           <li><strong>架構師</strong>：設計 CONFIG 抽象、kept 字典用時間戳當 key、normalize at source pattern</li>
           <li><strong>設計師</strong>：用 claude.ai artifact 出 HTML 模板雛形，含字體選擇 + 版面決策理由</li>
-          <li><strong>Debug 夥伴</strong>：5 個坑都是 AI 跟我一起 trace 出來的</li>
-          <li><strong>文件撰寫</strong>：CLAUDE.md / README.md 都是 AI 寫的，含 12 條 Common Pitfalls</li>
+          <li><strong>Debug 夥伴</strong>：9 個坑都是 AI 跟我一起 trace 出來的（從 deployment URL 到 source-of-truth 設計到 Telegram supergroup 自動升級）</li>
+          <li><strong>文件撰寫</strong>：CLAUDE.md / README.md 都是 AI 寫的，含 16 條 Common Pitfalls，每條都是真的踩過的坑</li>
         </ul>
         <p>我的角色：判斷邊界（這視覺夠精品嗎？這防呆 OK 嗎？）、提供現場反饋（截圖告訴哪裡破版）、做最終取捨（付費 vs 自架、保留 vs 移除某些設計元素）。</p>
       </div>
