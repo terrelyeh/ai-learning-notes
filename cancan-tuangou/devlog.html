@@ -1144,7 +1144,7 @@
     <div class="case-card">
       <div class="case-card-row">
         <span class="case-card-label">我用 AI 做了什麼</span>
-        <span class="case-card-value">把每檔次團購訂單整理的痛苦從「下午 4 小時手動」變成「全自動」，加上每筆訂單一鍵生成的設計版宅配出貨單 PDF，以及手機即時收到的 Telegram 訂單通知。</span>
+        <span class="case-card-value">把每檔次團購訂單整理的痛苦從「下午 4 小時手動」變成「全自動」，加上每筆訂單一鍵生成的設計版宅配出貨單 PDF、手機即時收到的 Telegram 訂單通知、以及一個讓試算表像 SaaS 的即時營運面板（Sidebar）。</span>
       </div>
       <div class="case-card-row">
         <span class="case-card-label">沒有 AI 的話</span>
@@ -1152,7 +1152,7 @@
       </div>
       <div class="case-card-row">
         <span class="case-card-label">最終成果</span>
-        <span class="case-card-value">一份 Google Sheet 上自動跑 6 個分析分頁、Telegram + email 雙管道通知、設計版宅配 PDF（用 Apps Script Web App + HTML 模板，瀏覽器列印零月費）。</span>
+        <span class="case-card-value">一份 Google Sheet 上自動跑 6 個分析分頁、Telegram + email 雙管道通知、設計版宅配 PDF、Sidebar 即時面板（受限品項剩餘、待處理清單、客戶搜尋、LINE 訊息草稿一鍵複製）— 全部跑在 Apps Script 上，零月費。</span>
       </div>
     </div>
 
@@ -1760,6 +1760,33 @@
           <strong>帶走的原則</strong>：通知不是「加一條 channel」這麼簡單，要想清楚<strong>哪一條接收即時、哪一條接收警示</strong>，否則最後通知會被忽略。Bot 推給群組 vs 私訊也是不同的協作模式 — 群組讓討論留在訊息底下，比私訊好太多。
         </div>
       </div>
+
+      <div class="subsection" style="margin-top: 40px;">
+        <div class="subsection-label">5-6 ｜ 介面層：Sidebar 即時面板 — 讓試算表變成像 SaaS 的工具</div>
+        <p>跑了一段時間後發現一個問題：<strong>選單是「點了會發生事情」，但同仁更需要的是「持續看到狀況」</strong>。例如酸種還剩多少、有沒有異常單要處理、誰還沒對帳 — 這些都要切到不同分頁看，斷斷續續。</p>
+        <p>所以加了 Sidebar — 試算表右側滑出一個面板，每 30 秒自動更新數字，邊看 sheet 邊看現況不用切分頁：</p>
+
+        <div class="table-wrap" style="margin: 18px 0;">
+          <table>
+            <thead><tr><th>功能區塊</th><th>顯示什麼</th></tr></thead>
+            <tbody>
+              <tr><td><strong>📦 受限品項</strong></td><td>酸種、紅隼進度條，剩餘量視覺化（顏色會隨剩餘量變化）</td></tr>
+              <tr><td><strong>📊 訂單狀況</strong></td><td>總訂單、營業額、待對帳、異常筆數</td></tr>
+              <tr><td><strong>🚨 待處理</strong></td><td>自動列出有問題的訂單（地址缺、跨界等），點擊跳到該列</td></tr>
+              <tr><td><strong>🔍 找客人</strong></td><td>打字即時搜尋；每筆結果旁可一鍵複製「催款訊息」或「出貨訊息」到剪貼簿</td></tr>
+              <tr><td><strong>⚡ 快捷操作</strong></td><td>全部重整 / 推日報到 Telegram / 推待對帳清單到 Telegram</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p><strong>有點意外的發現</strong>：Apps Script Sidebar 寬度被 Google 鎖在 <strong>300px</strong> — <code>setWidth()</code> 在 sidebar 上無效。要更寬只能用 Modeless Dialog 或 Web App。最後決定接受這個限制 — 300px 對手機 portrait 來說也很自然，反而避免了 sidebar 過度展開的設計病。</p>
+
+        <p><strong>架構上的小發現</strong>：sidebar 內的內容要分<strong>動態區 vs 靜態區</strong>。動態區（受限品項、訂單統計）每 30 秒重新渲染；靜態區（搜尋框、按鈕）只渲染一次。這個區分是踩過坑之後才意識到的（坑十二）。</p>
+
+        <div class="callout callout-tip" style="margin-top: 16px;">
+          <strong>帶走的原則</strong>：選單跟 sidebar 是<strong>互補不是替代</strong>的關係。Action 觸發放選單、持續觀察放 sidebar。把試算表延伸成「半個 SaaS」的關鍵就在這個 sidebar。
+        </div>
+      </div>
     </section>
 
     <!-- ══ Section 06：推進方式 ══════════════════════════════════ -->
@@ -1820,6 +1847,21 @@
           <li>推到群組而不是個人私訊 — 同事一起收到 + 訊息底下可即時討論</li>
         </ul>
         <p style="margin-top: 12px; font-size: 14px; color: var(--ink-3);">整段加了 ~300 行，但邏輯封裝在獨立 helper 函式裡，<strong>沒動到原本核心引擎跟 6 個分頁邏輯</strong>。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">階段七：從「選單觸發」進化到「即時面板」</div>
+        <p>通知問題解完之後，下一個自然的需求是<strong>「我希望可以邊用 sheet 邊看現況」</strong>。當時的選單只能「點了發生事情」，看現況還是要切到儀表板分頁。</p>
+        <p>問 AI 「Apps Script 有沒有類似 sidebar 的東西」— 結果它整理了 7 種發布形式給我看（Menu / Sidebar / Modal / Web App / Add-on / API Executable / Library），其中 Sidebar 完全是我要的：右側滑出、跟試算表並存、可以放 HTML 介面。</p>
+        <p style="margin-top: 12px;"><strong>做的事</strong>：</p>
+        <ul>
+          <li>設計 sidebar UI：受限品項 / 訂單統計 / 待處理 / 找客人 / 快捷操作 五個 cards</li>
+          <li>後端拆成多個函式（單一職責）：<code>getOpsPanelData</code> / <code>searchOrders</code> / <code>jumpToOrderRow</code> / <code>generateLineMessage</code> / <code>pushUnpaidToTelegram</code> / <code>runRefreshAll</code> / <code>runPushDailyToTelegram</code></li>
+          <li>前後端溝通用 <code>google.script.run</code>：HTML 端非同步呼叫後端，後端回傳 JSON，前端 render</li>
+          <li>解 LINE 訊息草稿產生：每筆訂單一鍵生「催款／出貨訊息」（自動填客戶資料、品項、金額、匯款帳號）→ 貼進 LINE 直接發，省下手動打字 1-2 分鐘 ×N 個客人</li>
+          <li>動態 vs 靜態區分離（踩坑後修）：搜尋框跟結果不會被自動 refresh 洗掉</li>
+        </ul>
+        <p style="margin-top: 12px; font-size: 14px; color: var(--ink-3);">整套加進去後，cancan 的工作流程就從「選單觸發 + 切分頁查」變成「sidebar 一直開著、邊操作 sheet 邊看數字、客戶搜尋一秒到位」 — <strong>像在用一個小型 SaaS</strong>。</p>
       </div>
     </section>
 
@@ -1922,6 +1964,40 @@
           <p><strong>根本原因：</strong>JS 字串必須有引號，<code>@</code> 不是合法的 identifier 字元 → parser 直接 throw SyntaxError → Apps Script <strong>整個檔案 load 失敗 → 所有觸發器同時停擺</strong>。</p>
           <p style="margin-top: 10px;"><strong>解法：</strong>就是加引號，<code>['terrel.yeh@gmail.com', 'cancancan.foodesign@gmail.com']</code>。</p>
           <div class="callout callout-tip" style="margin-top: 12px;"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>「壞掉」的 <strong>silent failure 比 crash 還可怕</strong>。Apps Script 編輯器沒有實時 ESLint，syntax error 不會在 UI 上提醒，整個系統靜悄悄地停了 — 下一筆訂單進來才會發現「咦怎麼沒寄通知？」<strong>存檔後主動測一次</strong>（跑「✨ 全部重新整理」）就能即時抓到。</div></div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑十：取貨方式長文字殘留 — normalize 規則只動到新訂單，舊訂單永久卡住</span></div>
+        <div class="bug-body">
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>訂單明細的取貨方式欄，<strong>有的客人顯示精簡版</strong>「5/23 (六) 古亭 cancan 自取」、<strong>有的卻是 form 原文</strong>「5/23 (六) 古亭 cancan 自取（當日另有 Chardonnay 暢飲，取貨喝酒兩個願望一次滿足）」。看起來像隨機，但其實是新舊資料混在一起。</div></div>
+          <p><strong>根本原因：</strong>早期版本的精簡規則沒抓到全形括號，那批訂單的長文字進了訂單明細之後就<strong>永久卡住</strong>（kept 字典每次重整都讀回它、用它、又存回去）。後來規則更新了，但只影響新訂單，舊的還是長文。</p>
+          <p style="margin-top: 10px;"><strong>解法：</strong>從 kept 字典讀回時也跑一次精簡規則（1 行修改）。</p>
+          <div class="callout callout-tip" style="margin-top: 12px;"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>有規範的欄位，應用時要是 <strong>idempotent</strong>（重複跑結果不變）。資料源頭可能是 form、可能是 kept 字典、可能是手動編輯 — 最終呈現都應該一致。<strong>規則更新後要能追補舊資料</strong>，不能只動新資料。</div></div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑十一：<code>matchesLimit_(limit, item)</code> 參數順序錯了，sidebar 數字一直 0</span></div>
+        <div class="bug-body">
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>接 Sidebar 即時面板時，受限品項區塊顯示「酸種 0/150、紅隼 0/12」。明明訂單明細有一堆訂單。debug 半天找不到原因。</div></div>
+          <p><strong>根本原因：</strong>呼叫 helper 函式時參數順序寫反 — <code>matchesLimit_(it, lm)</code> 應該是 <code>matchesLimit_(lm, it)</code>。JavaScript <strong>不會 throw error</strong>（兩個都是 object），函式默默回 <code>false</code>，結果累計值永遠 0。</p>
+          <div class="callout callout-tip" style="margin-top: 12px;"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>「參數順序錯但不 crash」的 bug <strong>最難 debug</strong>。TypeScript 會抓、vanilla JS 不會。沒有命名參數的呼叫，第一次寫的時候就要 <code>console.log</code> 驗證一筆 sample 確認 match 邏輯有跑通，再 ship。</div></div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑十二：Sidebar auto-refresh 把使用者打字的搜尋結果洗掉</span></div>
+        <div class="bug-body">
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>Sidebar v1 把所有 cards 包在 <code>#content</code> div 裡，每 30 秒重新渲染。實際用了之後：<strong>打字搜尋客人 → 看資料 → 過 30 秒搜尋框跟結果一起消失，必須重打</strong>。UX 災難。</div></div>
+          <p><strong>根本原因：</strong>用 <code>innerHTML = ...</code> 覆蓋整個 <code>#content</code>，把搜尋輸入框跟結果一起洗掉。</p>
+          <p style="margin-top: 10px;"><strong>解法：</strong>分動態區 vs 靜態區。</p>
+          <ul>
+            <li>動態區（受限品項、訂單統計）→ 留在 <code>#content</code> 內，繼續 auto-refresh</li>
+            <li>靜態區（搜尋框、按鈕）→ 放在 <code>#content</code> <strong>外面</strong>，不會被洗到</li>
+            <li>搜尋的 event listener 初始載入時綁定一次，不重綁</li>
+          </ul>
+          <div class="callout callout-tip" style="margin-top: 12px;"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>有狀態 / user input 的 UI 元素，<strong>不能被無腦 innerHTML 覆蓋</strong>。要做局部更新（只動沒狀態的部分），或者用 framework（React/Vue）讓它自己處理 diff。Vanilla JS 寫 sidebar 就要自己想清楚哪些區塊是「資料驅動」、哪些是「使用者操作」。</div></div>
         </div>
       </div>
     </section>
@@ -2062,8 +2138,9 @@
           <li><strong>業務分析師</strong>：第一輪追問規則細節，逼我想清楚 source of truth</li>
           <li><strong>架構師</strong>：設計 CONFIG 抽象、kept 字典用時間戳當 key、normalize at source pattern</li>
           <li><strong>設計師</strong>：用 claude.ai artifact 出 HTML 模板雛形，含字體選擇 + 版面決策理由</li>
-          <li><strong>Debug 夥伴</strong>：9 個坑都是 AI 跟我一起 trace 出來的（從 deployment URL 到 source-of-truth 設計到 Telegram supergroup 自動升級）</li>
-          <li><strong>文件撰寫</strong>：CLAUDE.md / README.md 都是 AI 寫的，含 16 條 Common Pitfalls，每條都是真的踩過的坑</li>
+          <li><strong>Debug 夥伴</strong>：12 個坑都是 AI 跟我一起 trace 出來的（從 deployment URL、source-of-truth 設計、Telegram supergroup 升級、到 sidebar UI 動態靜態區分離）</li>
+          <li><strong>介面設計師</strong>：sidebar 即時面板的整套 HTML/CSS + 後端 helper 函式，AI 一手包辦（含選色、resp 拆分）</li>
+          <li><strong>文件撰寫</strong>：CLAUDE.md / README.md 都是 AI 寫的，含 20 條 Common Pitfalls，每條都是真的踩過的坑</li>
         </ul>
         <p>我的角色：判斷邊界（這視覺夠精品嗎？這防呆 OK 嗎？）、提供現場反饋（截圖告訴哪裡破版）、做最終取捨（付費 vs 自架、保留 vs 移除某些設計元素）。</p>
       </div>
