@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Builder Skill v1 — AI 協作開發紀錄</title>
+  <meta name="description" content="非工程師 PMM 跟 Claude Code 對話兩天從 0 蓋出 dashboard-builder skill — 10 widget · 5 個 validated 情境 · 3 語言 · light/dark theme，含完整 RD 移交材料" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f5f0;
+      --grid: rgba(0,0,0,0.04);
+      --grid-sm: rgba(0,0,0,0.02);
+      --surface: #ffffff;
+      --surface-warm: #faf9f6;
+      --ink: #18160f;
+      --ink-2: #3a3830;
+      --ink-3: #6b6860;
+      --ink-4: #9b9890;
+      --border: rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.14);
+      --gold: #b5872a;
+      --gold-light: rgba(181,135,42,0.10);
+      --gold-mid: rgba(181,135,42,0.20);
+      --sidebar-w: 240px;
+      --font: 'Inter', 'Noto Sans TC', sans-serif;
+      --serif: 'EB Garamond', 'Noto Sans TC', Georgia, serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(var(--grid-sm) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-sm) 1px, transparent 1px);
+      background-size: 100px 100px, 100px 100px, 25px 25px, 25px 25px;
+      color: var(--ink);
+      line-height: 1.85;
+      font-size: 19px;
+    }
+
+    .layout { display: flex; min-height: 100vh; width: 100%; }
+
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      background: var(--surface); border-right: 1px solid var(--border-strong);
+      padding: 0 0 60px;
+    }
+    .sidebar-top { padding: 32px 24px 24px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+    .sidebar-eyebrow { font-size: 10px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+    .sidebar-top h2 { font-family: var(--serif); font-size: 16px; font-weight: 400; color: var(--ink); line-height: 1.5; }
+    .nav-section { padding: 0 16px; }
+    .nav-group { margin-top: 28px; }
+    .nav-group-label { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-4); padding: 0 12px 12px; }
+    .nav-link {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      font-size: 13px; color: var(--ink-3); text-decoration: none;
+      border-radius: 6px; transition: all .2s ease;
+    }
+    .nav-link:hover { color: var(--ink); background: var(--gold-light); }
+    .nav-link.active { color: var(--gold); background: var(--gold-light); font-weight: 500; }
+    .nav-num { font-family: var(--mono); font-size: 10px; color: var(--ink-4); }
+    .nav-link.active .nav-num { color: var(--gold); }
+
+    .main { flex: 1; min-width: 0; padding: 64px clamp(40px, 6vw, 96px) 120px; max-width: 880px; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--ink-3); text-decoration: none;
+      margin-bottom: 36px; padding: 6px 12px 6px 8px;
+      border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface); transition: all .2s ease;
+    }
+    .back-link:hover { color: var(--gold); border-color: var(--gold-mid); }
+    .back-link svg { width: 14px; height: 14px; }
+
+    .hero { margin-bottom: 56px; }
+    .hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .eyebrow-text { font-size: 11px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); }
+    .hero h1 { font-family: var(--serif); font-size: 44px; font-weight: 500; line-height: 1.2; letter-spacing: -.01em; color: var(--ink); margin-bottom: 24px; }
+    .hero-rule { width: 64px; height: 2px; background: var(--gold); margin-bottom: 24px; }
+    .hero-desc { font-family: var(--serif); font-size: 21px; font-style: italic; line-height: 1.6; color: var(--ink-2); margin-bottom: 16px; }
+    .hero-meta { font-size: 12px; color: var(--ink-3); font-family: var(--mono); }
+
+    .case-card {
+      background: var(--surface); border: 1px solid var(--border-strong);
+      border-radius: 8px; padding: 28px 32px; margin-bottom: 48px;
+      position: relative;
+    }
+    .case-card::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; background: var(--gold); border-radius: 8px 0 0 8px; }
+    .case-card-row { display: grid; grid-template-columns: 140px 1fr; gap: 20px; padding: 12px 0; border-bottom: 1px dashed var(--border); }
+    .case-card-row:last-child { border-bottom: 0; }
+    .case-card-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); padding-top: 4px; }
+    .case-card-value { font-size: 15px; line-height: 1.7; color: var(--ink-2); }
+    .case-card-value a { color: var(--gold); text-decoration: underline; text-decoration-color: var(--gold-mid); text-underline-offset: 3px; }
+
+    .section { margin-bottom: 80px; }
+    .section-header { display: flex; align-items: baseline; gap: 20px; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .section-num { font-family: var(--mono); font-size: 13px; color: var(--gold); font-weight: 500; }
+    .section-title { font-family: var(--serif); font-size: 28px; font-weight: 500; line-height: 1.3; color: var(--ink); letter-spacing: -.005em; }
+
+    .section p { font-size: 16px; line-height: 1.85; color: var(--ink-2); margin-bottom: 18px; }
+    .section p strong { color: var(--ink); font-weight: 600; }
+    .section ul, .section ol { margin: 0 0 24px 24px; }
+    .section li { font-size: 16px; line-height: 1.85; color: var(--ink-2); margin-bottom: 8px; }
+    .section li strong { color: var(--ink); font-weight: 600; }
+    .section a { color: var(--gold); text-decoration: underline; text-decoration-color: var(--gold-mid); text-underline-offset: 3px; }
+
+    .subsection { margin: 32px 0 24px; }
+    .subsection-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold);
+      padding-bottom: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--gold-mid);
+      display: inline-block; padding-right: 20px;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; margin: 24px 0 28px; background: var(--surface);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { padding: 14px 18px; text-align: left; background: var(--surface-warm); color: var(--ink-3); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; border-bottom: 1px solid var(--border-strong); }
+    td { padding: 14px 18px; border-bottom: 1px solid var(--border); color: var(--ink-2); line-height: 1.6; vertical-align: top; }
+    tr:last-child td { border-bottom: 0; }
+    td strong { color: var(--ink); font-weight: 600; }
+
+    pre {
+      background: #1d1f24; border-radius: 8px; padding: 20px 24px; overflow-x: auto;
+      margin: 20px 0 24px; font-family: var(--mono); font-size: 13px; line-height: 1.7;
+      border: 1px solid var(--border-strong);
+    }
+    pre code { color: #e6e1cf; }
+    code:not(pre code) { font-family: var(--mono); font-size: 0.88em; background: var(--gold-light); color: var(--ink); padding: 2px 6px; border-radius: 4px; }
+
+    .callout {
+      display: flex; gap: 14px; padding: 16px 20px; border-radius: 6px;
+      margin: 20px 0 24px; font-size: 15px; line-height: 1.7;
+    }
+    .callout-icon { flex-shrink: 0; font-weight: 700; font-size: 16px; line-height: 1.7; }
+    .callout-tip { background: var(--gold-light); border-left: 3px solid var(--gold); }
+    .callout-tip .callout-icon { color: var(--gold); }
+    .callout-tip div { color: var(--ink-2); }
+    .callout-tip strong { color: var(--ink); }
+    .callout-note { background: rgba(0,0,0,0.03); border-left: 3px solid var(--ink-4); }
+    .callout-note .callout-icon { color: var(--ink-4); }
+    .callout-note div { color: var(--ink-2); }
+
+    blockquote {
+      margin: 24px 0; padding: 4px 24px; border-left: 3px solid var(--gold);
+      font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.7; color: var(--ink-2);
+    }
+
+    .bug-block {
+      margin: 32px 0; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border-strong); background: var(--surface);
+    }
+    .bug-header {
+      background: #1d1f24; color: #e6e1cf; padding: 14px 22px;
+      display: flex; align-items: center; gap: 12px;
+      font-size: 14px; font-weight: 500;
+    }
+    .bug-icon { color: var(--gold); }
+    .bug-body { padding: 22px 26px; }
+    .bug-body p { font-size: 15px; }
+
+    .arch-flow {
+      display: flex; align-items: stretch; gap: 6px; flex-wrap: wrap;
+      margin: 28px 0 32px; padding: 24px; background: var(--surface);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+    }
+    .arch-flow-vertical { flex-direction: column; align-items: stretch; }
+    .arch-node {
+      flex: 1; min-width: 160px; padding: 16px 18px;
+      border-radius: 6px; border: 1px solid var(--border-strong);
+      background: var(--surface-warm);
+    }
+    .arch-node-label { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 6px; }
+    .arch-node-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 4px; line-height: 1.4; }
+    .arch-node-sub { font-size: 13px; color: var(--ink-3); line-height: 1.55; }
+    .arch-frontend { background: #e8f1fb; border-color: #91b6dd; }
+    .arch-frontend .arch-node-label { color: #2c5a8c; }
+    .arch-backend { background: #eaf5ec; border-color: #94c4a0; }
+    .arch-backend .arch-node-label { color: #2a6a3c; }
+    .arch-ai { background: rgba(181,135,42,0.12); border-color: var(--gold-mid); }
+    .arch-ai .arch-node-label { color: var(--gold); }
+    .arch-storage { background: #f0e8f5; border-color: #b29fc6; }
+    .arch-storage .arch-node-label { color: #6a3a8a; }
+    .arch-external { background: #e8ecf3; border-color: #99a4bc; }
+    .arch-external .arch-node-label { color: #4a5a7a; }
+    .arch-arrow { display: flex; align-items: center; justify-content: center; padding: 0 4px; flex-shrink: 0; }
+    .arch-arrow svg { width: 24px; height: 24px; fill: none; stroke: var(--ink-4); stroke-width: 2; }
+    .arch-arrow-down svg { transform: rotate(90deg); }
+
+    .credentials-block {
+      margin: 28px 0; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border-strong); background: var(--surface);
+    }
+    .credentials-header {
+      background: #1d1f24; color: #e6e1cf; padding: 14px 22px;
+      display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500;
+    }
+    .credentials-body { padding: 0; }
+    .credentials-row {
+      display: grid; grid-template-columns: 1.4fr 1.8fr 110px 1.6fr;
+      gap: 16px; padding: 14px 22px; border-bottom: 1px solid var(--border); align-items: start;
+      font-size: 13px; line-height: 1.6;
+    }
+    .credentials-row:last-child { border-bottom: 0; }
+    .credentials-row.header-row { background: var(--surface-warm); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+    .credentials-service { color: var(--ink); font-weight: 600; }
+    .credentials-note { color: var(--ink-3); }
+    .credentials-type-badge {
+      display: inline-block; padding: 3px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    }
+    .badge-api-key { background: var(--gold-light); color: var(--gold); }
+    .badge-token { background: #e8f1fb; color: #2c5a8c; }
+    .badge-secret { background: #fbe8e8; color: #8c2c2c; }
+    .badge-env { background: #eaf5ec; color: #2a6a3c; }
+    .badge-model { background: #f0e8f5; color: #6a3a8a; }
+    .badge-external { background: #e8ecf3; color: #4a5a7a; }
+    .badge-hosting { background: rgba(181,135,42,0.18); color: var(--gold); }
+
+    .result-preview {
+      margin: 32px 0 28px; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border-strong); background: var(--surface);
+    }
+    .result-preview img { display: block; width: 100%; height: auto; }
+    .result-preview-caption {
+      padding: 14px 22px; background: var(--surface-warm);
+      font-size: 13px; color: var(--ink-3); line-height: 1.6;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .result-preview-badge {
+      display: inline-block; padding: 3px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      background: var(--gold); color: var(--surface);
+    }
+
+    .screenshot-compare {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0;
+    }
+    .screenshot-compare-item { border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
+    .screenshot-compare-item img { display: block; width: 100%; height: auto; }
+    .screenshot-compare-label {
+      background: #1d1f24; color: #e6e1cf;
+      padding: 8px 16px; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    }
+    .screenshot-compare-label.after { background: var(--gold); color: var(--surface); }
+
+    .takeaway {
+      margin: 56px 0 32px; padding: 32px 36px;
+      background: var(--surface); border: 1px solid var(--border-strong);
+      border-top: 3px solid var(--gold); border-radius: 0 0 8px 8px;
+    }
+    .takeaway-label { font-size: 11px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+    .takeaway h3 { font-family: var(--serif); font-size: 20px; font-weight: 500; color: var(--ink); margin: 20px 0 12px; }
+    .takeaway h3:first-of-type { margin-top: 0; }
+    .takeaway p { font-size: 15px; line-height: 1.75; color: var(--ink-2); margin-bottom: 14px; }
+    .takeaway ul { margin: 0 0 16px 24px; }
+    .takeaway li { font-size: 15px; line-height: 1.75; color: var(--ink-2); margin-bottom: 6px; }
+
+    footer {
+      margin-top: 80px; padding-top: 32px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-4); font-family: var(--mono);
+    }
+
+    .menu-toggle {
+      display: none; position: fixed; top: 16px; right: 16px; z-index: 100;
+      width: 44px; height: 44px; border-radius: 8px;
+      background: var(--ink); color: var(--surface);
+      border: none; font-size: 20px; cursor: pointer;
+      align-items: center; justify-content: center;
+    }
+
+    @media (max-width: 900px) {
+      body { font-size: 16px; }
+      .layout { flex-direction: column; }
+      .sidebar { position: fixed; top: 0; left: -260px; transition: left .3s ease; z-index: 90; box-shadow: 0 0 30px rgba(0,0,0,0.15); }
+      .sidebar.open { left: 0; }
+      .main { padding: 56px 24px 80px; }
+      .hero h1 { font-size: 30px; }
+      .menu-toggle { display: flex; }
+      .case-card-row { grid-template-columns: 1fr; gap: 6px; }
+      .credentials-row { grid-template-columns: 1fr; gap: 6px; }
+      .credentials-row.header-row { display: none; }
+      .screenshot-compare { grid-template-columns: 1fr; }
+      .arch-flow { flex-direction: column; }
+      .arch-arrow svg { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-eyebrow">Dev Notes · AI 工具開發</div>
+      <h2>Dashboard Builder Skill v1 — AI 協作開發</h2>
+    </div>
+    <div class="nav-section">
+      <div class="nav-group">
+        <div class="nav-group-label">案例內容</div>
+        <a class="nav-link" href="#s1"><span class="nav-num">01</span>為什麼要做這件事</a>
+        <a class="nav-link" href="#s2"><span class="nav-num">02</span>最終樣貌</a>
+        <a class="nav-link" href="#s3"><span class="nav-num">03</span>技術選型</a>
+        <a class="nav-link" href="#s4"><span class="nav-num">04</span>外部服務與金鑰</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>系統架構</a>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span>推進方式</a>
+        <a class="nav-link" href="#s7"><span class="nav-num">07</span>踩到的坑</a>
+        <a class="nav-link" href="#s8"><span class="nav-num">08</span>AI 怎麼幫我做的</a>
+        <a class="nav-link" href="#s9"><span class="nav-num">09</span>如果繼續往下</a>
+        <a class="nav-link" href="#takeaway"><span class="nav-num">10</span>Takeaway</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <a class="back-link" href="../">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      所有案例
+    </a>
+
+    <header class="hero">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-text">AI 工具開發 · 非工程師視角</span>
+      </div>
+      <h1>Dashboard Builder Skill v1<br>— AI 協作開發紀錄</h1>
+      <div class="hero-rule"></div>
+      <p class="hero-desc">為了日本展會要 demo「AI 動態生成 dashboard」，把原本一張一張手刻的 HTML，升級成一套 widget 化的 skill — 讓 AI 在對話中即時組裝 dashboard、視覺一致、可重用、可移交。</p>
+      <div class="hero-meta">整理日期：2026-05-16 &nbsp;·&nbsp; 類型：AI 工具開發 · 非工程師視角</div>
+    </header>
+
+    <div class="case-card">
+      <div class="case-card-row">
+        <span class="case-card-label">我用 AI 做了什麼</span>
+        <span class="case-card-value">跟 Claude Code 對話兩天，從 0 蓋出可重用的 dashboard-builder skill（10 widget · 5 個 validated 情境 · 3 語言版本 · light/dark 主題），含完整對外文件、RD 移交材料、4 份推進會議的 deck</span>
+      </div>
+      <div class="case-card-row">
+        <span class="case-card-label">沒有 AI 的話</span>
+        <span class="case-card-value">估計需要 2-4 週 + 一個前端工程師。一個 PMM 獨自做不到</span>
+      </div>
+      <div class="case-card-row">
+        <span class="case-card-label">最終成果</span>
+        <span class="case-card-value"><a href="https://network-ai-assistant.vercel.app/dashboard-builder/architecture.html" target="_blank">dashboard-builder/</a> 已上線，可給 RD review、可直接在日本展會 demo</span>
+      </div>
+    </div>
+
+    <div class="result-preview">
+      <img src="./screenshots/architecture-overview.png" alt="Dashboard Builder Architecture Page Overview" />
+      <div class="result-preview-caption">
+        <span class="result-preview-badge">成果截圖</span>
+        Architecture page — 含 sticky 左側 TOC、3 層分工視覺、widget gallery、5 個 validated 情境 × 3 語言版本
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">為什麼要做這件事</h2>
+      </div>
+
+      <p>這次 session 的起點是一個很明確的痛點。</p>
+
+      <p><strong>展會壓力</strong>：日本展會逼近，要 demo「<strong>訪客問問題 → AI 撈雲端資料 → AI 動態生 dashboard</strong>」這個故事。但前一階段的 PoC 是每個情境手刻 700+ 行 HTML，問題很大：</p>
+
+      <ul>
+        <li>每張 dashboard 視覺風格略有差異（手刻容易飄）</li>
+        <li>加新情境要重寫整套，沒有 reuse</li>
+        <li>觀眾如果問「能不能加一個 X widget」我幾乎沒辦法即時回應</li>
+        <li>Wedge 故事很弱：「AI 動態生」變成「我們預先做好的範本」</li>
+      </ul>
+
+      <p><strong>所以這次要做的事是</strong>：把 dashboard 拆成一套積木（widget library），讓 Claude 在對話中拿這些積木拼，每張 dashboard 由一份簡單的 spec JSON 描述。同時把整套東西包成一個 skill，未來可以移交給 RD。</p>
+
+      <blockquote>這跟 frontend 工程的 component library 思路一樣，但我不會 React，整套必須走純 HTML + vanilla JS + 純 stdlib Python，這樣 Claude 能 self-contained 生出來、不依賴 build system。</blockquote>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">最終樣貌</h2>
+      </div>
+
+      <p>主入口：<a href="https://network-ai-assistant.vercel.app/dashboard-builder/architecture.html" target="_blank">architecture.html</a></p>
+
+      <p>整套是一個 <code>dashboard-builder/</code> 資料夾，跟既有 proposal site 互不干擾：</p>
+
+      <ul>
+        <li><strong>1 個 architecture page</strong>（10+ 章節，含 sticky 左側 TOC、3 層分工視覺、demo readiness 規範、widget gallery、skill 內部檔案列表）</li>
+        <li><strong>1 個 widget catalog page</strong>（10 widget spec 用 marked.js 即時 render）</li>
+        <li><strong>5 個 validated 情境</strong>：S2 multi-org 治理 / S3 org 健康 / S4 離職權限 / S5 license 續約 / S7 跨 org 設備調撥</li>
+        <li><strong>17 張 live dashboard canvas</strong>：5 個情境 × 3 語言（zh-TW / EN / JA）+ dark theme variant + v1 hand-crafted 對照版</li>
+        <li><strong>1 套 dashboard-builder skill</strong> 在 <code>dashboard-builder/skill/</code>：10 widget HTML partial + theme tokens + compose.py + 10 份 widget reference markdown</li>
+        <li><strong>4 份推 RD 會議材料</strong>：30-min agenda、5 個 P0 op 的具體 API spec proposal、demo storyboard、history API 提案</li>
+        <li><strong>2 個 helper script</strong>：<code>refresh-all.sh</code>（撈雲端真實資料，14 秒）+ <code>compose.py</code>（spec → HTML，200ms）</li>
+      </ul>
+
+      <p>整個資料夾 self-contained，掛在 Vercel 上任何人有 URL 就能瀏覽。</p>
+
+      <div class="result-preview">
+        <img src="./screenshots/canvas-ja.png" alt="Cross-org reallocation dashboard — Japanese locale" />
+        <div class="result-preview-caption">
+          <span class="result-preview-badge">日文版 dashboard</span>
+          S7 跨 org 設備調撥情境的日文版 — 同一份 spec，加上 <code>--locale ja</code> 切換語言（為日本展會準備）
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">技術選型</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>工具 / 技術</th><th>選的理由</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>純靜態 HTML + vanilla JS</strong></td>
+              <td>沒有 build 步驟、Vercel 直接服務；每張 dashboard 是 self-contained HTML，方便分享</td>
+            </tr>
+            <tr>
+              <td><strong>Python 3 + stdlib only</strong>（compose.py）</td>
+              <td>不需要額外 venv 依賴；任何裝 Python 的同事都能跑</td>
+            </tr>
+            <tr>
+              <td><strong>JSON spec + deep-merge</strong></td>
+              <td>i18n 用「base + locales」結構，spec 內嵌每個語言的 override，不必維護多檔</td>
+            </tr>
+            <tr>
+              <td><strong>CSS custom properties</strong>（theme tokens）</td>
+              <td>改一處（<code>tokens.css</code>）全 dashboard cascade；dark theme 透過 <code>tokens-dark.css</code> 切換</td>
+            </tr>
+            <tr>
+              <td><strong>IntersectionObserver + scroll listener</strong></td>
+              <td>兩重保險追蹤 sticky TOC 的 active 狀態</td>
+            </tr>
+            <tr>
+              <td><strong>Marked.js (CDN)</strong></td>
+              <td>在 catalog viewer 即時 render <code>references/widget_*.md</code>，不用預先把 markdown 轉 HTML</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">→</span>
+        <div><strong>選型原則：</strong>能不依賴 framework 就不依賴。整套 skill 要能丟到任何環境跑。</div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">外部服務與金鑰</h2>
+      </div>
+
+      <p>這個工具串接的所有外部資源 — 整套 demo 不需要 LLM API key，Claude 跟我的對話發生在 Claude Code 內，跟產出的 dashboard 沒有 runtime 連線關係。</p>
+
+      <div class="credentials-block">
+        <div class="credentials-header">
+          <span>🔑</span>
+          <span>外部服務與金鑰</span>
+        </div>
+        <div class="credentials-body">
+          <div class="credentials-row header-row">
+            <span>服務 / 模型</span>
+            <span>用途</span>
+            <span>類型</span>
+            <span>備註</span>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">EnGenius Cloud API</div>
+            <div class="credentials-note">撈真實 staging 資料生 live dashboard（falcon.staging.engenius.ai）</div>
+            <div><span class="credentials-type-badge badge-external">EXTERNAL</span></div>
+            <div class="credentials-note">RD 已有 13 個 skill 包好</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service"><code>MANAGE_SYSTEM_URL</code></div>
+            <div class="credentials-note">API base URL</div>
+            <div><span class="credentials-type-badge badge-env">ENV VAR</span></div>
+            <div class="credentials-note">指到 staging server</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service"><code>API_KEY</code></div>
+            <div class="credentials-note">API 認證 token</div>
+            <div><span class="credentials-type-badge badge-env">ENV VAR</span></div>
+            <div class="credentials-note">從 cloud GUI 自己 generate；不能 commit</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">RD <code>api-skills/</code> 套件</div>
+            <div class="credentials-note">包了 EnGenius Cloud API 的 13 個 skill</div>
+            <div><span class="credentials-type-badge badge-secret">PRIVATE</span></div>
+            <div class="credentials-note">私下發送，gitignored 在 repo 外</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">Vercel</div>
+            <div class="credentials-note">自動部署（push to main → 30s live）</div>
+            <div><span class="credentials-type-badge badge-hosting">HOSTING</span></div>
+            <div class="credentials-note">免費 hobby plan 夠用</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">GitHub</div>
+            <div class="credentials-note">terrelyeh/network-ai-assistant — 程式碼 + 提案文件</div>
+            <div><span class="credentials-type-badge badge-hosting">REPO</span></div>
+            <div class="credentials-note">public repo</div>
+          </div>
+          <div class="credentials-row">
+            <div class="credentials-service">Google Fonts CDN</div>
+            <div class="credentials-note">Inter / Noto Sans TC / JetBrains Mono</div>
+            <div><span class="credentials-type-badge badge-external">CDN</span></div>
+            <div class="credentials-note">離線可降級</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">系統架構</h2>
+      </div>
+
+      <p>這次 session 的核心洞察：<strong>3 層分工</strong>（Playbook / Orchestration / Primitives）— 不是技術分層，是「誰擁有 / 誰決定 / 誰被組合」的責任分層。</p>
+
+      <div class="arch-flow arch-flow-vertical">
+        <div class="arch-node arch-storage">
+          <div class="arch-node-label">📚 Playbook</div>
+          <div class="arch-node-title">Markdown 文件（read-only）</div>
+          <div class="arch-node-sub">10 份 widget reference docs、5 份 spec examples、scenario candidates、RD priorities、RD meeting pack — Claude 讀這些文件知道「能用什麼、怎麼用」</div>
+        </div>
+        <div class="arch-arrow arch-arrow-down">
+          <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="arch-node arch-ai">
+          <div class="arch-node-label">🧠 Orchestration</div>
+          <div class="arch-node-title">Claude Code 本身</div>
+          <div class="arch-node-sub">讀對話、決定要呼叫哪些 RD data skill、撈到 JSON 後寫 spec JSON、呼叫 compose.py 產出 HTML dashboard</div>
+        </div>
+        <div class="arch-arrow arch-arrow-down">
+          <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="arch-node arch-backend">
+          <div class="arch-node-label">🔧 Primitives</div>
+          <div class="arch-node-title">RD-owned + dashboard-builder 內部零件</div>
+          <div class="arch-node-sub">13 個 RD data skills（每個內含多個 op，每個 op 對應 1 個 Cloud API endpoint）+ dashboard-builder skill 內部（compose.py / 10 widget HTML partial / theme tokens / runtime.js）</div>
+        </div>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">→</span>
+        <div><strong>關鍵設計決策：</strong>故意不蓋「scenario skill」這一層。把每個情境包成 skill（例如 <code>org-health-overview</code> skill）等於凍結用法，wedge 故事死。Claude 自己就是 orchestration 層，現場即時組合 primitives。</div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">展前 → 訪客來了 雙 script 工作流</div>
+
+        <div class="arch-flow arch-flow-vertical">
+          <div class="arch-node arch-backend">
+            <div class="arch-node-label">展前 5 分鐘</div>
+            <div class="arch-node-title">refresh-all.sh</div>
+            <div class="arch-node-sub">撈雲端 → live-data/*.json（14 秒，6 個 JSON）</div>
+          </div>
+          <div class="arch-arrow arch-arrow-down">
+            <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="arch-node arch-ai">
+            <div class="arch-node-label">訪客來了</div>
+            <div class="arch-node-title">操作員 ↔ Claude Code 對話</div>
+            <div class="arch-node-sub">寫 spec JSON</div>
+          </div>
+          <div class="arch-arrow arch-arrow-down">
+            <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="arch-node arch-backend">
+            <div class="arch-node-label">200ms 後</div>
+            <div class="arch-node-title">compose.py</div>
+            <div class="arch-node-sub">spec + widgets + theme → 自包含 HTML</div>
+          </div>
+          <div class="arch-arrow arch-arrow-down">
+            <svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="arch-node arch-frontend">
+            <div class="arch-node-label">Browser 開 canvas</div>
+            <div class="arch-node-title">每 5 秒 poll live-data/*.json</div>
+            <div class="arch-node-sub">widget 自動 reflect 最新雲端資料</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">推進方式</h2>
+      </div>
+
+      <p>這次 session 沒有按「先設計 → 再實作 → 再測試」的瀑布流。整套是用 <strong>「探索 → 拆解 → 驗證 → 迭代」的對話節奏</strong>慢慢長出來的。</p>
+
+      <p>幾個關鍵的推進手法：</p>
+
+      <div class="subsection">
+        <div class="subsection-label">A. 先盤點 RD 給的 op 再發想情境</div>
+        <p>最開始我糾結「要不要先想情境，再看哪些 op 能支援」。Claude 反問「你怕想了情境結果沒 op 可用嗎？那就<strong>並行</strong>——一邊想情境、一邊查 op 列表」。後來這變成標準節奏：先掃 <code>api-skills/</code>（13 skill / ~93 ops）→ 列 10 個情境候選 → 每個情境標 🟢/🟡/🔴 可行性。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">B. 先做 1 個情境跑通，再考慮重用性</div>
+        <p>不是先設計 widget library 再做情境。而是先讓 Claude 用「對話 → 撈 5 個 op → 寫 700 行 HTML → live demo」做出第一張 org-health canvas。<strong>第一張做完才開始談「能不能拆成 widget」</strong>。這樣 widget library 是有真實使用案例 driven 出來的，不是憑想像。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">C. 用 spec reuse 驗證 widget 真的可重用</div>
+        <p>做完 widget v1 後，每加一個新情境都不准改 widget code，只准寫新 spec JSON。如果寫不出來，就回頭補 widget。S4 / S5 / S2 / S7 都是這樣加進來的——每加一個就確認 widget library 還夠用，不夠就補（這就是 timeline / donut / gauge / heatmap 加進來的理由）。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">D. 規範化口頭規則</div>
+        <p>中間有個轉折是這樣的——我問「是不是每個情境都要先 validate 才能上 booth？」Claude 回應「對，這應該寫成正式紀律」。下一步就把這條口頭規則升級成 <code>architecture.html</code> 的 <code>#demo-readiness</code> 區段（3 個 validated 條件 / 6 步 pipeline / 5 項展前 checklist）。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">E. 不寫 code、不看 spec 的 review 模式</div>
+        <p>我整個 session 沒打過一行 Python 或 HTML。我的角色是：看視覺、判斷語氣、決定方向、提出策略問題。Claude 全部程式碼自己寫、自己 verify、自己截圖回報。但<strong>所有「要不要這樣做」的決策都過我一遍</strong>。</p>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">踩到的坑，讓我更懂的事</h2>
+      </div>
+
+      <p>每一個坑都讓我對「AI 協作要怎麼做」更清楚一點。</p>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span>坑 1：「scenario skill」差點被我蓋下去</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>我一開始問「是不是要在 RD 的 skill 之上再蓋一層『agent skill』，整合多個 skill 解情境？」這聽起來合理——把 S3 包成一個 <code>org-health-overview</code> skill，使用者一句話就解決。</div>
+          </div>
+          <p><strong>Claude 的反駁：</strong>「不需要——Claude Code 本身就是那一層。你把它包成 skill，等於告訴觀眾『這是我們預先做好的 dashboard view』，跟 cloud GUI 預設 view 沒兩樣。Wedge 故事死。」</p>
+          <p><strong>洞察：</strong>「Claude 是 orchestration 層」這件事我之前沒想透。Skills 是被組合的零件，Playbook 是 Claude 讀的參考資料，Claude 自己就是現場拼裝的人。我做的是給 Claude 更好的零件和更好的參考資料，<strong>不是把 Claude 的判斷凍結成 code</strong>。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>當你想「把 AI 的某個情境包成可呼叫的工具」，先想清楚這會不會殺掉「即時組裝」的價值。預先打包 = 失去 wedge。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span>坑 2：Nested <code>&lt;a&gt;</code> 會被瀏覽器自動關閉</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>Gallery 區段我想做「每張 dashboard card 整個可點，內部還要有『中／EN／日』三個語言切換鍵」。最直覺的寫法是把語言鍵 <code>&lt;a&gt;</code> 直接放進外層 <code>&lt;a class="gallery-card"&gt;</code> 裡。跑出來 DOM 整個破掉：locale-pill 跑到 card 外面、層級錯亂、CSS selector 全失準。</div>
+          </div>
+          <p><strong>Claude 的解釋：</strong>HTML 規範禁止 nested anchors。瀏覽器 parser 看到內層 <code>&lt;a&gt;</code> 就會自動 close 外層 <code>&lt;a&gt;</code>，導致整段 DOM 結構斷裂。</p>
+          <p><strong>解法：</strong>用 wrapper <code>&lt;div class="gallery-item"&gt;</code> 把外層 card 跟內部 locale pill <strong>平行</strong>放在裡面，不要嵌套。</p>
+          <p><strong>洞察：</strong>這不是 CSS 問題，是 HTML 語意問題。瀏覽器 parser 的「自我修正」會默默把你的 DOM 改成它能接受的形狀，看不到 console error 但行為全錯。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>兩個東西「都要可點」時要分開放在 parent，不要嵌套。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span>坑 3：i18n 不只翻 spec，連 compute_fns 都要翻</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>第一版 i18n 我以為只要在 spec 的 locale override 裡換 title / label 就好。跑出日文版發現：alert 內容、KPI 子文字、recommendation 都還是中文。</div>
+          </div>
+          <p><strong>原因：</strong>動態文字（如「10 台設備中有 10 台 license 已過期；建議採購 10 張新 license」）是 JavaScript runtime 算出來的——spec 只 reference 一個 compute function 名稱，實際字串組裝在 widget HTML 裡。要 i18n 必須把整個 <code>compute_fns</code> 字串連同 template literals 內的中文一起替換。</p>
+          <p><strong>解法：</strong>每個 locale override 裡塞完整的 <code>compute_fns</code> JS 字串（重新定義 <code>license_summary</code>、<code>stale_subtext</code> 等）。spec 級的定義會 override widget 內建的（因為 compose.py 把 spec compute_fns 放在 widget script 之後）。</p>
+          <p><strong>洞察：</strong>i18n 不只是「翻 label」。任何 runtime 動態組出的字串都要納入翻譯範圍。如果原本架構是「字串散在 JS template 字面值」，i18n 工作量會比想像大 3-5 倍。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>寫程式碼時把所有 user-facing 字串集中管理（不是散在 template literal），未來 i18n 才不會吐血。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span>坑 4：Preview tool 的 programmatic scroll 不會 fire scroll event</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>寫 sticky TOC 的 active highlight，先用 scroll event listener，後來改用 IntersectionObserver。兩種都在開發工具 eval <code>window.scrollTo()</code> 時不更新 active 狀態。但真人滑鼠捲頁是 work 的。</div>
+          </div>
+          <p><strong>原因：</strong>Preview tool 的 programmatic scroll API 可能沒觸發 native scroll event（不確定是 Playwright 還是 viewport sandbox 的行為）。手動的 wheel 事件正常觸發。</p>
+          <p><strong>洞察：</strong>開發環境跟真實使用環境會有微妙差異。看到「console 沒 error 但行為不對」時，要先懷疑是否是測試環境的副作用，而不是程式錯。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>開發工具的 programmatic API 是「模擬」用戶行為，不一定每個 side effect 都模擬到位。最終驗證一定要真人開瀏覽器點一點。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span>坑 5：CLAUDE.md 不是「累積完成清單」，是「下次 session 能立即接手」的備忘錄</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>前期我 CLAUDE.md 有一個「已完成 (Line 2 PoC)」區塊，每次 sync 就加新項目。session 結束時這個區塊累積了 6 個項目，但其中 4 個其實已經被 dashboard-builder/ 取代或淘汰。</div>
+          </div>
+          <p><strong>洞察：</strong>CLAUDE.md 是給「下一個 AI session」看的工作備忘錄，<strong>不是專案歷史紀錄</strong>。只該保留「會影響下一個 session 寫程式碼方式」的資訊。已穩定的功能描述應該移到 README.md（給人看），技術注意事項移到 Common Pitfalls 或 Architecture（給 AI 看）。</p>
+          <p>這次 sync 時做了一次大幅汰換——拿掉 6 個 ops 硬編清單、舊 workflow ASCII 圖、Line 2 已完成清單，<strong>換成現在的 dashboard-builder skill 區塊 + 5 條新 pitfall</strong>。CLAUDE.md 還是 250 行但內容密度高很多。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>每次 sync CLAUDE.md 都要<strong>主動淘汰</strong>過期內容，不只 append 新內容。檔案長度本身不是問題，<strong>signal-to-noise ratio</strong> 才是。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">AI 怎麼幫我做的</h2>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">分工</div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th style="width:30%">環節</th><th style="width:18%">誰主導</th><th>說明</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>概念定位 / wedge 策略</td><td><strong>我</strong></td><td>PMM 視角的判斷</td></tr>
+              <tr><td>技術架構（3 層分工）/ 分層理由</td><td><strong>協作</strong></td><td>Claude 提方案、我選哪條</td></tr>
+              <tr><td>寫程式碼（Python / HTML / CSS / JS / spec JSON）</td><td><strong>Claude</strong></td><td>我 100% 不寫</td></tr>
+              <tr><td>視覺判斷 / 文案語氣 / 字體大小</td><td><strong>我 review、Claude 改</strong></td><td>螢幕截圖 → 我指問題 → Claude 修</td></tr>
+              <tr><td>文件結構（architecture.html 章節）</td><td><strong>協作</strong></td><td>我提需求、Claude 結構化</td></tr>
+              <tr><td>中→英、中→日 翻譯（草稿）</td><td><strong>Claude</strong></td><td>日文要 native reviewer 過</td></tr>
+              <tr><td>RD 對齊材料策略（meeting 怎麼開）</td><td><strong>我給方向、Claude 起草</strong></td><td>4 份會議材料的 talking points 我修字</td></tr>
+              <tr><td>規範決策（如 validated path 紀律）</td><td><strong>我提問、Claude 規範化</strong></td><td>口頭規則升級成正式 doc 區段</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">提問模式</div>
+        <p>幾個我覺得有效的提問方式：</p>
+        <ul>
+          <li><strong>「探索 → 收斂」雙階段</strong>：先丟模糊問題「這個 dashboard 設計現在有什麼限制？」讓 Claude 提多個方向；再聚焦到一個方向後問「ok 我選 X，請你寫」。</li>
+          <li><strong>策略決定型問題</strong>：「我糾結是 A 還是 B，條件是 X。先別動手，分析給我看」。讓 Claude 做技術 trade-off 分析，我做業務決策。</li>
+          <li><strong>症狀描述 + 求解釋</strong>：「我看到 gallery 變成 8 張卡了但應該只有 4 張」→ Claude debug + 解釋根因。比起「請修這個 bug」更能讓 Claude 順便解釋背後機制，我順便學。</li>
+          <li><strong>「規範化我剛說的」</strong>：當我口頭定下一條規則（如 demo readiness），追問「我們把它寫成正式 doc 區段嗎」。這把判斷升級到專案制度。</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">關鍵轉折</div>
+        <p>整個 session 有 3 個明顯的方向修正點：</p>
+
+        <p><strong>轉折 1：「不蓋 scenario skill 層」</strong><br>
+        我問「是不是要在 skill 之上做一層 agent skill 整合多個 skill 的情境？」Claude 強烈反對，解釋這會殺掉 wedge 故事，讓我重新理解 Claude 自己就是 orchestration 層。<strong>這個對話約佔 session 的 5%，但決定了整套架構走向。</strong></p>
+
+        <p><strong>轉折 2：「dashboard-builder/ 該不該包進 api-skills/」</strong><br>
+        我問「為什麼放在 GitHub 而不是包進 skill？」Claude 拆解出兩種東西的歸屬：<strong>skill code</strong> 應該歸 RD（移到 api-skills/）、<strong>demo/proposal 材料</strong>應該公開（留在 network-ai-assistant repo）。這幫我釐清檔案結構的根本理由。</p>
+
+        <p><strong>轉折 3：「validated path 紀律」</strong><br>
+        我問「是不是每個情境都要先 validated？」Claude 不只回答「對」，還主動把它規範化——進 architecture.html 新章節 <code>#demo-readiness</code>（3 個必要條件 + 6 步 pipeline + 5 項展前 checklist）。<strong>口頭規則升級成正式制度，未來下個操作員就有規範可循。</strong></p>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">如果繼續往下</h2>
+      </div>
+
+      <p>下一個 session 的優先序很明確：</p>
+
+      <div class="subsection">
+        <div class="subsection-label">Critical（卡 RD）</div>
+        <ul>
+          <li><strong>RD 補 troubleshoot scripts</strong>（rpc_led_dance / rpc_kick_clients / subscribe_client_list / subscribe_cable_diag / rpc_reboot 這 5 個 P0 op）→ 解鎖最戲劇的 booth demo（讓現場 AP 真的閃 LED、即時踢可疑 client）</li>
+          <li><strong>RD 補 history aggregation API</strong> → 解鎖 line_chart / sparkline / area_chart 這整個趨勢類 widget 品類</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">獨立可做（不等 RD）</div>
+        <ul>
+          <li><strong>Dashboard 視覺風格優化</strong>：widget UI 還可以更精緻（特別是顏色比例 / 字距 / 留白）。<strong>改一處 <code>skill/theme/tokens.css</code> 就 cascade 全 dashboard</strong>，迭代成本低。</li>
+          <li><strong>新情境腦力激盪</strong>：找更吸睛、更有 wow 感的新 demo 故事。每個新情境走 validated path pipeline（6 步）加入 examples/。</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">Pending</div>
+        <ul>
+          <li>日文版找日本 native speaker review（目前是 LLM 草稿，可能有不夠地道的措辭）</li>
+          <li>把 <code>dashboard-builder/skill/</code> 整合進 RD 的 <code>api-skills/skills/dashboard-builder/</code>（P2，docs/rd-handoff.md 有完整步驟）</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <div class="takeaway" id="takeaway">
+      <div class="takeaway-label">Takeaway</div>
+
+      <h3>1. 這個案例展示了什麼</h3>
+      <p>非工程師的 PMM 怎麼用 AI 主導一個技術產出：<strong>我不寫程式碼，Claude 寫全部；但「要不要這樣做」「方向對不對」「視覺好不好」都要過我一遍。</strong> AI 接管實作後，主導者的時間從「碰程式碼」轉到「做策略決定 + 視覺判斷 + 規範口頭規則」。</p>
+
+      <p>最有效的工作節奏是「<strong>探索 → 拆解 → 驗證 → 迭代</strong>」的對話循環——不是先寫好 spec 再交給 AI 實作，而是先做一個能跑的小版本，再對著它討論「下一步該往哪走」。每加一個 widget 就跑一次 compose 看視覺，每寫一個情境就回頭驗證 widget 還夠不夠用。</p>
+
+      <h3>2. 可移植性</h3>
+      <p><strong>✅ 可直接複製的條件：</strong></p>
+      <ul>
+        <li>非工程師背景但需要 build 一個技術產出（demo / 工具 / 內部系統）</li>
+        <li>跨多個 session 的累積開發（記得每次都跑 <code>/sync-context</code>）</li>
+        <li>涉及 RD 移交、需要會議材料、多語言版本</li>
+        <li>工具要 self-contained / 純前端 / 不能依賴 build system</li>
+      </ul>
+
+      <p><strong>❌ 不適合直接複製：</strong></p>
+      <ul>
+        <li>牽涉複雜業務邏輯、需要工程師深度介入的系統</li>
+        <li>純概念學習（不需要產出工具）</li>
+        <li>單次工程作業（不會累積成跨 session 工程）</li>
+      </ul>
+
+      <h3>3. 起手式 prompt</h3>
+      <p>如果你也要用這個方式做事，下次跟 Claude 對話可以這樣開頭：</p>
+      <pre><code class="language-plaintext">我有一個 [描述產品 / 工具 / demo]，目前狀態是 [現況限制]，我想要 [目標]。
+我不寫程式碼，請你寫；但所有「要不要這樣做」我要過一遍。
+
+先別動手 — 幫我先盤點：
+1. 這件事可以怎麼拆解成元件？
+2. 哪些是 reusable 的零件、哪些是一次性的場景？
+3. 我需要做哪些決策？條件分別是什麼？</code></pre>
+
+      <p>或者中期碰到方向疑問時：</p>
+      <pre><code class="language-plaintext">我糾結 A 還是 B。A 的理由是 [...]，B 的理由是 [...]。
+請你不要直接給答案，而是分析這兩條路各會帶我到哪。
+我做業務決策、你提技術 trade-off 分析。</code></pre>
+    </div>
+
+    <footer>
+      <span>整理自 2026-05-15 → 2026-05-16 跟 Claude Code 的對話 · <strong>2026-05-16</strong></span>
+      <span>AI 工具開發 · 非工程師視角</span>
+    </footer>
+  </main>
+</div>
+
+<button class="menu-toggle" id="menuToggle" aria-label="目錄">≡</button>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const toggle = document.getElementById('menuToggle');
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    toggle.textContent = sidebar.classList.contains('open') ? '✕' : '≡';
+  });
+
+  const sections = document.querySelectorAll('.section, .takeaway');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  sections.forEach(s => io.observe(s));
+
+  hljs.highlightAll();
+</script>
+</body>
+</html>
