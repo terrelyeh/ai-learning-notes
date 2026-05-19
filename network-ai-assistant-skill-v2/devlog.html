@@ -639,6 +639,14 @@
         <h2 class="section-title">最終樣貌</h2>
       </div>
 
+      <div class="result-preview">
+        <img src="./screenshots/dashboard-final-ja.png" alt="Danny Org · 全体ヘルス概要 — 日文版 dashboard，header 含 Refresh / Deploy / Live tag、KPI cards、設備配置長條圖、License 期限分布">
+        <div class="result-preview-caption">
+          <span class="result-preview-badge">Live Dashboard</span>
+          <span>Danny Org · 日文 locale · AI 對話內 30 秒組出來的健康狀況看板。右上 Refresh / Deploy / Settings 三顆按鈕 + Live tag、KPI cards 上方有 AI 寫的人話 alert banner。整張用相對路徑引用 self-contained，任何時間點都能 deploy 出去當 snapshot 分享。</span>
+        </div>
+      </div>
+
       <p>整套系統現在做得到的事：</p>
 
       <ul>
@@ -649,6 +657,14 @@
         <li><strong>點 ⚙ Settings 現場切帳號</strong> — 貼自己 key、masked input + 👁 reveal、Save 前先驗證、chip 即時變、Refresh 換用新 key 撈資料</li>
         <li><strong>Deploy 出去的版本進 snapshot 模式</strong> — 自動隱藏 Refresh/Deploy/Settings 按鈕、停 polling、Live tag 變「Snapshot · YYYY-MM-DD」、chip 從 <code>_snapshot.json</code> baked 過的 identity 還原</li>
       </ul>
+
+      <div class="result-preview">
+        <img src="./screenshots/deploy-modal-zh.png" alt="部署與分享 Dashboard modal — Vercel / GitHub Pages target chooser、自訂網址欄位、辨識資料掃描結果、用途 radio">
+        <div class="result-preview-caption">
+          <span class="result-preview-badge">Deploy Modal</span>
+          <span>↗ Deploy 按下去跳的 modal。上方 target 兩張 card（Vercel / GH Pages）、選中那張用品牌橘 highlight；中段網址即時 preview；下方先掃出這張 dashboard 含多少筆敏感資料（org_id / MAC / 序號 / Email）、再讓使用者用人話 radio 決定要不要 redact。不是 checkbox + 法律語、是「我要做什麼」的選擇題。</span>
+        </div>
+      </div>
 
       <div class="callout callout-tip">
         <span class="callout-icon">→</span>
