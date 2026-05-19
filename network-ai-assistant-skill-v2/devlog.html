@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Network AI-Assistant Skill v2 — 從 PoC 到可分享的網管助理</title>
+  <meta name="description" content="3 天 25 個 PR、把 Skill v1 從只能本機 demo 進化成可一鍵分享、可現場切帳號、可雙 target 部署（Vercel / GitHub Pages）的完整助理。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f5f0;
+      --grid: rgba(0,0,0,0.04);
+      --grid-sm: rgba(0,0,0,0.02);
+      --surface: #ffffff;
+      --surface-warm: #faf9f6;
+      --ink: #18160f;
+      --ink-2: #3a3830;
+      --ink-3: #6b6860;
+      --ink-4: #9b9890;
+      --border: rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.14);
+      --gold: #b5872a;
+      --gold-light: rgba(181,135,42,0.10);
+      --gold-mid: rgba(181,135,42,0.20);
+      --sidebar-w: 240px;
+      --font: 'Inter', 'Noto Sans TC', sans-serif;
+      --serif: 'EB Garamond', 'Noto Sans TC', Georgia, serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(var(--grid-sm) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-sm) 1px, transparent 1px);
+      background-size: 100px 100px, 100px 100px, 25px 25px, 25px 25px;
+      color: var(--ink);
+      line-height: 1.85;
+      font-size: 19px;
+    }
+
+    .layout { display: flex; min-height: 100vh; width: 100%; }
+
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      background: var(--surface); border-right: 1px solid var(--border-strong);
+      padding: 0 0 60px;
+    }
+    .sidebar-top { padding: 32px 24px 24px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+    .sidebar-eyebrow { font-size: 10px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+    .sidebar-top h2 { font-family: var(--serif); font-size: 16px; font-weight: 400; color: var(--ink); line-height: 1.5; }
+    .nav-section { padding: 0 16px; }
+    .nav-group { margin-top: 28px; }
+    .nav-group-label { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-4); padding: 0 12px 12px; }
+    .nav-link {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      font-size: 13px; color: var(--ink-3); text-decoration: none;
+      border-radius: 6px; transition: all .2s ease;
+    }
+    .nav-link:hover { color: var(--ink); background: var(--gold-light); }
+    .nav-link.active { color: var(--gold); background: var(--gold-light); font-weight: 500; }
+    .nav-num { font-family: var(--mono); font-size: 10px; color: var(--ink-4); }
+    .nav-link.active .nav-num { color: var(--gold); }
+
+    .main { flex: 1; min-width: 0; padding: 64px clamp(40px, 6vw, 96px) 120px; max-width: 880px; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--ink-3); text-decoration: none;
+      margin-bottom: 36px; padding: 6px 12px 6px 8px;
+      border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface); transition: all .2s ease;
+    }
+    .back-link:hover { color: var(--gold); border-color: var(--gold-mid); }
+    .back-link svg { width: 14px; height: 14px; }
+
+    .hero { margin-bottom: 56px; }
+    .hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .eyebrow-text { font-size: 11px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); }
+    .hero h1 { font-family: var(--serif); font-size: 44px; font-weight: 500; line-height: 1.2; letter-spacing: -.01em; color: var(--ink); margin-bottom: 24px; }
+    .hero-rule { width: 64px; height: 2px; background: var(--gold); margin-bottom: 24px; }
+    .hero-desc { font-family: var(--serif); font-size: 21px; font-style: italic; line-height: 1.6; color: var(--ink-2); margin-bottom: 16px; }
+    .hero-meta { font-size: 12px; color: var(--ink-3); font-family: var(--mono); }
+
+    .case-card {
+      background: var(--surface); border: 1px solid var(--border-strong);
+      border-radius: 8px; padding: 28px 32px; margin-bottom: 48px;
+      position: relative;
+    }
+    .case-card::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; background: var(--gold); border-radius: 8px 0 0 8px; }
+    .case-card-row { display: grid; grid-template-columns: 140px 1fr; gap: 20px; padding: 12px 0; border-bottom: 1px dashed var(--border); }
+    .case-card-row:last-child { border-bottom: 0; }
+    .case-card-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); padding-top: 4px; }
+    .case-card-value { font-size: 15px; line-height: 1.7; color: var(--ink-2); }
+    .case-card-value a { color: var(--gold); text-decoration: underline; text-decoration-color: var(--gold-mid); text-underline-offset: 3px; }
+
+    .section { margin-bottom: 80px; }
+    .section-header { display: flex; align-items: baseline; gap: 20px; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .section-num { font-family: var(--mono); font-size: 13px; color: var(--gold); font-weight: 500; }
+    .section-title { font-family: var(--serif); font-size: 28px; font-weight: 500; line-height: 1.3; color: var(--ink); letter-spacing: -.005em; }
+
+    .section p { font-size: 16px; line-height: 1.85; color: var(--ink-2); margin-bottom: 18px; }
+    .section p strong { color: var(--ink); font-weight: 600; }
+    .section ul, .section ol { margin: 0 0 24px 24px; }
+    .section li { font-size: 16px; line-height: 1.85; color: var(--ink-2); margin-bottom: 8px; }
+    .section li strong { color: var(--ink); font-weight: 600; }
+    .section a { color: var(--gold); text-decoration: underline; text-decoration-color: var(--gold-mid); text-underline-offset: 3px; }
+
+    .subsection { margin: 32px 0 24px; }
+    .subsection-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold);
+      padding-bottom: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--gold-mid);
+      display: inline-block; padding-right: 20px;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; margin: 24px 0 28px; background: var(--surface);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { padding: 14px 18px; text-align: left; background: var(--surface-warm); color: var(--ink-3); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; border-bottom: 1px solid var(--border-strong); }
+    td { padding: 14px 18px; border-bottom: 1px solid var(--border); color: var(--ink-2); line-height: 1.6; vertical-align: top; }
+    tr:last-child td { border-bottom: 0; }
+    td strong { color: var(--ink); font-weight: 600; }
+
+    pre {
+      background: #1d1f24; border-radius: 8px; padding: 20px 24px; overflow-x: auto;
+      margin: 20px 0 24px; font-family: var(--mono); font-size: 13px; line-height: 1.7;
+      border: 1px solid var(--border-strong);
+    }
+    pre code { color: #e6e1cf; }
+    code:not(pre code) { font-family: var(--mono); font-size: 0.88em; background: var(--gold-light); color: var(--ink); padding: 2px 6px; border-radius: 4px; }
+
+    .callout {
+      display: flex; gap: 14px; padding: 16px 20px; border-radius: 6px;
+      margin: 20px 0 24px; font-size: 15px; line-height: 1.7;
+    }
+    .callout-icon { flex-shrink: 0; font-weight: 700; font-size: 16px; line-height: 1.7; }
+    .callout-tip { background: var(--gold-light); border-left: 3px solid var(--gold); }
+    .callout-tip .callout-icon { color: var(--gold); }
+    .callout-tip div { color: var(--ink-2); }
+    .callout-tip strong { color: var(--ink); }
+    .callout-note { background: rgba(0,0,0,0.03); border-left: 3px solid var(--ink-4); }
+    .callout-note .callout-icon { color: var(--ink-4); }
+    .callout-note div { color: var(--ink-2); }
+
+    blockquote {
+      margin: 24px 0; padding: 4px 24px; border-left: 3px solid var(--gold);
+      font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.7; color: var(--ink-2);
+    }
+
+    .bug-block {
+      margin: 32px 0; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border-strong); background: var(--surface);
+    }
+    .bug-header {
+      background: #1d1f24; color: #e6e1cf; padding: 14px 22px;
+      display: flex; align-items: center; gap: 12px;
+      font-size: 14px; font-weight: 500;
+    }
+    .bug-icon { color: var(--gold); }
+    .bug-body { padding: 22px 26px; }
+    .bug-body p { font-size: 15px; }
+
+    .arch-flow {
+      display: flex; align-items: stretch; gap: 6px; flex-wrap: wrap;
+      margin: 28px 0 32px; padding: 24px; background: var(--surface);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+    }
+    .arch-flow-vertical { flex-direction: column; align-items: stretch; }
+    .arch-node {
+      flex: 1; min-width: 160px; padding: 16px 18px;
+      border-radius: 6px; border: 1px solid var(--border-strong);
+      background: var(--surface-warm);
+    }
+    .arch-node-label { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 6px; }
+    .arch-node-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 4px; line-height: 1.4; }
+    .arch-node-sub { font-size: 13px; color: var(--ink-3); line-height: 1.55; }
+    .arch-frontend { background: #e8f1fb; border-color: #91b6dd; }
+    .arch-frontend .arch-node-label { color: #2c5a8c; }
+    .arch-backend { background: #eaf5ec; border-color: #94c4a0; }
+    .arch-backend .arch-node-label { color: #2a6a3c; }
+    .arch-ai { background: rgba(181,135,42,0.12); border-color: var(--gold-mid); }
+    .arch-ai .arch-node-label { color: var(--gold); }
+    .arch-storage { background: #f0e8f5; border-color: #b29fc6; }
+    .arch-storage .arch-node-label { color: #6a3a8a; }
+    .arch-external { background: #e8ecf3; border-color: #99a4bc; }
+    .arch-external .arch-node-label { color: #4a5a7a; }
+    .arch-arrow { display: flex; align-items: center; justify-content: center; padding: 0 4px; flex-shrink: 0; }
+    .arch-arrow svg { width: 24px; height: 24px; fill: none; stroke: var(--ink-4); stroke-width: 2; }
+    .arch-arrow-down svg { transform: rotate(90deg); }
+
+    .credentials-block {
+      margin: 28px 0; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border-strong); background: var(--surface);
+    }
+    .credentials-header {
+      background: #1d1f24; color: #e6e1cf; padding: 14px 22px;
+      display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500;
+    }
+    .credentials-body { padding: 0; }
+    .credentials-row {
+      display: grid; grid-template-columns: 1.4fr 1.8fr 110px 1.6fr;
+      gap: 16px; padding: 14px 22px; border-bottom: 1px solid var(--border); align-items: start;
+      font-size: 13px; line-height: 1.6;
+    }
+    .credentials-row:last-child { border-bottom: 0; }
+    .credentials-row.header-row { background: var(--surface-warm); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+    .credentials-service { color: var(--ink); font-weight: 600; }
+    .credentials-note { color: var(--ink-3); }
+    .credentials-type-badge {
+      display: inline-block; padding: 3px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    }
+    .badge-api-key { background: var(--gold-light); color: var(--gold); }
+    .badge-token { background: #e8f1fb; color: #2c5a8c; }
+    .badge-secret { background: #fbe8e8; color: #8c2c2c; }
+    .badge-env { background: #eaf5ec; color: #2a6a3c; }
+    .badge-model { background: #f0e8f5; color: #6a3a8a; }
+    .badge-external { background: #e8ecf3; color: #4a5a7a; }
+    .badge-hosting { background: rgba(181,135,42,0.18); color: var(--gold); }
+
+    .result-preview {
+      margin: 32px 0 28px; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border-strong); background: var(--surface);
+    }
+    .result-preview img { display: block; width: 100%; height: auto; }
+    .result-preview-caption {
+      padding: 14px 22px; background: var(--surface-warm);
+      font-size: 13px; color: var(--ink-3); line-height: 1.6;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .result-preview-badge {
+      display: inline-block; padding: 3px 9px; border-radius: 4px;
+      font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      background: var(--gold); color: var(--surface);
+    }
+
+    .screenshot-compare {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0;
+    }
+    .screenshot-compare-item { border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
+    .screenshot-compare-item img { display: block; width: 100%; height: auto; }
+    .screenshot-compare-label {
+      background: #1d1f24; color: #e6e1cf;
+      padding: 8px 16px; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    }
+    .screenshot-compare-label.after { background: var(--gold); color: var(--surface); }
+
+    .takeaway {
+      margin: 56px 0 32px; padding: 32px 36px;
+      background: var(--surface); border: 1px solid var(--border-strong);
+      border-top: 3px solid var(--gold); border-radius: 0 0 8px 8px;
+    }
+    .takeaway-label { font-size: 11px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+    .takeaway h3 { font-family: var(--serif); font-size: 20px; font-weight: 500; color: var(--ink); margin: 20px 0 12px; }
+    .takeaway h3:first-of-type { margin-top: 0; }
+    .takeaway p { font-size: 15px; line-height: 1.75; color: var(--ink-2); margin-bottom: 14px; }
+    .takeaway ul { margin: 0 0 16px 24px; }
+    .takeaway li { font-size: 15px; line-height: 1.75; color: var(--ink-2); margin-bottom: 6px; }
+
+    footer {
+      margin-top: 80px; padding-top: 32px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-4); font-family: var(--mono);
+    }
+
+    .menu-toggle {
+      display: none; position: fixed; top: 16px; right: 16px; z-index: 100;
+      width: 44px; height: 44px; border-radius: 8px;
+      background: var(--ink); color: var(--surface);
+      border: none; font-size: 20px; cursor: pointer;
+      align-items: center; justify-content: center;
+    }
+
+    @media (max-width: 900px) {
+      body { font-size: 16px; }
+      .layout { flex-direction: column; }
+      .sidebar { position: fixed; top: 0; left: -260px; transition: left .3s ease; z-index: 90; box-shadow: 0 0 30px rgba(0,0,0,0.15); }
+      .sidebar.open { left: 0; }
+      .main { padding: 56px 24px 80px; }
+      .hero h1 { font-size: 30px; }
+      .menu-toggle { display: flex; }
+      .case-card-row { grid-template-columns: 1fr; gap: 6px; }
+      .credentials-row { grid-template-columns: 1fr; gap: 6px; }
+      .credentials-row.header-row { display: none; }
+      .screenshot-compare { grid-template-columns: 1fr; }
+      .arch-flow { flex-direction: column; }
+      .arch-arrow svg { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-eyebrow">Dev Notes · AI 工具開發 · v2</div>
+      <h2>Network AI-Assistant Skill v2 — 從 PoC 到可分享</h2>
+    </div>
+    <div class="nav-section">
+      <div class="nav-group">
+        <div class="nav-group-label">案例內容</div>
+        <a class="nav-link" href="#s1"><span class="nav-num">01</span>為什麼要做這件事</a>
+        <a class="nav-link" href="#s2"><span class="nav-num">02</span>技術選型</a>
+        <a class="nav-link" href="#s3"><span class="nav-num">03</span>外部服務與金鑰</a>
+        <a class="nav-link" href="#s4"><span class="nav-num">04</span>系統架構</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>推進方式</a>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span>踩到的坑</a>
+        <a class="nav-link" href="#s7"><span class="nav-num">07</span>最終樣貌</a>
+        <a class="nav-link" href="#s8"><span class="nav-num">08</span>如果繼續往下</a>
+        <a class="nav-link" href="#takeaway"><span class="nav-num">09</span>Takeaway</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <a class="back-link" href="../">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      所有案例
+    </a>
+
+    <header class="hero">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-text">AI 工具開發 · 非工程師視角 · v2</span>
+      </div>
+      <h1>Network AI-Assistant Skill v2<br>— 從 PoC 到可分享的網管助理</h1>
+      <div class="hero-rule"></div>
+      <p class="hero-desc">Skill v1 把 AI dashboard PoC 做出來、但只能在本機跑、Refresh 是假的、沒辦法切帳號試 — 3 天 25 個 PR、補齊「可被別人用 / 看 / 信任」的最後一哩。</p>
+      <div class="hero-meta">整理日期：2026-05-19 &nbsp;·&nbsp; 類型：AI 工具開發 · 非工程師視角 &nbsp;·&nbsp; 接續 <a href="../dashboard-builder-skill/devlog.html">Skill v1 開發紀錄</a></div>
+    </header>
+
+    <div class="case-card">
+      <div class="case-card-row">
+        <span class="case-card-label">我用 AI 做了什麼</span>
+        <span class="case-card-value">把一個只能在本機 demo 的 AI dashboard 工具，變成可一鍵分享、可現場切帳號、可選兩種公開平台（Vercel / GitHub Pages）的完整工作流系統</span>
+      </div>
+      <div class="case-card-row">
+        <span class="case-card-label">沒有 AI 的話</span>
+        <span class="case-card-value">不會寫 Python http.server subclass、不會做 i18n 系統、不會碰 Vercel CLI / gh CLI 自動化、也不會把 inline SVG / color-mix 做進 CSS。粗估純工程外包至少 2 週</span>
+      </div>
+      <div class="case-card-row">
+        <span class="case-card-label">最終成果</span>
+        <span class="case-card-value">~3 天 25 個 PR、可分享、可切帳號、可雙 target 部署的完整助理。<a href="https://terrelyeh.github.io/egcloud-llm-dashboards/demo-20260519-154159/" target="_blank">deployed demo URL</a> 開著就能 walkthrough 給 RD / PM / 業務看</span>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">為什麼要做這件事</h2>
+      </div>
+
+      <p>Skill v1 出來後馬上撞到三個問題。</p>
+
+      <p><strong>1. Demo 只能對著我自己的 Mac 開。</strong> 要給 Senao RD / 同事看「AI 怎麼即時組裝 dashboard」、得每次本機 <code>bash scripts/serve.sh</code> + 拉人來看我螢幕。沒辦法產一個 URL 丟到群組。</p>
+
+      <p><strong>2. Refresh button 是假的。</strong> 按下去只是重讀同一份 JSON 檔。「AI 同事」這個名字、不能配 staging 一動就要等我手動重跑 recipe 的設計。</p>
+
+      <p><strong>3. 沒辦法切帳號試。</strong> 所有 demo 都綁同一把 staging API key（RD 給的）、想對外講「這套通用、不只 Ian 的帳號能用」沒辦法現場驗證。</p>
+
+      <p>這三件事都不是「再加一個 feature」、是「<strong>把工具從 PoC 升級成可分享的產品</strong>」。我想看的不只是「dashboard 能被組」、是「整套 demo 流程跑得起來」。</p>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">技術選型</h2>
+      </div>
+
+      <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>工具 / 技術</th><th>選的理由</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Python <code>http.server</code> 子類</strong></td><td>不裝 Flask、FastAPI、任何 framework。Python 標準庫就夠寫 7 個 endpoint。下游 RD / SI 接手不用搞 dependency。</td></tr>
+          <tr><td><strong>Vercel CLI</strong></td><td>Vercel auto-creates project on first deploy（<code>--yes</code> flag），不用 user 先去 dashboard 開。寫一行 subprocess 解決。</td></tr>
+          <tr><td><strong><code>gh</code> CLI（GitHub Pages target）</strong></td><td>不寫 Octokit / GitHub REST API、全部走 <code>gh repo list</code> / <code>git push origin gh-pages</code> / <code>gh api repos/.../pages</code>。一樣是「沒額外 dep」。</td></tr>
+          <tr><td><strong>Pure SVG (inline)</strong></td><td>Vercel triangle + GitHub Octocat 都直接寫進 HTML、用 <code>currentColor</code>、跟 theme 連動。不外掛 image hosting。</td></tr>
+          <tr><td><strong><code>color-mix()</code> in CSS</strong></td><td>軟色票 / soft tint 不寫 hex、跟著 design system token 走。深色模式自動 fallback。</td></tr>
+          <tr><td><strong>i18n via JS dict</strong></td><td><code>DEPLOY_I18N</code> 跟 <code>SETTINGS_I18N</code> 在 runtime.js 內、依 <code>spec.locale</code> 挑。沒做 react-intl / lingui 之類的 framework call。</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">→</span>
+        <div><strong>選型原則：</strong>能用 Python / shell / 瀏覽器自帶能力做的、就不引第三方框架。這專案會交給 Senao RD、可能 OSS、<code>pip install</code> 一堆東西會卡死接手者。</div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">外部服務與金鑰</h2>
+      </div>
+
+      <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>服務 / 工具</th><th>用途</th><th>類型</th><th>備註</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>EnGenius Cloud Staging API</strong></td><td>dashboard 真實資料來源</td><td>REST API</td><td>falcon.staging.engenius.ai</td></tr>
+          <tr><td><strong><code>API_KEY</code> env var</strong></td><td>Staging API 認證</td><td>API Key</td><td>預設值 hardcode 在 3 個檔（<code>serve.py</code> / <code>org.sh</code> / <code>refresh-all.sh</code>）· OSS release 前要拔掉</td></tr>
+          <tr><td><strong><code>vercel</code> CLI</strong></td><td>一鍵 Vercel deploy</td><td>OAuth Token</td><td>一次性瀏覽器登入</td></tr>
+          <tr><td><strong><code>gh</code> CLI</strong></td><td>GitHub Pages deploy · 列 user repo</td><td>OAuth Token</td><td>一次性瀏覽器登入</td></tr>
+          <tr><td><strong>terrelyeh/egcloud-llm-dashboards</strong></td><td>GH Pages canvas snapshots</td><td>Public repo</td><td>專用 repo、gh-pages branch 自動 orphan + push</td></tr>
+          <tr><td><strong>Claude (Sonnet)</strong></td><td>AI 協作 IDE</td><td>LLM</td><td>Claude Code</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="callout callout-note">
+        <span class="callout-icon">!</span>
+        <div>Staging API key 雖然不是 production、但仍是 Senao 內部資產。release OSS 版時要改成「沒設 env var 就 fail with 明確 error」、不留 fallback。</div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">系統架構</h2>
+      </div>
+
+      <p>整個系統長這樣：</p>
+
+      <pre><code class="language-plaintext">你的 Mac:
+─────────────────────────────────────
+│  Claude Code session（compose canvas）│
+│         ↓ 寫檔                          │
+│  dashboard-builder/canvases/&lt;id&gt;/      │
+│  ├── index.html（含 inline runtime.js）│
+│  └── live-data/*.json                  │
+│         ↑                              │
+│         │ 讀                            │
+│  scripts/serve.py（port 8765）         │
+│  ├── GET 靜態檔                         │
+│  ├── POST /refresh    ←→ 跑 recipe     │
+│  ├── POST /deploy     ←→ Vercel / GH   │
+│  ├── POST /settings/api-key ← 切帳號    │
+│  ├── GET  /account    ← user 身分      │
+│  ├── GET  /user-orgs  ← 解析 scope 名  │
+│  └── GET  /gh/repos   ← repo dropdown  │
+│         ↑                              │
+│         │ HTTP                          │
+│  瀏覽器 Chrome（看 dashboard）          │
+│  ├── Refresh button → POST /refresh    │
+│  ├── Deploy button → POST /deploy      │
+│  ├── ⚙ Settings → POST /settings/...   │
+│  └── header chips: 👤 email · 🎯 scope │
+                   │ 對外
+                   ▼
+┌─────────────────────────────────────┐
+│  EnGenius Cloud Staging API           │
+│  (recipe via api-skills Python venv)  │
+└─────────────────────────────────────┘
+                   │ deploy
+                   ▼
+┌─────────────────┐  ┌──────────────────┐
+│  Vercel cloud   │  │ GitHub Pages     │
+│  *.vercel.app   │  │ &lt;user&gt;.github.io │
+└─────────────────┘  └──────────────────┘</code></pre>
+
+      <div class="subsection-label">幾個關鍵設計</div>
+
+      <p><strong>Self-contained canvas</strong>：每張 dashboard = 一個 folder（<code>index.html</code> + <code>live-data/</code>）。Inline 所有 JS / CSS / 圖、不外連任何 stylesheet。Folder 可以整包打包丟去任何 static host。</p>
+
+      <p><strong><code>_snapshot.json</code> marker</strong>：deploy 出去的版本根目錄會有這個檔、runtime 偵測到後自動切 snapshot 模式（隱藏 Refresh/Deploy/Settings、停 polling、Live tag 變「Snapshot · YYYY-MM-DD」）。本機 source canvas 沒有 marker → 維持 live 模式。</p>
+
+      <p><strong>In-process API key override</strong>：<code>/settings/api-key</code> 寫進 <code>_api_key_override</code> 全域變數、不寫磁碟。Server 重啟自動回到 env 預設。Demo 時切完現場、收場前重啟一下就乾淨。</p>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">推進方式</h2>
+      </div>
+
+      <p>整個 v2 era 大概 25 個 PR（#41–#59）、按主題分成五波。</p>
+
+      <div class="subsection-label">第一波（PR #41-#43）· 鋪基礎</div>
+      <p>把 v1 那個「flat HTML 檔 + 共用 live-data」的結構改成 <strong>folder-per-canvas + refresh recipe</strong>。每張 canvas 一個獨立 folder = 為了之後一鍵部署做的鋪路。然後 ship 第一版 Vercel deploy（單一 target、redact / acknowledge checkbox、modal 字串全英文）。</p>
+
+      <div class="subsection-label">第二波（PR #44-#50）· UX 修整</div>
+      <p>真實 demo 給自己看一輪、找出 8 個小坑：</p>
+      <ul>
+        <li>Acknowledge → Deploy button 不會 enable（時序錯）</li>
+        <li>Donut chart layout 三次調整（先太大、再太小、最後 anchor 左側 + designed legend）</li>
+        <li>Recipe 截掉資料：Danny org 90 devices 只撈到 10、原因是 API server 每頁 cap 在 56 而我們沒做 pagination</li>
+        <li>AI compose 把衍生欄位 bake 進 live-data JSON、結果 refresh 全洗掉</li>
+      </ul>
+      <p>每個坑都 fix + 把學到的寫成 SKILL.md 規則（Mental model 必須寫散文不寫表格、live-data 是 API 真相不存衍生欄位）。</p>
+
+      <div class="subsection-label">第三波（PR #51-#53）· 即時感</div>
+      <p>Refresh button 點下去用戶看不到在做什麼。加了 status banner：藍色「refreshing · 12s」即時計秒、綠色「✓ refreshed · 4 files · 28s」自動淡出、紅色「✗ failed」要點 ✕ 關。Recipe 在 server 跑時 client 知道：<strong>在做什麼 + 多久了 + 成功還失敗</strong>。</p>
+
+      <div class="subsection-label">第四波（PR #54-#56）· 身份系統</div>
+      <p>Header 加 account chip + scope chip — 多開幾張 dashboard 不會混。然後是 Settings modal — demo 時可以<strong>現場貼自己 key</strong> 切帳號、masked password + 👁 reveal、Save 前先打 <code>/account</code> 驗證 key 有效。</p>
+
+      <div class="subsection-label">第五波（PR #57-#59）· 第二個 deploy target</div>
+      <p>GitHub Pages 加進來。同個 modal 上面加 target chooser radio、Vercel / GH Pages 切換、下面欄位動態換（Vercel 顯示 project name input、GH Pages 顯示 repo dropdown + path slug）。<code>/gh/repos</code> endpoint 列出 user 53 個 repo 進 datalist 讓他挑。實機驗證撞到一個 Jekyll filter 把 <code>_snapshot.json</code> 過濾掉、加一行 <code>.nojekyll</code> 解決。</p>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">→</span>
+        <div><strong>整體節奏：</strong>每個 PR 一件小事、改完 push 上去、CI 跑、merge、sync plugin cache、用瀏覽器看效果、不對就再來。AI 寫 code、我做 review + UX 判斷。一晚 5-9 個 PR 是常態。</div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">踩到的坑，讓我更懂的事</h2>
+      </div>
+
+      <p>每一個坑都讓我對「AI 協作要怎麼做」更清楚一點。</p>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span>坑 1：Catalog 化的 mental model 害 AI 退化成 template matching</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>我寫了「persona v0.1」要教 AI 怎麼判斷該回 text 還是 dashboard。寫成漂亮的決策表格（10 條規則、5 個矩陣、清楚的分支）。結果測試一跑、AI 開始機械式查表：拿到問題先 lookup 表格、選不到完美 match 就退到 fallback。原本 v0 能即興判斷的彈性沒了。</div>
+          </div>
+          <p><strong>解法：</strong>整個 v0.1 撤回、回到 v0 散文式描述 + 加 falsifiability test。後來把它寫進 design framework：「<strong>Mental models 要寫散文、不寫表格</strong>。Catalog 觸發 LLM 進 lookup mode、Principle 才會被內化。」</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>寫給 AI 看的指引、寫得越像 template AI 越會退化成 template-matching。要讓 AI 思考、就要強迫它讀完整段話、不能讓它跳到表格直接 match。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span>坑 2：Refresh recipe 把預先算好的衍生欄位洗掉</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>AI compose dashboard 時、為了讓圖表好寫、會預先把 <code>days_remaining</code> / <code>urgency_bucket</code> 等衍生欄位算好寫進 <code>live-data/inventory.json</code>。看起來合理。直到 user 按 Refresh → recipe 重抓 API → 覆寫 inventory.json → 衍生欄位全沒了 → table filter / chip / 桶分布全爛。</div>
+          </div>
+          <p><strong>解法：</strong>修法不只是改 recipe，而是寫進 SKILL.md：「<strong>live-data/*.json 是 API 真相的鏡像、refresh 一定會整個覆寫。任何衍生欄位走 <code>spec.compute_fns</code>、在 render 時算、不要 bake 進 JSON。</strong>」加 falsifiability test：「如果 user 現在按 Refresh、這個欄位的值會被洗掉嗎？會 → 它就不該在 JSON。」</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>每一個 storage 層都有「誰擁有它」的 owner。覆寫它的程式 = owner。AI 寫資料進不該寫的層、是因為沒人告訴它「這層 someone else 會覆寫」。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span>坑 3：Status banner 的 setInterval 自殺</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>新加的 refresh status banner、藍色 pill 每秒應該跳秒數（1s, 2s, 3s...）。結果一直停在 1s。</div>
+          </div>
+          <p><strong>挖 code 看：</strong>ticker callback 每秒呼叫 <code>setStatus('pending', '...12s')</code> 更新文字、但 <code>setStatus()</code> 第一行是 <code>clearInterval(statusTicker)</code>。意思是：第一次 tick 觸發 → 呼叫 setStatus → setStatus 立刻把產生這個 tick 的 timer 殺掉 → 不會再有第二個 tick。</p>
+          <p><strong>解法：</strong>ticker callback 不走 setStatus、直接動 DOM。setStatus 是給 state transition 用的（pending → success / error）、ticker 是 pending 內部更新、不該共用同一個進入點。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>一個函式同時負責「初始化」跟「持續更新」、容易自相矛盾。分開設計：transition 函式、updater 函式、各自有單一職責。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span>坑 4：GitHub Pages 把 <code>_snapshot.json</code> 吃掉</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>Deploy 到 GH Pages、URL 開出來 header 不對：Refresh / Deploy buttons 還在、chip 也沒顯示 baked 過的 identity。本機 sources 看 <code>_snapshot.json</code> 確實有 push 上去（<code>gh api</code> 看 branch 內容存在）。但 <code>curl &lt;pages-url&gt;/_snapshot.json</code> 回 404。</div>
+          </div>
+          <p><strong>原因：</strong>GitHub Pages 預設用 Jekyll 處理檔案、Jekyll <strong>預設會跳過所有 <code>_</code> 開頭的檔案 / 資料夾</strong>。包含 <code>_snapshot.json</code>。</p>
+          <p><strong>解法：</strong>repo root 寫一個空檔 <code>.nojekyll</code>。一行解決。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>「能成功部署到目標平台」是獨立於程式邏輯的驗證軸。即使本機跑 100% 正確、target 平台還是會有自己的奇怪規則。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span>坑 5：Dash 字元被即時 sanitize 吃掉</span>
+        </div>
+        <div class="bug-body">
+          <div class="callout callout-note">
+            <span class="callout-icon">!</span>
+            <div><strong>症狀：</strong>Deploy modal 的 URL input 想打 <code>abc-def</code>。打到 <code>abc-</code> 的時候、欄位裡的 <code>-</code> 立刻消失。試了好幾次才看出來。</div>
+          </div>
+          <p><strong>原因：</strong>oninput 即時 sanitize 把頭尾的 dash 都修掉了、所以 trailing <code>-</code> 一加就被吃。</p>
+          <p><strong>解法：</strong>sanitize 拆成兩階段、即時只 normalize（清非法字、收 <code>--</code> 成 <code>-</code>）、頭尾 trim <strong>只在按 Deploy 那一刻才做</strong>。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div><strong>帶走的原則：</strong>input 處理函式不該對「正在打字的中間狀態」太嚴格。Aggressive sanitize 該留給 submit 那一刻、不是 keystroke 那一刻。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">最終樣貌</h2>
+      </div>
+
+      <p>整套系統現在做得到的事：</p>
+
+      <ul>
+        <li><strong>AI 在 Claude Code 對話內動態組裝 dashboard</strong> — 跟 AI 講「我要看 Danny org 的健康狀況」、它寫 spec.json、compose.py 組出 self-contained HTML + JSON folder、AI 自動 <code>open</code> 瀏覽器</li>
+        <li><strong>點 ↻ Refresh 拿即時資料</strong> — server 跑對應 recipe（org / all / hv / network）、用 paginated_api 把 staging API 大量資料分頁拼接、寫回 canvas-local live-data → 瀏覽器自動 re-render</li>
+        <li><strong>header 兩個 chip 顯示 demo 身份</strong> — <code>👤 ian.lai@senao.com</code> / <code>🎯 SCOPE Danny</code>、多 dashboard 一目了然</li>
+        <li><strong>點 ↗ Deploy 一鍵分享</strong> — modal 選 target（Vercel 3-30s / GH Pages 1-2min）、改網址、選用途（保留真資料 / 給陌生人 demo 自動 redact）、~分鐘內拿到公開 URL</li>
+        <li><strong>點 ⚙ Settings 現場切帳號</strong> — 貼自己 key、masked input + 👁 reveal、Save 前先驗證、chip 即時變、Refresh 換用新 key 撈資料</li>
+        <li><strong>Deploy 出去的版本進 snapshot 模式</strong> — 自動隱藏 Refresh/Deploy/Settings 按鈕、停 polling、Live tag 變「Snapshot · YYYY-MM-DD」、chip 從 <code>_snapshot.json</code> baked 過的 identity 還原</li>
+      </ul>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">→</span>
+        <div><strong>公開 demo URL（一張部署過的 canvas）：</strong><br><a href="https://terrelyeh.github.io/egcloud-llm-dashboards/demo-20260519-154159/" target="_blank">https://terrelyeh.github.io/egcloud-llm-dashboards/demo-20260519-154159/</a></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">如果繼續往下</h2>
+      </div>
+
+      <ul>
+        <li><strong>deploy CLI wrapper（P2）</strong> — 把 <code>deploy_lib.py</code> 包成 <code>scripts/deploy.sh</code> 命令列工具、power user / 批次自動化用。Modal 是 UI、CLI 是腳本化、兩條路同一個 deploy_lib 底層。</li>
+        <li><strong>Vercel Live mode（P4 · 風險高）</strong> — deployed canvas 也能 refresh、需要 serverless function 跑 recipe + 處理 API key auth gate。是不是真的需要、看 demo 後反饋。</li>
+        <li><strong>OSS release</strong> — 拔掉 hardcoded staging API_KEY fallback、改成 <code>.env</code> flow、寫 Windows / WSL 安裝指南、想清楚 RD vs PM 各自看到什麼 README 版本。</li>
+        <li><strong>下個應用層</strong> — 系統現在能組能 deploy、但 dashboard 本身的「決策力」還是 v1 那套。house-rules（EnGenius 平台事實）、playbook（standard procedure）、memory（看過的 dashboard）還沒實作。</li>
+      </ul>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+
+    <div class="takeaway" id="takeaway">
+      <div class="takeaway-label">Takeaway</div>
+
+      <h3>1. 這個案例展示了什麼</h3>
+      <p>「<strong>快速迭代 PR 流</strong>」配上「<strong>即時瀏覽器驗證</strong>」做大型 AI 協作專案的可行性。25 個 PR / 3 天、每個 PR 一件小事、每個 PR 都驗證再 merge。AI 寫 code、我做 UX 判斷 + review + 報 bug。沒寫測試（因為都是 UI / IO 邊界、人眼比 unit test 還容易判對）、但因為每個 PR 都小、瀏覽器點一下就知道對不對。</p>
+
+      <h3>2. 可移植性</h3>
+      <p><strong>✅ 適用的情境：</strong></p>
+      <ul>
+        <li>Vibe coding 類型的小工具 / 內部 demo / PoC</li>
+        <li>工程師背景輕、但需要快速 ship UI 的人</li>
+        <li>願意每個 PR 都驗一次的紀律</li>
+        <li>主要在 web 環境、能即時用瀏覽器看效果</li>
+      </ul>
+
+      <p><strong>❌ 不適用的情境：</strong></p>
+      <ul>
+        <li>需要 production-grade test coverage 的系統</li>
+        <li>多人協作、conflict 跑很頻繁的 codebase</li>
+        <li>後端 service / 一次部署要花 30 分鐘以上的場景</li>
+      </ul>
+
+      <h3>3. 起手式 prompt</h3>
+      <p>如果你也要做、可以先問 AI 兩個 prompt：</p>
+      <pre><code class="language-plaintext">我要做一個 [系統]、user flow 是 [a → b → c]、
+幫我列出最小可動原型需要的 endpoints + UI components + data flow，
+不要寫 code、只要結構圖。</code></pre>
+
+      <p>進到中期、選技術路徑時：</p>
+      <pre><code class="language-plaintext">[功能 X] 有 3-4 種實作路徑、各自的 tradeoff 是什麼？
+工程量？依賴？
+我是 [背景] 你建議走哪條？</code></pre>
+
+      <p>第一題讓 AI 把問題拆好、第二題讓你不只拿到 1 個解、而是看到地圖再選。</p>
+    </div>
+
+    <footer>
+      <span>整理自 2026-05-17 → 2026-05-19 跟 Claude Code 的對話（PR #41–#59）· <strong>2026-05-19</strong></span>
+      <span>AI 工具開發 · 非工程師視角</span>
+    </footer>
+  </main>
+</div>
+
+<button class="menu-toggle" id="menuToggle" aria-label="目錄">≡</button>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const toggle = document.getElementById('menuToggle');
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    toggle.textContent = sidebar.classList.contains('open') ? '✕' : '≡';
+  });
+
+  const sections = document.querySelectorAll('.section, .takeaway');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  sections.forEach(s => io.observe(s));
+
+  hljs.highlightAll();
+</script>
+</body>
+</html>
