@@ -583,6 +583,48 @@
       .screenshot-compare { grid-template-columns: 1fr; }
     }
 
+    /* ── Phone Gallery (compact thumbnails for similar app screens) ── */
+    .phone-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 22px;
+      margin: 28px 0;
+      align-items: flex-start;
+    }
+
+    .phone-shot { width: 188px; flex-shrink: 0; }
+
+    .phone-shot img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+    }
+
+    .phone-shot-label {
+      font-size: 12px;
+      color: var(--ink-3);
+      text-align: center;
+      margin-top: 10px;
+      line-height: 1.4;
+      letter-spacing: .02em;
+    }
+
+    .phone-shot-label .badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--gold);
+      letter-spacing: .06em;
+    }
+
+    @media (max-width: 960px) {
+      .phone-gallery { gap: 16px; justify-content: center; }
+      .phone-shot { width: 140px; }
+    }
+
     /* ── Architecture Flow (arch-flow) ── */
     .arch-flow {
       display: flex;
@@ -782,13 +824,11 @@
         <li><strong>今日餐桌</strong>：遇到值得紀念的一桌，店長挑菜/酒、側拍照、寫開場白與手寫感謝，生成 <code>?s=</code> 連結 + QR 送給客人。</li>
         <li><strong>兩層登入</strong>：店員「瀏覽碼」只能看、店長「編輯碼」可改；客人連結免登入、看不到任何內部資料。</li>
       </ul>
-      <div class="screenshot-compare">
-        <div class="screenshot-compare-item"><div class="screenshot-compare-label">今日（單杯＋酒櫃）</div><img src="./screenshots/app-today.png" alt="今日頁" /></div>
-        <div class="screenshot-compare-item"><div class="screenshot-compare-label">配酒（雙向）</div><img src="./screenshots/app-pairing.png" alt="配酒頁" /></div>
-      </div>
-      <div class="screenshot-compare">
-        <div class="screenshot-compare-item"><div class="screenshot-compare-label after">酒款詳情＋外部評分</div><img src="./screenshots/wine-detail.png" alt="詳情頁" /></div>
-        <div class="screenshot-compare-item"><div class="screenshot-compare-label after">今日餐桌（客人回憶頁）</div><img src="./screenshots/keepsake-letter.png" alt="今日餐桌" /></div>
+      <div class="phone-gallery">
+        <div class="phone-shot"><img src="./screenshots/app-today.png" alt="今日頁" /><div class="phone-shot-label">今日（單杯＋酒櫃）</div></div>
+        <div class="phone-shot"><img src="./screenshots/app-pairing.png" alt="配酒頁" /><div class="phone-shot-label">配酒（雙向）</div></div>
+        <div class="phone-shot"><img src="./screenshots/wine-detail.png" alt="詳情頁" /><div class="phone-shot-label">酒款詳情＋外部評分</div></div>
+        <div class="phone-shot"><img src="./screenshots/keepsake-letter.png" alt="今日餐桌" /><div class="phone-shot-label">今日餐桌（客人回憶頁）</div></div>
       </div>
     </section>
 
@@ -851,9 +891,9 @@
 
       <div class="subsection"><div class="subsection-label">前端：一個 HTML 長出一整套 App</div>
         <p>所有畫面都在一個 <code>index.html</code> 裡，用 Preact 的 view 切換，一個一個長出來：今日酒櫃/單杯、酒單 + 風味/國家篩選、菜單、雙向配酒、酒款詳情、瓶頸小卡 + QR（印出來綁瓶頸）、品飲活動。</p>
-        <div class="screenshot-compare">
-          <div class="screenshot-compare-item"><div class="screenshot-compare-label">酒單（可篩選）</div><img src="./screenshots/app-list.png" alt="酒單" /></div>
-          <div class="screenshot-compare-item"><div class="screenshot-compare-label">菜單</div><img src="./screenshots/app-menu.png" alt="菜單" /></div>
+        <div class="phone-gallery">
+          <div class="phone-shot"><img src="./screenshots/app-list.png" alt="酒單" /><div class="phone-shot-label">酒單（可篩選）</div></div>
+          <div class="phone-shot"><img src="./screenshots/app-menu.png" alt="菜單" /><div class="phone-shot-label">菜單</div></div>
         </div>
       </div>
 
@@ -863,9 +903,8 @@
 
       <div class="subsection"><div class="subsection-label">今日餐桌 + 外部評分 + 兩層登入（後續加的）</div>
         <p>遇到很有趣的一桌，店長挑菜/酒、側拍照、寫開場白與手寫感謝、選版型，生成 <code>?s=</code> 專屬連結 + QR 送給客人。順手補上：酒款詳情顯示 Vivino 外部評分；以及「兩層密碼 + 公開資料自動去掉敏感欄位」——因為今日餐桌會把工具網址交到客人手上，逼出一個本來沒注意的隱私問題。</p>
-        <div class="result-preview">
-          <img src="./screenshots/login-gate.png" alt="兩層登入閘門" />
-          <div class="result-preview-caption"><span class="result-preview-badge">成果截圖</span>修補後的登入閘門：店員瀏覽碼、店長編輯碼；客人連結則完全繞過。</div>
+        <div class="phone-gallery">
+          <div class="phone-shot"><img src="./screenshots/login-gate.png" alt="兩層登入閘門" /><div class="phone-shot-label"><span class="badge">成果</span> 登入閘門：店員瀏覽碼 / 店長編輯碼；客人連結繞過</div></div>
         </div>
       </div>
     </section>

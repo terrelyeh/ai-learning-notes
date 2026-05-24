@@ -42,13 +42,14 @@ status: 已完成
 - **今日餐桌**：遇到值得紀念的一桌，店長挑今天的菜/酒、側拍照、寫開場白與手寫感謝，生成 `?s=` 專屬連結 + QR 送給客人收藏。
 - **兩層登入**：店員「瀏覽碼」只能看、店長「編輯碼」可改；客人連結免登入、且看不到任何內部資料。
 
-| 今日（單杯＋酒櫃） | 配酒（雙向） |
-|---|---|
-| ![今日頁](./screenshots/app-today.png) | ![配酒頁](./screenshots/app-pairing.png) |
+<p>
+  <img src="./screenshots/app-today.png" width="190" alt="今日（單杯＋酒櫃）" />&nbsp;
+  <img src="./screenshots/app-pairing.png" width="190" alt="配酒（雙向）" />&nbsp;
+  <img src="./screenshots/wine-detail.png" width="190" alt="酒款詳情＋外部評分" />&nbsp;
+  <img src="./screenshots/keepsake-letter.png" width="190" alt="今日餐桌（客人回憶頁）" />
+</p>
 
-| 酒款詳情＋外部評分 | 今日餐桌（客人回憶頁） |
-|---|---|
-| ![詳情頁](./screenshots/wine-detail.png) | ![今日餐桌](./screenshots/keepsake-letter.png) |
+<sub>左起：今日（單杯＋酒櫃）· 配酒（雙向）· 酒款詳情＋外部評分 · 今日餐桌（客人回憶頁）</sub>
 
 ---
 
@@ -134,9 +135,13 @@ Google Sheet（資料庫）  →  Apps Script Web App（JSON API）  →  網頁
 - **外部評分**：酒款詳情頁顯示 Vivino 等第三方評分增加說服力；18 支在架酒用 AI 查好填上。
 - **兩層登入 + 公開資料瘦身**：今日餐桌會把工具網址交到客人手上，這逼出一個本來沒注意的隱私問題——客人會不會摸到內部後台？答案是會，連客人頁背後的資料都含進價、內部筆記。於是把它重整成「兩層密碼 + 公開資料自動去掉敏感欄位」。
 
-| 兩層登入閘門 | 酒單（可篩選） |
-|---|---|
-| ![登入](./screenshots/login-gate.png) | ![酒單](./screenshots/app-list.png) |
+<p>
+  <img src="./screenshots/login-gate.png" width="190" alt="兩層登入閘門" />&nbsp;
+  <img src="./screenshots/app-list.png" width="190" alt="酒單（可篩選）" />&nbsp;
+  <img src="./screenshots/app-menu.png" width="190" alt="菜單" />
+</p>
+
+<sub>左起：兩層登入閘門 · 酒單（可篩選）· 菜單</sub>
 
 ---
 
