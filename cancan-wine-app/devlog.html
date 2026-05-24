@@ -805,7 +805,7 @@
       <ul>
         <li><strong>酒商資料整理到天荒地老</strong>：合作 20–30 家酒商，給的資料格式天差地遠——PDF、手機拍的 JPG、一句話塞在 Excel 總表裡。每進一批酒就要重新整理、還要上網查產區/品種/酒精度補齊。</li>
         <li><strong>店員記不住 50–60 款酒</strong>：natural wine 名字又長又難記，店員忙起來沒空好好介紹，更別說推薦搭配。</li>
-        <li><strong>菜單常換，配酒要跟著重排</strong>：每換一次菜，哪支酒配哪道菜就要重想一輪。</li>
+        <li><strong>酒款常換，配對要跟著更新</strong>：自然酒常售完、又不定期進新酒（菜單反而相對固定），每換一批酒，配對與酒卡都要重做。</li>
       </ul>
       <p>我想要的最終狀態很明確：</p>
       <blockquote>用「一張 Google Sheet」管理全部酒款，店員在手機上查得到、AI 幫忙產草稿、我只要在 Sheet 上審核，App 就即時更新。</blockquote>
@@ -869,7 +869,7 @@
             <tr><td><strong>Wines</strong><br>酒款</td><td>中心主表</td><td>一支酒一列：規格、價格、庫存，及三個獨立開關 active／inFridge／byGlass</td><td>被其他表用 wineId 指向</td></tr>
             <tr><td><strong>WineNotes</strong><br>酒款筆記</td><td>明細（1 對多）</td><td>一支酒多則筆記：豆知識／酒莊故事／店內品酒；分客人看與店員看</td><td>wineId → Wines</td></tr>
             <tr><td><strong>Feedback</strong><br>客人回饋</td><td>明細（1 對多）</td><td>記客人口味反饋（店員走免密碼通道寫入）</td><td>wineId／dishId</td></tr>
-            <tr><td><strong>Menu</strong><br>菜單</td><td>主表</td><td>菜色（常換）：中英名、描述、價格、風味</td><td>透過 Pairings 連 Wines</td></tr>
+            <tr><td><strong>Menu</strong><br>菜單</td><td>主表</td><td>菜色（相對固定）：中英名、描述、價格、風味</td><td>透過 Pairings 連 Wines</td></tr>
             <tr><td><strong>Pairings</strong><br>配酒</td><td>橋接（多對多）</td><td>一列＝一組 (菜, 酒)；AI 產的要老闆核可才上線</td><td>dishId→Menu、wineId→Wines</td></tr>
             <tr><td><strong>FlavorVocab</strong><br>風味詞庫</td><td>字典（共用）</td><td>酒與菜的共同風味詞；避免 AI 風味詞亂飄、重複</td><td>被 Wines.tags 與 Menu.flavorProfile 取用</td></tr>
             <tr><td><strong>Vendors</strong><br>酒商</td><td>查找表</td><td>20–30 家酒商；追貨源、算毛利</td><td>被 Wines.vendor 參照</td></tr>
