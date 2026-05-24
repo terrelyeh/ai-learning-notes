@@ -769,11 +769,12 @@
         <a class="nav-link" href="#s1"><span class="nav-num">01</span>為什麼要做</a>
         <a class="nav-link" href="#s2"><span class="nav-num">02</span>最終樣貌</a>
         <a class="nav-link" href="#s3"><span class="nav-num">03</span>系統架構</a>
-        <a class="nav-link" href="#s4"><span class="nav-num">04</span>技術選型</a>
-        <a class="nav-link" href="#s5"><span class="nav-num">05</span>從零到上線的歷程</a>
-        <a class="nav-link" href="#s6"><span class="nav-num">06</span>AI 怎麼幫我做的</a>
-        <a class="nav-link" href="#s7"><span class="nav-num">07</span>踩到的坑</a>
-        <a class="nav-link" href="#s8"><span class="nav-num">08</span>Takeaway</a>
+        <a class="nav-link" href="#s4"><span class="nav-num">04</span>資料庫怎麼分工</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>技術選型</a>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span>從零到上線的歷程</a>
+        <a class="nav-link" href="#s7"><span class="nav-num">07</span>AI 怎麼幫我做的</a>
+        <a class="nav-link" href="#s8"><span class="nav-num">08</span>踩到的坑</a>
+        <a class="nav-link" href="#s9"><span class="nav-num">09</span>Takeaway</a>
       </div>
     </div>
   </nav>
@@ -847,7 +848,54 @@
     </section>
 
     <section class="section" id="s4">
-      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">技術選型</h2></div>
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">資料庫：10 張表怎麼分工</h2></div>
+      <p>整張 Google Sheet 有 10 個分頁。它們不是一條平的清單，而是有「角色」之分——<strong>Wines（酒款主表）是中心，其他表不是繞著它記細節（明細），就是把它和別張表牽起來（橋接），或是被它查詢（字典／查找表）。</strong>想通這層分工，就懂整個資料庫怎麼運作。</p>
+
+      <div class="subsection"><div class="subsection-label">最關鍵的一組關係：菜 ↔ 酒 是「多對多」</div>
+        <p>「一道菜可以配多支酒、一支酒也可以配多道菜」——這種關係塞不進任何一張主表，所以中間放一張 <strong>Pairings</strong> 專門記每一組搭配。這張「橋接表」就是配酒功能能<strong>雙向查</strong>（選菜配酒、選酒配菜）的關鍵。</p>
+        <div class="arch-flow">
+          <div class="arch-node arch-storage"><div class="arch-node-label">主表</div><div class="arch-node-title">Menu（菜）</div><div class="arch-node-sub">一道菜一列</div></div>
+          <div class="arch-arrow"><svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="arch-node arch-ai"><div class="arch-node-label">橋接表</div><div class="arch-node-title">Pairings（配對）</div><div class="arch-node-sub">一列＝一組 (菜, 酒)；帶 rank/score，可雙向排序、可手動/規則/AI</div></div>
+          <div class="arch-arrow"><svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="arch-node arch-storage"><div class="arch-node-label">主表</div><div class="arch-node-title">Wines（酒）</div><div class="arch-node-sub">一支酒一列</div></div>
+        </div>
+      </div>
+
+      <div class="subsection"><div class="subsection-label">10 張表各自的角色</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>分頁</th><th>角色</th><th>主要目的</th><th>怎麼關聯</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Wines</strong><br>酒款</td><td>中心主表</td><td>一支酒一列：規格、價格、庫存，及三個獨立開關 active／inFridge／byGlass</td><td>被其他表用 wineId 指向</td></tr>
+            <tr><td><strong>WineNotes</strong><br>酒款筆記</td><td>明細（1 對多）</td><td>一支酒多則筆記：豆知識／酒莊故事／店內品酒；分客人看與店員看</td><td>wineId → Wines</td></tr>
+            <tr><td><strong>Feedback</strong><br>客人回饋</td><td>明細（1 對多）</td><td>記客人口味反饋（店員走免密碼通道寫入）</td><td>wineId／dishId</td></tr>
+            <tr><td><strong>Menu</strong><br>菜單</td><td>主表</td><td>菜色（常換）：中英名、描述、價格、風味</td><td>透過 Pairings 連 Wines</td></tr>
+            <tr><td><strong>Pairings</strong><br>配酒</td><td>橋接（多對多）</td><td>一列＝一組 (菜, 酒)；AI 產的要老闆核可才上線</td><td>dishId→Menu、wineId→Wines</td></tr>
+            <tr><td><strong>FlavorVocab</strong><br>風味詞庫</td><td>字典（共用）</td><td>酒與菜的共同風味詞；避免 AI 風味詞亂飄、重複</td><td>被 Wines.tags 與 Menu.flavorProfile 取用</td></tr>
+            <tr><td><strong>Vendors</strong><br>酒商</td><td>查找表</td><td>20–30 家酒商；追貨源、算毛利</td><td>被 Wines.vendor 參照</td></tr>
+            <tr><td><strong>Countries</strong><br>國家</td><td>查找表</td><td>國名中英／國碼對照（小卡上的「產區 (國碼)」）</td><td>被 Wines.country 參照</td></tr>
+            <tr><td><strong>Config</strong><br>設定</td><td>設定開關</td><td>全店開關：是否顯示售價、品飲活動、照片資料夾 ID</td><td>獨立，與酒無直接關聯</td></tr>
+            <tr><td><strong>Sessions</strong><br>今日餐桌</td><td>快照</td><td>一筆＝一張客人回憶頁（當天的菜/酒/側拍照）</td><td>wineIds／dishIds 引用 Wines/Menu</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="subsection"><div class="subsection-label">三種關係，一句話記</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>關係</th><th>哪些表</th><th>白話</th></tr></thead>
+          <tbody>
+            <tr><td>主表 → 明細（1 對多）</td><td>Wines → WineNotes／Feedback</td><td>一支酒，很多則筆記/回饋</td></tr>
+            <tr><td>橋接（多對多）</td><td>Menu ↔ Pairings ↔ Wines</td><td>菜和酒互相配，中間用一張表記</td></tr>
+            <tr><td>字典／查找（被參照）</td><td>FlavorVocab／Vendors／Countries</td><td>共用詞庫與對照表，避免各寫各的</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>資料怎麼流：</strong>① AI 產草稿寫進 Wines（標 draft）→ 老闆在 Sheet 審 → 變 reviewed → 客人才看得到。② 三層可得性：<code>active</code>（庫房有貨）→ 勾 <code>inFridge</code>（進今日酒櫃）→ 勾 <code>byGlass</code>（今日單杯），App「今日」頁就讀這三個開關。③ 配酒靠 FlavorVocab 當共同詞庫，把 Menu 的風味比對 Wines 的風味標籤。</div></div>
+    </section>
+
+    <section class="section" id="s5">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">技術選型</h2></div>
       <div class="table-wrap"><table>
         <thead><tr><th>選擇</th><th>為什麼選它</th></tr></thead>
         <tbody>
@@ -863,8 +911,8 @@
       </table></div>
     </section>
 
-    <section class="section" id="s5">
-      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">從零到上線的歷程</h2></div>
+    <section class="section" id="s6">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">從零到上線的歷程</h2></div>
 
       <div class="subsection"><div class="subsection-label">先把資料結構想清楚（Sheet 的 10 個分頁）</div>
         <p>第一步不是寫程式，是<strong>設計資料庫</strong>。AI 幫我把營運裡的每個概念對到一個分頁：</p>
@@ -909,8 +957,8 @@
       </div>
     </section>
 
-    <section class="section" id="s6">
-      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">AI 怎麼幫我做的</h2></div>
+    <section class="section" id="s7">
+      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">AI 怎麼幫我做的</h2></div>
       <div class="ai-role-card">
         <div class="ai-role-col ai-role-ai"><div class="ai-role-header">AI 負責</div><ul><li>設計 Sheet 資料結構</li><li>寫前端 Preact + 後端 Apps Script</li><li>部署上線、發佈 PWA</li><li>生示範照片、上網查酒的評分</li></ul></div>
         <div class="ai-role-col ai-role-human"><div class="ai-role-header">人負責</div><ul><li>要做什麼、像不像</li><li>把營運語言翻成需求</li><li>放哪裡、哪裡怪</li><li>看截圖給回饋、拍板</li></ul></div>
@@ -922,8 +970,8 @@
       <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>隨口問的隱私疑慮變成必要修補：</strong>我問「客人拿到連結會不會摸到後台」，AI 老實說「比你想的更曝露」，把一個許願功能變成一次安全重整。</div></div>
     </section>
 
-    <section class="section" id="s7">
-      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">踩到的坑，讓我更懂的事</h2></div>
+    <section class="section" id="s8">
+      <div class="section-header"><span class="section-num">08</span><h2 class="section-title">踩到的坑，讓我更懂的事</h2></div>
 
       <div class="bug-block">
         <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑：方便 = 漏洞</span></div>
@@ -966,8 +1014,8 @@
       </div>
     </section>
 
-    <section class="section" id="s8">
-      <div class="section-header"><span class="section-num">08</span><h2 class="section-title">Takeaway</h2></div>
+    <section class="section" id="s9">
+      <div class="section-header"><span class="section-num">09</span><h2 class="section-title">Takeaway</h2></div>
       <div class="takeaway">
         <div class="takeaway-label">帶走的幾件事</div>
         <p><strong>非工程師也能主導開發一整套工具。</strong>重點不是會不會寫程式，而是會描述情境、會把營運語言翻成資料結構、會判斷「像不像/順不順」、敢追問。最有效的模式是「先講情境讓 AI 提方案 + 看截圖快速迭代」。</p>
