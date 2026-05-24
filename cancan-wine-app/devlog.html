@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cancan 今日餐桌與權限分層 — AI 協作開發紀錄</title>
-  <meta name="description" content="一間台北 natural wine bar 的酒款 App：用 AI 協作長出「今日餐桌」客人回憶頁、外部評分、兩層登入權限與店員回饋的開發紀錄。" />
+  <title>cancan 酒款管理 — 用一張 Google Sheet 長出一整套 wine bar App · AI 協作開發全紀錄</title>
+  <meta name="description" content="從零幫一間台北 natural wine bar 做整套酒款管理工具：用 Apps Script 把 Google Sheet 變資料庫、長出 10 個分頁，再拉出手機 App（今日酒櫃/單杯/酒單/菜單/雙向配酒/詳情/瓶頸小卡 QR/品飲活動/今日餐桌），最後發佈成 PWA。非工程師主導、AI 全程實作的開發紀錄。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
@@ -360,52 +360,6 @@
     .callout-tip { background: rgba(181,135,42,0.07); border-color: var(--gold); }
     .callout-note { background: rgba(0,0,0,0.04); border-color: var(--ink-3); }
 
-    /* ── Route cards (3-col grid) ── */
-    .route-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      margin-bottom: 32px;
-      border: 1px solid var(--border-strong);
-      background: var(--border-strong);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .route-card { background: var(--surface); padding: 24px 22px; position: relative; }
-    .route-card.featured { background: var(--surface-warm); }
-
-    .route-tag {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--gold);
-      letter-spacing: .08em;
-      margin-bottom: 10px;
-    }
-
-    .route-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: var(--ink); }
-    .route-sub { font-size: 12px; color: var(--ink-4); margin-bottom: 14px; }
-
-    .pros-cons { list-style: none; padding: 0; font-size: 13.5px; color: var(--ink-3); }
-    .pros-cons li { margin-bottom: 6px; padding-left: 16px; position: relative; }
-    .pros-cons .pro::before { content: "✓"; position: absolute; left: 0; color: #5c8a5c; }
-    .pros-cons .con::before { content: "—"; position: absolute; left: 0; color: var(--ink-4); }
-
-    .rec-badge {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      background: var(--gold);
-      color: #fff;
-      padding: 2px 8px;
-      border-radius: 2px;
-    }
-
     /* ── Tech pills ── */
     .tech-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
 
@@ -423,23 +377,6 @@
     }
 
     .tech-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-    /* ── Decision tree (dark terminal) ── */
-    .tree-block {
-      background: #111009;
-      border-radius: 4px;
-      padding: 28px 32px;
-      font-family: var(--mono);
-      font-size: 13.5px;
-      line-height: 2;
-      color: #c9c5b8;
-      margin-bottom: 24px;
-      overflow-x: auto;
-    }
-
-    .tq { color: #d4b483; }
-    .ta { color: #8fba8f; }
-    .tc { color: #9ab0c9; }
 
     /* ── Takeaway boxes ── */
     .takeaway {
@@ -464,10 +401,6 @@
     .matrix-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; font-size: 16px; }
     .matrix-arrow { color: var(--gold); }
     .matrix-key { color: var(--ink-3); font-size: 14px; min-width: 110px; }
-
-    /* ── Code compare grid ── */
-    .code-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .code-label { font-size: 12px; color: var(--ink-4); margin-bottom: 8px; font-weight: 500; letter-spacing: .04em; }
 
     /* ── Case Card (opening hook — placed after Hero, before first section) ── */
     .case-card {
@@ -573,10 +506,6 @@
 
     .bug-body { background: var(--surface); padding: 22px 24px; }
 
-    @media (max-width: 960px) {
-      .ai-role-card { grid-template-columns: 1fr; }
-    }
-
     /* ── Result Preview (成果截圖) ── */
     .result-preview {
       margin: 32px 0;
@@ -615,7 +544,7 @@
       white-space: nowrap;
     }
 
-    /* ── Screenshot Compare (Before / After) ── */
+    /* ── Screenshot Compare (2-up gallery) ── */
     .screenshot-compare {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -671,7 +600,7 @@
       border-radius: 4px;
       padding: 16px 20px;
       min-width: 140px;
-      max-width: 200px;
+      max-width: 220px;
       flex-shrink: 0;
     }
 
@@ -728,128 +657,11 @@
       fill: none;
     }
 
-    .arch-arrow-label {
-      font-size: 10px;
-      color: var(--ink-4);
-      text-align: center;
-      font-family: var(--mono);
-      letter-spacing: .05em;
-      margin-top: 2px;
-    }
-
-    /* Vertical variant */
-    .arch-flow.vertical {
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .arch-flow.vertical .arch-arrow { transform: rotate(90deg); padding: 4px 0; }
-    .arch-flow.vertical .arch-node { max-width: 280px; width: 100%; }
-
-    /* Multi-row (wrap) */
-    .arch-flow-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-      margin-bottom: 32px;
-    }
-
-    .arch-flow-grid .arch-node { max-width: none; }
-
     @media (max-width: 960px) {
       .arch-flow { flex-direction: column; align-items: stretch; }
       .arch-flow .arch-node { max-width: none; }
       .arch-flow .arch-arrow { transform: rotate(90deg); align-self: center; padding: 4px 0; }
-    }
-
-    /* ── Credentials Block (外部服務與金鑰) ── */
-    .credentials-block {
-      border: 1px solid var(--border-strong);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-bottom: 24px;
-    }
-
-    .credentials-header {
-      background: #1a1d2e;
-      padding: 13px 22px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .credentials-icon { font-size: 14px; }
-
-    .credentials-title {
-      font-family: var(--mono);
-      font-size: 13px;
-      font-weight: 500;
-      color: #a8b5d6;
-      letter-spacing: .04em;
-    }
-
-    .credentials-body { background: var(--surface); }
-
-    .credentials-row {
-      display: grid;
-      grid-template-columns: 1fr 1.5fr 1fr 1.5fr;
-      padding: 12px 22px;
-      border-bottom: 1px solid var(--border);
-      font-size: 14px;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .credentials-row:last-child { border-bottom: none; }
-
-    .credentials-row.header-row {
-      background: var(--surface-warm);
-      font-weight: 500;
-      font-size: 11px;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: var(--ink-3);
-      padding: 10px 22px;
-    }
-
-    .credentials-service {
-      font-weight: 500;
-      color: var(--ink);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .credentials-type-badge {
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: .06em;
-      padding: 2px 6px;
-      border-radius: 2px;
-      white-space: nowrap;
-    }
-
-    .badge-api-key { background: rgba(181,135,42,0.12); color: var(--gold); }
-    .badge-token { background: rgba(92,122,191,0.12); color: #5c7abf; }
-    .badge-secret { background: rgba(207,92,92,0.12); color: #cf5c5c; }
-    .badge-env { background: rgba(92,138,92,0.12); color: #5c8a5c; }
-    .badge-model { background: rgba(155,114,207,0.12); color: #9b72cf; }
-
-    .credentials-value {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--ink-3);
-    }
-
-    .credentials-note {
-      font-size: 13px;
-      color: var(--ink-3);
-      line-height: 1.5;
-    }
-
-    @media (max-width: 960px) {
-      .credentials-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .ai-role-card { grid-template-columns: 1fr; }
     }
 
     /* ── Footer ── */
@@ -899,8 +711,6 @@
       .main { padding: 40px 28px 80px; }
       .hero h1 { font-size: 30px; }
       .menu-toggle { display: flex; }
-      .route-grid { grid-template-columns: 1fr; }
-      .code-compare { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -909,7 +719,7 @@
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-top">
       <div class="sidebar-eyebrow">AI 協作紀錄 · 工具開發</div>
-      <h2>cancan 今日餐桌與權限分層</h2>
+      <h2>cancan 酒款管理 — 從一張 Sheet 到一整套 App</h2>
     </div>
     <div class="nav-section">
       <div class="nav-group">
@@ -918,9 +728,10 @@
         <a class="nav-link" href="#s2"><span class="nav-num">02</span>最終樣貌</a>
         <a class="nav-link" href="#s3"><span class="nav-num">03</span>系統架構</a>
         <a class="nav-link" href="#s4"><span class="nav-num">04</span>技術選型</a>
-        <a class="nav-link" href="#s5"><span class="nav-num">05</span>AI 怎麼幫我做的</a>
-        <a class="nav-link" href="#s6"><span class="nav-num">06</span>踩到的坑</a>
-        <a class="nav-link" href="#s7"><span class="nav-num">07</span>Takeaway</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>從零到上線的歷程</a>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span>AI 怎麼幫我做的</a>
+        <a class="nav-link" href="#s7"><span class="nav-num">07</span>踩到的坑</a>
+        <a class="nav-link" href="#s8"><span class="nav-num">08</span>Takeaway</a>
       </div>
     </div>
   </nav>
@@ -933,106 +744,161 @@
 
     <header class="hero">
       <div class="hero-eyebrow"><span class="eyebrow-text">工具開發 · AI 協作 · 餐飲</span></div>
-      <h1>cancan「今日餐桌」與權限分層</h1>
+      <h1>用一張 Google Sheet<br>長出一整套 wine bar App</h1>
       <div class="hero-rule"></div>
-      <p class="hero-desc">一間台北 natural wine bar 的酒款 App。這一輪用對話長出「送給客人的回憶頁」，順手補上隱私與權限分層——全程我只描述情境與感覺，AI 負責實作、部署、生圖。</p>
-      <div class="hero-meta">整理日期：2026-05-24 &nbsp;·&nbsp; 類型：AI 工具開發（非工程師視角）</div>
+      <p class="hero-desc">從零幫一間台北 natural wine bar 做整套酒款管理工具：用 Apps Script 把 Google Sheet 變資料庫、長出 10 個分頁，再拉出一個手機 App（今日酒櫃／單杯／酒單／菜單／雙向配酒／詳情／瓶頸小卡 QR／品飲活動／今日餐桌），最後發佈成可安裝的 PWA。全程我不會寫程式，只描述情境與感覺，AI 負責設計資料結構、寫前後端、部署、生圖。</p>
+      <div class="hero-meta">整理日期：2026-05-24 &nbsp;·&nbsp; 類型：AI 工具開發（非工程師視角）&nbsp;·&nbsp; 涵蓋整個專案</div>
     </header>
 
     <div class="case-card">
-      <div class="case-card-row"><span class="case-card-label">我用 AI 做了什麼</span><span class="case-card-value">用一整輪對話，幫店裡的酒款 App 長出「今日餐桌」客人回憶頁、外部評分、兩層登入、店員回饋等功能。</span></div>
-      <div class="case-card-row"><span class="case-card-label">沒有 AI 的話</span><span class="case-card-value">我不會寫程式，只能外包，等報價、等排期，來回改字級改版面會是好幾週的事。</span></div>
-      <div class="case-card-row"><span class="case-card-label">最終成果</span><span class="case-card-value">「值得紀念的一桌，30 秒做一頁送客人」上線，並把客人看不到內部資料的隱私漏洞補起來。</span></div>
+      <div class="case-card-row"><span class="case-card-label">我用 AI 做了什麼</span><span class="case-card-value">從零做出「Sheet 當資料庫 → Apps Script API → 手機 PWA」的整套酒款管理工具，含 10 個資料分頁與近十個 App 畫面。</span></div>
+      <div class="case-card-row"><span class="case-card-label">沒有 AI 的話</span><span class="case-card-value">「資料庫 + 後端 API + 手機 App + 部署」對不會寫程式的我等於外包，要好幾週、好幾萬塊。</span></div>
+      <div class="case-card-row"><span class="case-card-label">最終成果</span><span class="case-card-value">店員手機 3–4 次點擊就查到酒、改 Google Sheet 就即時更新、不用重新發版的工具；已上線、可安裝到手機桌面。</span></div>
     </div>
 
     <section class="section" id="s1">
       <div class="section-header"><span class="section-num">01</span><h2 class="section-title">為什麼要做這件事</h2></div>
-      <p>起點是一個很具體的營運情境：<strong>遇到很有趣、吃得很開心的一桌，想在結束時送他們一頁「今天的餐桌」當回憶</strong>——記錄今天開了哪些酒、吃了哪些菜，配上店裡的側拍照和一段手寫感謝，生成連結 + QR 給客人收藏、分享到 IG。建不建立完全由店長看當天氣氛決定，不是每桌都做。</p>
-      <p>做著做著，又牽出兩件本來沒想到、但其實更重要的事：</p>
-      <div class="callout callout-note"><span class="callout-icon">!</span><div>客人收到連結 → 等於知道了工具網址 → 會不會就摸到我們內部用的後台？（隱私）<br>店員沒有編輯權限，那客人想給回饋時店員怎麼記？</div></div>
-      <p>所以這一輪其實是「一個許願功能」帶出「一次小型的權限與隱私重整」。</p>
+      <p>起點是三個很具體、每天都在發生的營運痛點：</p>
+      <ul>
+        <li><strong>酒商資料整理到天荒地老</strong>：合作 20–30 家酒商，給的資料格式天差地遠——PDF、手機拍的 JPG、一句話塞在 Excel 總表裡。每進一批酒就要重新整理、還要上網查產區/品種/酒精度補齊。</li>
+        <li><strong>店員記不住 50–60 款酒</strong>：natural wine 名字又長又難記，店員忙起來沒空好好介紹，更別說推薦搭配。</li>
+        <li><strong>菜單常換，配酒要跟著重排</strong>：每換一次菜，哪支酒配哪道菜就要重想一輪。</li>
+      </ul>
+      <p>我想要的最終狀態很明確：</p>
+      <blockquote>用「一張 Google Sheet」管理全部酒款，店員在手機上查得到、AI 幫忙產草稿、我只要在 Sheet 上審核，App 就即時更新。</blockquote>
+      <p>並且要能自動產出兩個交付物——印出來綁在瓶頸上的「瓶頸小卡」，跟「依菜推酒」的配酒建議。</p>
     </section>
 
     <section class="section" id="s2">
       <div class="section-header"><span class="section-num">02</span><h2 class="section-title">最終樣貌</h2></div>
-      <div class="result-preview">
-        <img src="./screenshots/keepsake-letter.png" alt="今日餐桌客人回憶頁" />
-        <div class="result-preview-caption"><span class="result-preview-badge">成果截圖</span>客人收到的「今日餐桌」回憶頁：品牌開場、側拍照、今天的菜與酒、手寫感謝、分享 QR。</div>
-      </div>
-      <p>這一輪做出來的東西：</p>
+      <p>一個部署在 Vercel、可安裝到手機的 PWA，後面接一張 Google Sheet 當資料庫。主要畫面：</p>
       <ul>
-        <li><strong>今日餐桌（回憶頁）</strong>：挑菜/酒、挑側拍照、寫開場白與手寫感謝、選版型（信箋／卡片／雜誌），生成 <code>?s=</code> 專屬連結 + QR。</li>
-        <li><strong>外部評分</strong>：酒款頁顯示 Vivino 等第三方評分，18 支在架酒已用 AI 查好填上。</li>
-        <li><strong>兩層登入</strong>：店員瀏覽碼只能看、店長編輯碼可改；客人連結免登入。</li>
-        <li><strong>店員回饋</strong>：店員不用編輯權限也能記客人回饋。</li>
-        <li><strong>品牌一致</strong>：品牌色校正成 #BE4118、標準字改用 Fraunces。</li>
+        <li><strong>今日</strong>（預設頁）：今日活動橫幅 + 今日單杯（House Wine）+ 今日酒櫃，店員打開就看到「今天有什麼可以賣、可以推」。</li>
+        <li><strong>酒單</strong>：全部在架酒，可用風味 / 國家篩選，點進去看詳情。</li>
+        <li><strong>菜單</strong>：當期菜色，含照片與介紹。</li>
+        <li><strong>配酒</strong>：雙向——「選菜 → 配酒」幫整桌配，或「選酒 → 配菜」。</li>
+        <li><strong>酒款詳情</strong>：品飲分數、風味標籤、酒莊故事 / 豆知識 / 店內品酒筆記、侍酒備註、外部評分（Vivino），底部可生瓶頸小卡 + QR。</li>
+        <li><strong>品飲活動</strong>：辦品酒會時，把 Config 一個開關打開就出現「今日活動」頁。</li>
+        <li><strong>今日餐桌</strong>：遇到值得紀念的一桌，店長挑菜/酒、側拍照、寫開場白與手寫感謝，生成 <code>?s=</code> 連結 + QR 送給客人。</li>
+        <li><strong>兩層登入</strong>：店員「瀏覽碼」只能看、店長「編輯碼」可改；客人連結免登入、看不到任何內部資料。</li>
       </ul>
-      <div class="result-preview">
-        <img src="./screenshots/wine-detail.png" alt="酒款詳情含外部評分" />
-        <div class="result-preview-caption"><span class="result-preview-badge">成果截圖</span>酒款詳情頁：外部評分（Vivino）放在第一區最下方、用分隔線隔開，不跟自家資料混在一起。</div>
+      <div class="screenshot-compare">
+        <div class="screenshot-compare-item"><div class="screenshot-compare-label">今日（單杯＋酒櫃）</div><img src="./screenshots/app-today.png" alt="今日頁" /></div>
+        <div class="screenshot-compare-item"><div class="screenshot-compare-label">配酒（雙向）</div><img src="./screenshots/app-pairing.png" alt="配酒頁" /></div>
+      </div>
+      <div class="screenshot-compare">
+        <div class="screenshot-compare-item"><div class="screenshot-compare-label after">酒款詳情＋外部評分</div><img src="./screenshots/wine-detail.png" alt="詳情頁" /></div>
+        <div class="screenshot-compare-item"><div class="screenshot-compare-label after">今日餐桌（客人回憶頁）</div><img src="./screenshots/keepsake-letter.png" alt="今日餐桌" /></div>
       </div>
     </section>
 
     <section class="section" id="s3">
       <div class="section-header"><span class="section-num">03</span><h2 class="section-title">系統架構</h2></div>
-      <p>維持原本的三層，這次主要是在「App」層長功能、在「Apps Script」層加權限與資料瘦身。</p>
+      <p>整套工具是<strong>三層</strong>，核心理念：<strong>Google Sheet = 唯一真相來源（資料庫）＋人工審核面；AI 只產草稿，老闆核可後才上線；前端與任何工具都只讀後端吐的 JSON。</strong></p>
       <div class="arch-flow">
-        <div class="arch-node arch-storage"><div class="arch-node-label">資料庫</div><div class="arch-node-title">Google Sheet</div><div class="arch-node-sub">酒 / 菜 / 今日餐桌 / 照片資料夾</div></div>
+        <div class="arch-node arch-storage"><div class="arch-node-label">資料庫</div><div class="arch-node-title">Google Sheet</div><div class="arch-node-sub">10 個分頁：酒/菜/配酒/筆記/風味詞/設定/今日餐桌… + 3 個 Drive 照片資料夾</div></div>
         <div class="arch-arrow"><svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="arch-node arch-backend"><div class="arch-node-label">API</div><div class="arch-node-title">Apps Script</div><div class="arch-node-sub">依權限回三種資料；寫入需編輯碼；公開資料自動瘦身</div></div>
+        <div class="arch-node arch-backend"><div class="arch-node-label">API</div><div class="arch-node-title">Apps Script Web App</div><div class="arch-node-sub">doGet 唯讀 JSON（依權限三種回應）；doPost 寫入；中文表頭↔英文 key 自動轉換</div></div>
         <div class="arch-arrow"><svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="arch-node arch-frontend"><div class="arch-node-label">前端</div><div class="arch-node-title">網頁 App (Preact)</div><div class="arch-node-sub">部署 Vercel；客人頁 ?w= / ?d= / ?s=</div></div>
+        <div class="arch-node arch-frontend"><div class="arch-node-label">前端</div><div class="arch-node-title">網頁 App (Preact, PWA)</div><div class="arch-node-sub">部署 Vercel；今日/酒單/菜單/配酒/詳情/今日餐桌；客人頁 ?w= /?d= /?s=</div></div>
       </div>
-      <div class="callout callout-tip"><span class="callout-icon">→</span><div>關鍵概念：<strong>同一個 App、三種人看到不同東西</strong>——客人（公開、瘦身過的資料）、店員（瀏覽碼，看得到內部小抄但不能改）、店長（編輯碼，全權）。</div></div>
+      <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>為什麼用 Google Sheet 當資料庫：</strong>老闆本來就會用試算表。把資料庫做成一張他看得懂、能直接手改的 Sheet，就不用學任何後台系統——<strong>改 Sheet = 改線上資料</strong>，這是整個設計的靈魂。</div></div>
+      <div class="callout callout-note"><span class="callout-icon">!</span><div>同一個 App、三種人看到不同東西——客人（公開、瘦身過、看不到價格與內部筆記）、店員（瀏覽碼，看得到內部小抄但不能改）、店長（編輯碼，全權）。</div></div>
     </section>
 
     <section class="section" id="s4">
-      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">技術選型（這輪新增）</h2></div>
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">技術選型</h2></div>
       <div class="table-wrap"><table>
         <thead><tr><th>選擇</th><th>為什麼選它</th></tr></thead>
         <tbody>
-          <tr><td>Google Sheet 當側拍相片庫</td><td>店長把照片丟進 Drive「側拍環境照」資料夾，做回憶頁時清單自動出現，不用每次找工程師</td></tr>
-          <tr><td>Fraunces（可變字型）</td><td>找標準字時試了幾款圓體都不像，這款「軟襯線」能調粗細/字腳柔軟度，最接近 logo</td></tr>
-          <tr><td>LXGW WenKai TC（手寫字體）</td><td>結尾感謝想要手寫感，但放照片很假——改用手寫字體直接排在頁面上，底色一致、像真的手寫</td></tr>
-          <tr><td>外部評分「查一次存起來」</td><td>Vivino / Wine-Searcher 沒有開放 API、不能即時抓；改成進酒時查一次填進 Sheet，自然酒沒評分就留白</td></tr>
-          <tr><td>兩層密碼（瀏覽碼 + 編輯碼）</td><td>店員日常用、店長才編輯；客人連結繞過登入</td></tr>
+          <tr><td>Google Sheet 當資料庫</td><td>老闆會用試算表；改資料不用工程師、不用後台，直接編格子就好</td></tr>
+          <tr><td>Apps Script Web App</td><td>免費、免主機、跟 Sheet 同源；doGet 吐 JSON、doPost 寫回，一個檔搞定後端</td></tr>
+          <tr><td>Preact + htm + Tailwind（走 CDN，零 build）</td><td>整個前端就一個 index.html，沒有 build step、沒有 node_modules；改完直接部署</td></tr>
+          <tr><td>Vercel + PWA</td><td>一行指令部署；PWA 讓店員把它「裝」到手機桌面，像 App 一樣開</td></tr>
+          <tr><td>JSONP 讀 / text/plain 寫</td><td>Apps Script 跨網域有 CORS 限制；GET 用 JSONP、POST 用 text/plain 繞過瀏覽器預檢</td></tr>
+          <tr><td>中文表頭 ↔ 英文 key</td><td>Sheet 顯示中文表頭（老闆看得懂），程式裡用英文 key（好寫）；兩邊自動轉換</td></tr>
+          <tr><td>Fraunces + LXGW WenKai TC</td><td>wordmark 要「軟襯線」調性；今日餐桌的手寫感謝用手寫字體渲染，比放照片真</td></tr>
+          <tr><td>外部評分「查一次存起來」</td><td>Vivino / Wine-Searcher 沒開放 API；進酒時查一次填進 Sheet</td></tr>
         </tbody>
       </table></div>
     </section>
 
     <section class="section" id="s5">
-      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">AI 怎麼幫我做的</h2></div>
-      <div class="ai-role-card">
-        <div class="ai-role-col ai-role-ai"><div class="ai-role-header">AI 負責</div><ul><li>前端 + 後端（Apps Script）實作</li><li>部署上線、生示範照片</li><li>上網查 18 支酒的評分</li></ul></div>
-        <div class="ai-role-col ai-role-human"><div class="ai-role-header">人負責</div><ul><li>要做什麼、像不像</li><li>放哪裡、哪裡怪</li><li>看截圖給回饋、拍板</li></ul></div>
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">從零到上線的歷程</h2></div>
+
+      <div class="subsection"><div class="subsection-label">先把資料結構想清楚（Sheet 的 10 個分頁）</div>
+        <p>第一步不是寫程式，是<strong>設計資料庫</strong>。AI 幫我把營運裡的每個概念對到一個分頁：</p>
+        <ul>
+          <li><strong>Wines</strong>（酒款主表）：一支酒一列，含產區、品種、品飲分數、風味、價格、進價、酒商、庫存……還有三個關鍵獨立開關——<code>active</code>（可賣）、<code>inFridge</code>（今日在酒櫃）、<code>byGlass</code>（今日有單杯），對應店裡真實動線：庫房 → 今日酒櫃 → 今日單杯。</li>
+          <li><strong>WineNotes</strong>（店內知識庫）：一支酒對多筆筆記，分豆知識/酒莊故事/店內品酒/侍酒建議；分「店員看」與「客人看」可見度。</li>
+          <li><strong>Menu / Pairings / FlavorVocab / Feedback / Vendors / Countries / Config</strong>：菜單、配酒（可手動/規則/AI、雙向查）、風味詞庫（讓酒和菜講同一種語言）、客人回饋、酒商、國家、全店設定（含品飲活動開關）。</li>
+          <li>後來又加了第 10 個 <strong>Sessions</strong>（今日餐桌）。</li>
+        </ul>
+        <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>學到的事：</strong>做工具最值錢的一步是「把營運語言翻成資料結構」。這步想清楚，後面前端怎麼長都順；想偏了，後面一直打結。</div></div>
       </div>
-      <div class="subsection"><div class="subsection-label">提問模式</div><p>以「<strong>情境描述</strong>」開頭（例：遇到有趣的一桌想送他們一頁回憶），AI 先給做法建議＋老實講限制，談好方向才動手；接著是「<strong>看截圖 → 微調</strong>」的快速來回（字級小 20%、間距收一點、這個拉出來變常駐按鈕…）。</p></div>
-      <div class="subsection"><div class="subsection-label">三個關鍵轉折</div></div>
-      <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>先討論再動手：</strong>今日餐桌一開始只說情境，AI 先把「資料怎麼存、版型、照片怎麼來」攤開列出取捨，這個前置討論讓後面少走很多冤枉路。</div></div>
-      <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>「手寫卡看起來很假」：</strong>我嫌放手寫照片很假，AI 改用手寫字體渲染文字——原來「溫度」來自字體呈現，不是貼一張圖。</div></div>
-      <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>隨口問的隱私疑慮：</strong>我問「客人拿到連結會不會摸到後台」，AI 老實說「比你想的更曝露」，把一個許願功能變成一次必要的安全修補。</div></div>
-      <div class="result-preview">
-        <img src="./screenshots/login-gate.png" alt="兩層登入閘門" />
-        <div class="result-preview-caption"><span class="result-preview-badge">成果截圖</span>修補後的登入閘門：店員瀏覽碼、店長編輯碼；客人連結則完全繞過。</div>
+
+      <div class="subsection"><div class="subsection-label">中文表頭 ↔ 英文 key —— 讓老闆和程式都舒服</div>
+        <p>老闆要在 Sheet 上看到「品名 / 產區 / 售價」這種中文表頭；但程式裡用中文當欄位名是惡夢。AI 設計了一層對照表：<strong>讀資料時把中文表頭轉成英文 key，寫資料時再轉回中文。</strong> 老闆看到的是中文、程式吃到的是英文，兩邊都舒服。這層機制是後面所有功能的地基。</p>
+      </div>
+
+      <div class="subsection"><div class="subsection-label">後端：一個 Apps Script 檔搞定讀寫</div>
+        <ul>
+          <li><strong>doGet（唯讀 JSON）</strong>：店員/店長帶密碼拿「完整資料」；客人不帶密碼拿「瘦身過的公開資料」。</li>
+          <li><strong>doPost（寫入）</strong>：店長帶密碼可新增/修改/刪除；另開一條免密碼通道讓店員記錄客人回饋（只能寫進 Feedback、欄位白名單）。</li>
+          <li>部署成「任何人可存取」的 Web App，前端就能免金鑰讀取。</li>
+        </ul>
+      </div>
+
+      <div class="subsection"><div class="subsection-label">前端：一個 HTML 長出一整套 App</div>
+        <p>所有畫面都在一個 <code>index.html</code> 裡，用 Preact 的 view 切換，一個一個長出來：今日酒櫃/單杯、酒單 + 風味/國家篩選、菜單、雙向配酒、酒款詳情、瓶頸小卡 + QR（印出來綁瓶頸）、品飲活動。</p>
+        <div class="screenshot-compare">
+          <div class="screenshot-compare-item"><div class="screenshot-compare-label">酒單（可篩選）</div><img src="./screenshots/app-list.png" alt="酒單" /></div>
+          <div class="screenshot-compare-item"><div class="screenshot-compare-label">菜單</div><img src="./screenshots/app-menu.png" alt="菜單" /></div>
+        </div>
+      </div>
+
+      <div class="subsection"><div class="subsection-label">發佈成 PWA</div>
+        <p>加上 manifest 與 service worker，店員就能把網址「加入主畫面」，開起來沒有瀏覽器網址列，像原生 App，還能離線開上次的資料。<strong>對店員來說，它就是一個 App，不需要知道後面是一張 Google Sheet。</strong></p>
+      </div>
+
+      <div class="subsection"><div class="subsection-label">今日餐桌 + 外部評分 + 兩層登入（後續加的）</div>
+        <p>遇到很有趣的一桌，店長挑菜/酒、側拍照、寫開場白與手寫感謝、選版型，生成 <code>?s=</code> 專屬連結 + QR 送給客人。順手補上：酒款詳情顯示 Vivino 外部評分；以及「兩層密碼 + 公開資料自動去掉敏感欄位」——因為今日餐桌會把工具網址交到客人手上，逼出一個本來沒注意的隱私問題。</p>
+        <div class="result-preview">
+          <img src="./screenshots/login-gate.png" alt="兩層登入閘門" />
+          <div class="result-preview-caption"><span class="result-preview-badge">成果截圖</span>修補後的登入閘門：店員瀏覽碼、店長編輯碼；客人連結則完全繞過。</div>
+        </div>
       </div>
     </section>
 
     <section class="section" id="s6">
-      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">踩到的坑，讓我更懂的事</h2></div>
-
-      <div class="bug-block">
-        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑：像照片就是假</span></div>
-        <div class="bug-body">
-          <p>模擬手寫感謝時，貼 AI 生成的手寫卡照片怎麼看都假。改成用手寫字體把字排在頁面上、背景跟頁面一致，立刻就對了。</p>
-          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走：</strong>要「真」，有時是讓它變回「純文字 + 對的字體」，而不是塞一張更精緻的圖。</div></div>
-        </div>
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">AI 怎麼幫我做的</h2></div>
+      <div class="ai-role-card">
+        <div class="ai-role-col ai-role-ai"><div class="ai-role-header">AI 負責</div><ul><li>設計 Sheet 資料結構</li><li>寫前端 Preact + 後端 Apps Script</li><li>部署上線、發佈 PWA</li><li>生示範照片、上網查酒的評分</li></ul></div>
+        <div class="ai-role-col ai-role-human"><div class="ai-role-header">人負責</div><ul><li>要做什麼、像不像</li><li>把營運語言翻成需求</li><li>放哪裡、哪裡怪</li><li>看截圖給回饋、拍板</li></ul></div>
       </div>
+      <div class="subsection"><div class="subsection-label">提問模式</div><p>以「<strong>情境描述</strong>」開頭（例：店員記不住 50 款酒／遇到有趣的一桌想送回憶），AI 先給做法建議＋老實講限制，談好方向才動手；接著是「<strong>看截圖 → 微調</strong>」的快速來回。</p></div>
+      <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>先設計資料、再寫程式：</strong>一開始我急著看到 App，但 AI 堅持先把 Sheet 的分頁/欄位攤開討論。事後證明這讓後面每個功能都長得很順。</div></div>
+      <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>「資料是開關、App 是畫面」：</strong>今日酒櫃不是另開一張表，而是 Wines 表上一個勾選格；今日活動是 Config 裡一組開關。讓老闆「改格子 = 改畫面」。</div></div>
+      <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>「手寫卡看起來很假」：</strong>今日餐桌的手寫感謝本來想放照片，怎麼看都假；AI 改用手寫字體渲染——原來「溫度」來自字體呈現，不是貼一張更精緻的圖。</div></div>
+      <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>隨口問的隱私疑慮變成必要修補：</strong>我問「客人拿到連結會不會摸到後台」，AI 老實說「比你想的更曝露」，把一個許願功能變成一次安全重整。</div></div>
+    </section>
+
+    <section class="section" id="s7">
+      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">踩到的坑，讓我更懂的事</h2></div>
 
       <div class="bug-block">
         <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑：方便 = 漏洞</span></div>
         <div class="bug-body">
           <p>原本店員免登入就能瀏覽，看似貼心，其實代表客人也能摸到同一個畫面，背後資料甚至含成本與內部筆記。</p>
           <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走：</strong>「誰都能看」對內部工具來說不是方便，是風險；該分層就要分層。</div></div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑：跨網域的眉角（CORS）與部署權限</span></div>
+        <div class="bug-body">
+          <p>Apps Script 的 Web App 從別的網域讀寫會被瀏覽器擋；GET 要用 JSONP、POST 要用 text/plain 才繞得過。部署存取權設成「任何人」跟「任何有 Google 帳號的人」也差很多，後者會變登入牆；而且自己登入的瀏覽器兩種都看得到，要用無痕視窗驗證。</p>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走：</strong>這種「環境細節」自己摸絕對會卡很久，但 AI 一句話就解掉——把它問清楚比硬試省超多時間。</div></div>
         </div>
       </div>
 
@@ -1045,6 +911,14 @@
       </div>
 
       <div class="bug-block">
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑：像照片就是假</span></div>
+        <div class="bug-body">
+          <p>模擬手寫感謝時，貼 AI 生成的手寫卡照片怎麼看都假。改成用手寫字體把字排在頁面上、背景跟頁面一致，立刻就對了。</p>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走：</strong>要「真」，有時是讓它變回「純文字 + 對的字體」，而不是塞一張更精緻的圖。</div></div>
+        </div>
+      </div>
+
+      <div class="bug-block">
         <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑：改了就驗證</span></div>
         <div class="bug-body">
           <p>每次調完 AI 都先在本機預覽、截圖確認再上線；連「收合工具時殘留的 QR 視窗」這種小 bug 也是這樣抓到的。</p>
@@ -1053,20 +927,21 @@
       </div>
     </section>
 
-    <section class="section" id="s7">
-      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Takeaway</h2></div>
+    <section class="section" id="s8">
+      <div class="section-header"><span class="section-num">08</span><h2 class="section-title">Takeaway</h2></div>
       <div class="takeaway">
-        <div class="takeaway-label">帶走的三件事</div>
-        <p><strong>非工程師也能主導開發。</strong>重點不是會不會寫程式，而是會描述情境、會判斷「像不像/順不順」、敢追問。最有效的模式是「先講情境讓 AI 提方案 + 看截圖快速迭代」。</p>
+        <div class="takeaway-label">帶走的幾件事</div>
+        <p><strong>非工程師也能主導開發一整套工具。</strong>重點不是會不會寫程式，而是會描述情境、會把營運語言翻成資料結構、會判斷「像不像/順不順」、敢追問。最有效的模式是「先講情境讓 AI 提方案 + 看截圖快速迭代」。</p>
+        <div class="matrix-row"><span class="matrix-key">最值錢決策</span><span class="matrix-arrow">→</span><span>把 Sheet 當資料庫、讓「改資料 = 改畫面」。老闆不用學後台，AI 不用因為改一筆酒就重新發版。</span></div>
         <div class="matrix-row"><span class="matrix-key">可移植</span><span class="matrix-arrow">→</span><span>「Sheet 當資料庫 + 網頁 App + AI 當工程師」很適合小店自己養工具（餐廳、咖啡、選物店）。</span></div>
-        <div class="matrix-row"><span class="matrix-key">別照搬</span><span class="matrix-arrow">→</span><span>「免費即時抓第三方評分」這種期待——多數平台沒 API，務實做法是查一次存起來。</span></div>
-        <div class="matrix-row"><span class="matrix-key">起手式</span><span class="matrix-arrow">→</span><span>「我想做〔功能〕，先別寫，幫我把資料怎麼存、有哪些做法與取捨、有沒有隱私/權限問題講清楚。」</span></div>
+        <div class="matrix-row"><span class="matrix-key">別照搬</span><span class="matrix-arrow">→</span><span>「免費即時抓第三方評分」這種期待——多數平台沒 API，務實做法是查一次存起來，並接受留白。</span></div>
+        <div class="matrix-row"><span class="matrix-key">起手式</span><span class="matrix-arrow">→</span><span>「我想做管理〔某某〕的工具，先別寫，幫我把資料怎麼存、要分哪些表、每張表有哪些欄位先設計好。」</span></div>
       </div>
     </section>
 
     <footer>
       <span>整理自 AI 協作對話 · <strong>2026-05-24</strong></span>
-      <span>AI 工具開發</span>
+      <span>AI 工具開發 · 涵蓋整個專案</span>
     </footer>
   </main>
 </div>
