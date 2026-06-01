@@ -345,6 +345,11 @@
       <div class="case-card-row"><span class="case-card-label">最終成果</span><span class="case-card-value">團隊可正式試用的產品：單一 plugin、雙 agent、品質閘擋住文件漂移、一鍵安裝精靈、多把 key 秒切；連商業模式 / 護城河 / 發布架構都想清楚了</span></div>
     </div>
 
+      <div class="result-preview">
+        <img src="./screenshots/dashboard-trends.png" alt="使用者問一句白話，AI 即時組出的「用量趨勢」儀表板：頂端 identity /" />
+        <div class="result-preview-caption"><span class="result-preview-badge">動態 dashboard</span>使用者問一句白話，AI 即時組出的「用量趨勢」儀表板：頂端 identity / Refresh / Deploy chip、判讀 callout、KPI、兩張趨勢圖，底部標出用到哪些 API。</div>
+      </div>
+
     <section class="section" id="s1">
       <div class="section-header">
         <span class="section-num">01</span>
@@ -392,15 +397,14 @@
         <h2 class="section-title">系統架構</h2>
       </div>
       <p>核心觀念：<strong>一份來源，兩個外包裝。</strong> skill 本體只寫一次（<code>api-skills/</code>），兩個 agent 的安裝包都從同一份自動產生，品質閘守在入口。</p>
-      <pre><code class="language-plaintext">              api-skills/   ← 唯一正本（skills + _shared transport + 4 份規範文件）
-                  |
-       +----------+----------+
-  Claude Code plugin    Codex marketplace（codex-marketplace/，腳本產生）
-       |                     |
-  /plugin install       codex plugin marketplace add
-       +----------+----------+
-            同一套 SKILL.md + persona / design / house-rules
-            ＋ 品質閘（PROBE -> AUTHOR -> VALIDATE）守著入口</code></pre>
+      <div class="arch-flow vertical">
+        <div class="arch-node arch-backend"><div class="arch-node-label">唯一正本</div><div class="arch-node-title">api-skills/</div><div class="arch-node-sub">skills + _shared transport + 4 份規範文件</div></div>
+        <div class="arch-arrow"><svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="arch-node arch-storage"><div class="arch-node-label">自動產生的安裝包</div><div class="arch-node-title">Claude plugin · Codex marketplace</div><div class="arch-node-sub">同一份 source、兩個薄打包入口（腳本產生、pre-commit 防過期）</div></div>
+        <div class="arch-arrow"><svg viewBox="0 0 28 28"><path d="M6 14h16m0 0l-5-5m5 5l-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="arch-node arch-frontend"><div class="arch-node-label">兩種 Agent</div><div class="arch-node-title">Claude Code · OpenAI Codex</div><div class="arch-node-sub">載入同一套 SKILL.md + persona / design / house-rules</div></div>
+      </div>
+      <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>品質閘守在入口：</strong>新 skill / API 一律 PROBE → AUTHOR → VALIDATE、drift 擋 commit，所以規模變大、品質不掉。</div></div>
       <p><strong>4 份規範文件</strong>（persona 怎麼講話 / design 視覺 / house-rules 平台事實 / memory）是讓 AI「像顧問而不是 API 包裝」的關鍵。</p>
     </section>
     <section class="section" id="s5">
@@ -465,6 +469,15 @@
       <li><strong>本機 Dashboard 目錄頁</strong>：動態生成的 dashboard 自動列出（即時預覽 / 搜尋 / 刪除 / 已部署徽章）</li>
       <li><strong>多把 key 秒切</strong> + 設不好時會引導你的錯誤訊息</li>
       </ul>
+    
+      <div class="result-preview">
+        <img src="./screenshots/dashboard-gallery.png" alt="每張動態生成的 dashboard 自動列在這：即時預覽縮圖 / 搜尋 / 刪除" />
+        <div class="result-preview-caption"><span class="result-preview-badge">本機目錄頁</span>每張動態生成的 dashboard 自動列在這：即時預覽縮圖 / 搜尋 / 刪除 / 已部署徽章。</div>
+      </div>
+      <div class="result-preview">
+        <img src="./screenshots/dashboard-checklist.png" alt="當結論是「建議客戶改哪些設定」，AI 產出的不是圖、是一張帶優先級 + 風險分級" />
+        <div class="result-preview-caption"><span class="result-preview-badge">第 4 種輸出</span>當結論是「建議客戶改哪些設定」，AI 產出的不是圖、是一張帶優先級 + 風險分級 + 後台路徑的行動清單。</div>
+      </div>
     </section>
     <section class="section" id="s8">
       <div class="section-header">
