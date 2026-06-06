@@ -957,7 +957,7 @@
     <div class="case-card">
       <div class="case-card-row">
         <span class="case-card-label">我用 AI 做了什麼</span>
-        <span class="case-card-value">把手算 Excel 的薪資流程做成「線上協作編輯 → 本地批次計算 → 線上發布」的完整工具，三層認證、印章列印、批次圖片打包都一次到位。</span>
+        <span class="case-card-value">把手算 Excel 的薪資流程做成涵蓋「線上協作編輯 → 本地批次計算 → 線上查看 → 會計轉帳 → 營運長覆核」的完整月度發薪工作流，三層認證、印章列印、批次圖片、會計轉帳清單都一次到位。</span>
       </div>
       <div class="case-card-row">
         <span class="case-card-label">沒有 AI 的話</span>
@@ -965,7 +965,7 @@
       </div>
       <div class="case-card-row">
         <span class="case-card-label">最終成果</span>
-        <span class="case-card-value">14 位員工 3 月薪資誤差全在 $200 內，平均 $43，管理層 100% 吻合；店長線上補打卡，不用 LINE 來回對帳。</span>
+        <span class="case-card-value">2026 年 1–5 月皆已用此工具實際發薪；店長線上補打卡、會計用「會計視角」一鍵匯出轉帳清單、營運長逐筆打勾覆核，整條鏈不再靠 LINE 來回對帳。</span>
       </div>
     </div>
 
@@ -1184,6 +1184,20 @@
         <span class="callout-icon">→</span>
         <div><strong>推進心法</strong>：先做能跑的，後做正確的，最後做漂亮的。每個階段都先讓店長能用，再回頭補我自己看到的不完美。</div>
       </div>
+
+      <div class="subsection-label" style="margin-top: 2em;">後續演進（2026-05，每月實際發薪中長出來的需求）</div>
+      <p>第一版上線後，每個月真的拿來發薪，需求就從「算得準」往「整條鏈順手 + 防呆」長：</p>
+      <ul style="padding-left: 1.6em;">
+        <li><strong>薪資趨勢分析 <code>/salary/trend</code></strong> — 累積幾個月後看薪資成本佔營收比、業績獎金健康度、員工排行、加班/辛苦金趨勢；資料少於 3 個月的圖自動降級為「資料累積中」。</li>
+        <li><strong>員工每日工時核對區</strong>（編輯頁，預設收合）— 補完打卡後逐員工核對「POS 原始 + 補卡」疊加，正職對比目標工時看加班。刻意只「顯示疊加」不重算，避免跟 Python 產生第二套會漂移的真相。</li>
+        <li><strong>會計工作流</strong> — 員工銀行資訊主檔（只存代碼 + 後五碼）、「會計視角」精簡轉帳清單、CSV / 表格圖片匯出。</li>
+        <li><strong>營運長覆核</strong> — 逐筆打勾「金額對、已匯」，全勾跳「本月發薪完成」，首頁月份卡顯示發薪進度徽章。</li>
+        <li><strong>真實資料的髒</strong> — 重複下班自動處理、跨月跨日打卡、內勤改固定月薪。</li>
+      </ul>
+      <div class="callout callout-tip">
+        <span class="callout-icon">→</span>
+        <div><strong>這一波的心法變了</strong>：第一版重點是「規則翻譯對」，這一波重點是「<strong>把每個會被誤用的地方變透明 + 防呆</strong>」。因為使用者從「我自己」變成「店長 + 會計 + 營運長」三種角色，每個人都可能在不同地方踩坑。</div>
+      </div>
     </section>
 
     <!-- s6 踩到的坑 -->
@@ -1287,6 +1301,54 @@
           </div>
         </div>
       </div>
+
+      <!-- 坑 7 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">我自己埋的「獎金基準 = 0」隱形地雷</span>
+        </div>
+        <div class="bug-body">
+          <p>我幫店長建每月補打卡骨架時，順手寫了 <code>bonus_base_revenue: 0</code> 當預設。但計算邏輯是「<strong>只要這欄位存在就採用它的值，即使是 0</strong>」，否則才走每日營收加總。結果店長把每日營收都填好了（兩百多萬），系統卻因為那個 0 把<strong>全員業績獎金 + 店長業績全部歸零</strong>。</p>
+          <p>幸好發布前的健康檢查抓到「獎金基準 NT$0 但每日營收有填」這個矛盾，沒真的發錯。修法兩層：① 骨架不要再寫那個 0；② 編輯頁加顯眼的「本月業績獎金基準 = $X（來源：每日加總／手動覆寫）」指示框，覆寫成 0 或偏離加總太多就跳紅字。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div>防呆不能只做「被動提示」（我原本只寫「若啟用覆寫則忽略此值」的小灰字，沒人看）。要<strong>主動把系統實際採用的那個值秀出來</strong>。使用者看不到的狀態，遲早會錯。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 坑 8 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">真實打卡資料比想像中髒（重複下班 / 跨月跨日）</span>
+        </div>
+        <div class="bug-body">
+          <p><strong>重複下班</strong>：員工同一班按了好幾次下班卡 → 一開始被誤判成「缺上班」，店長去補打卡，工時翻倍變 14 小時。後來改成自動偵測（孤兒下班距前次 &lt; 3h）並延長到「最後一次」下班，店長無感。</p>
+          <p><strong>跨月跨日班</strong>：1/31 上班、2/1 凌晨下班 → 1 月報表看到「有上班沒下班」、2 月報表看到「有下班沒上班」，同一組班在兩個月各被誤報一次。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div>規則對齊只是第一關，<strong>真實世界的輸入資料永遠有你沒想到的邊界</strong>。每個「異常」自動處理前，先確認「自動補」會不會比「不補」更危險（重複下班那次，自動補反而炸開工時）。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 坑 9 -->
+      <div class="bug-block">
+        <div class="bug-header">
+          <span class="bug-icon">⚠</span>
+          <span class="bug-title">會計確認狀態，兩個畫面對不上</span>
+        </div>
+        <div class="bug-body">
+          <p>營運長在「會計視角」把 14 筆匯款全打勾、頂部變綠「本月發薪完成」，但薪資首頁的月份卡卻只顯示「2/14」。</p>
+          <p>原因又是 SSG（坑 4 的變形）：會計視角的勾選走 client 端即時讀 GitHub，看到最新；但首頁是 server component，讀的是 build 時打包的舊檔。同一份資料、兩個讀取路徑、兩個時間點。修法：讓首頁也改成即時讀 GitHub。</p>
+          <div class="callout callout-tip">
+            <span class="callout-icon">→</span>
+            <div>同一份資料如果有「即時讀」和「打包讀」兩條路徑，遲早會給使用者看到自相矛盾的畫面。<strong>要嘛統一成即時、要嘛統一成打包，不要混用</strong>。</div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- s7 最終樣貌 -->
@@ -1315,11 +1377,34 @@
       </div>
 
       <div class="subsection">
-        <div class="subsection-label">會計視角（從「獎金池 2%」KPI 卡點「📊 查看計算明細」）</div>
+        <div class="subsection-label">業績獎金明細（從「獎金池 2%」KPI 卡點「📊 查看計算明細」）</div>
         <ul style="padding-left: 1.6em;">
-          <li>門檻狀態（✅ / ❌ 含金額對比）</li>
-          <li>公式區：基準 × 2% ÷ 合格時數 = 每小時</li>
-          <li>每人分配表（姓名/類別/打卡時數/進位小時/業績獎金），Winnie 標「店長」徽章</li>
+          <li>門檻狀態（✅ / ❌ 含金額對比）+ 公式區 + 每人分配表，Winnie 標「店長」徽章</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">店長工時核對（編輯頁，預設收合）</div>
+        <ul style="padding-left: 1.6em;">
+          <li>逐員工選擇 → POS 原始班次 + 補卡疊加顯示，補卡的天標色、可篩「只看有補卡的天」</li>
+          <li>正職底部顯示目標工時對比（估超 / 未達 / 達標），順便看出加班狀況</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">會計視角（薪資總覽左上分段切換）</div>
+        <ul style="padding-left: 1.6em;">
+          <li>切成精簡轉帳清單：薪資細項 + 銀行代碼 + 帳號後五碼（銀行欄淡綠底）</li>
+          <li>「📤 匯出 CSV」（含 BOM、後五碼防掉前導 0）+「下載表格圖片」（截圖時自動隱藏勾選欄）</li>
+          <li><strong>已匯確認欄</strong>：營運長逐筆打勾，hover 顯示確認時間 + 當下金額；薪資重算金額變動會標「⚠️變動」要求重新確認；全勾跳「✅ 本月發薪完成」</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">薪資趨勢分析 / salary/trend</div>
+        <ul style="padding-left: 1.6em;">
+          <li>整體成本（薪資佔營收比，健康區間提示）/ 業績獎金健康度 / 員工年度排行 / 喝酒金趨勢</li>
+          <li>薪資首頁每月卡片顯示發薪進度徽章（✅ 已發薪 / ⏳ N/M / 未匯款）</li>
         </ul>
       </div>
 
@@ -1339,8 +1424,8 @@
       <ul style="padding-left: 1.6em;">
         <li><strong>薪資條自動寄送</strong> — 員工 email 欄位 + Resend API 批次寄；或 LINE Messaging API 推播（員工更常用 LINE）</li>
         <li><strong>參數版本化</strong> — 現在改 <code>salary-config.json</code> 會影響所有未計算月份。加個 <code>effective_from</code> 日期，調薪時不會回頭污染歷史</li>
-        <li><code>/salary/trend</code> — 多月薪資趨勢比較</li>
         <li><strong>薪資條每人獨立 PDF</strong> — 用 jsPDF + JSZip 生成個別 PDF（現在只能 PNG）</li>
+        <li><strong>跨月跨日打卡自動配對</strong> — 目前月底跨日班要手動補 + 下月忽略；可在轉檔階段標記為跨月待配對，UI 直接提示</li>
       </ul>
     </section>
 
@@ -1380,17 +1465,40 @@
       </div>
 
       <div class="takeaway">
+        <div class="takeaway-label">第二波長出來的洞察：工具上線後才是真正的開始</div>
+        <p>第一版（算得準）只是地基。真正讓這工具有價值的，是每個月實際拿來發薪後長出來的東西：</p>
+        <div class="matrix-row">
+          <span class="matrix-key">使用者 1 種 → 3 種</span>
+          <span class="matrix-arrow">→</span>
+          <span>店長 / 會計 / 營運長，每個角色都要量身的視角和防呆。新功能幾乎都不是憑空想的，是「這個月卡在哪」直接告訴我的</span>
+        </div>
+        <div class="matrix-row">
+          <span class="matrix-key">防呆要主動顯性</span>
+          <span class="matrix-arrow">→</span>
+          <span>「獎金基準 = 0」地雷證明：藏在小灰字的提示等於沒有，要把系統實際採用的值大字秀出來</span>
+        </div>
+        <div class="matrix-row">
+          <span class="matrix-key">真實資料永遠更髒</span>
+          <span class="matrix-arrow">→</span>
+          <span>重複下班、跨月跨日不是規則問題是現實問題，只能一個個遇到一個個補</span>
+        </div>
+      </div>
+
+      <div class="takeaway">
         <div class="takeaway-label">如果你也要做，先問 AI 什麼</div>
         <blockquote>「我把現在試算表裡所有計算規則描述給你聽，請你幫我整理成一份條列文件，並標出哪些地方我沒講清楚、需要補充。」</blockquote>
         <p style="color: var(--ink-3); font-size: 0.95em;">→ 這是把隱性知識顯性化的起手式。</p>
 
         <blockquote style="margin-top: 1em;">「我要做一個工具讓 [角色 A] 線上編輯規則參數、[角色 B] 線上查看結果，但我不想架後端。請幫我評估『把資料存在 Git 倉庫的 JSON 檔，前端透過 GitHub API 讀寫』這個架構的優缺點。」</blockquote>
         <p style="color: var(--ink-3); font-size: 0.95em;">→ 這是「在限制中做選型」的提問模式。AI 會列出所有 trade-off，你做決定。</p>
+
+        <blockquote style="margin-top: 1em;">「這個月實際發薪時卡在 [某個情境]，你覺得是該改規則、改 UI、還是加防呆？分別的 trade-off 是什麼？」</blockquote>
+        <p style="color: var(--ink-3); font-size: 0.95em;">→ 工具上線後的提問模式。把「真實使用遇到的卡點」當需求來源，比憑空想功能更準。</p>
       </div>
     </section>
 
     <footer>
-      <span>整理自 AI 協作開發紀錄 · <strong>2026-04-23</strong>（開發期間 2026-03-29 → 2026-04-23）</span>
+      <span>整理自 AI 協作開發紀錄 · <strong>2026-04-23</strong>，更新 <strong>2026-05-04</strong>（第一版 2026-03-29 → 04-23；2026-05 持續演進）</span>
       <span>AI 工具開發型 · 非工程師視角</span>
     </footer>
   </main>
