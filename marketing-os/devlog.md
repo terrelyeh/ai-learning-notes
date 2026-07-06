@@ -212,6 +212,23 @@ claude plugin validate .        # 發佈前驗證結構
 - **CLI（gh / Vercel / Firecrawl…）**：plugin **不會安裝** system binary。要給 Claude 這些能力，**優先用它們的 MCP server**（Firecrawl/Vercel/GitHub 都有），而非包 CLI。
 - **介面限制**：`.mcp.json` 是 Claude Code 機制；桌面/網頁無 shell，跑不了 `npx` 型 MCP，改用內建 Connectors。
 
+**佈線指令看的是「工具用什麼語言寫」**：`.mcp.json` 的 `command` 決定怎麼啟動那支 MCP server——Node 寫的用 `npx`，Python 寫的用 `uvx`（`npx` 的 Python 對應：抓來跑一次、不永久安裝；符合「用 uv、別碰 pip / 系統 Python」）。
+
+```jsonc
+// Node 寫的 MCP（我們的 Firecrawl 就是這種）
+{ "command": "npx", "args": ["-y", "firecrawl-mcp"] }
+
+// Python 寫的 MCP → 改用 uvx，別寫 pip install / python3
+{ "command": "uvx", "args": ["some-python-mcp-server"] }
+```
+
+| Node | Python（uv） | 做什麼 |
+|---|---|---|
+| `npx <tool>` | `uvx <tool>` | 不永久安裝、直接跑一次 |
+| `npm i -g <tool>` | `uv tool install <tool>` | 裝成全域 CLI |
+
+> 分清層級：這是**佈線一支真的程式（MCP / CLI）**才用到；裝 **skill（SKILL.md）永遠是 `npx skills add`，跟語言無關**——skill 是被讀的說明書，不是被執行的程式。
+
 ### 3.12 擴充：加技能(B) vs 加 plugin(C)
 
 > 同一群人、同一領域、要一起裝 → **B**（同 plugin 加技能）。

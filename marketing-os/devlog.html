@@ -465,6 +465,23 @@ npx skills remove [skills]    # 移除（別名 rm）</code></pre>
           <li>憑證（API key / token）一律用<strong>環境變數</strong>帶入，<strong>絕不寫死打包</strong>。</li>
           <li>plugin <strong>不會安裝</strong> system binary。要給 Claude CLI 能力，<strong>優先用它們的 MCP server</strong>（Firecrawl/Vercel/GitHub 都有），而非包 CLI。</li>
         </ul>
+        <p><strong>佈線指令看的是「工具用什麼語言寫」</strong>：<code>.mcp.json</code> 的 <code>command</code> 決定怎麼啟動那支 MCP server——Node 寫的用 <code>npx</code>，Python 寫的用 <code>uvx</code>（<code>npx</code> 的 Python 對應：抓來跑一次、不永久安裝；符合「用 uv、別碰 pip」）。</p>
+        <pre><code class="language-json">// Node 寫的 MCP（我們的 Firecrawl 就是這種）
+{ "command": "npx", "args": ["-y", "firecrawl-mcp"] }
+
+// Python 寫的 MCP → 改用 uvx，別寫 pip install / python3
+{ "command": "uvx", "args": ["some-python-mcp-server"] }</code></pre>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Node</th><th>Python（uv）</th><th>做什麼</th></tr></thead>
+          <tbody>
+            <tr><td><code>npx &lt;tool&gt;</code></td><td><code>uvx &lt;tool&gt;</code></td><td>不永久安裝、直接跑一次</td></tr>
+            <tr><td><code>npm i -g &lt;tool&gt;</code></td><td><code>uv tool install &lt;tool&gt;</code></td><td>裝成全域 CLI</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout-note">
+          <span class="callout-icon">!</span>
+          <div>分清層級：這是<strong>佈線一支真的程式（MCP / CLI）</strong>才用到；裝 <strong>skill（SKILL.md）永遠是 <code>npx skills add</code>，跟語言無關</strong>——skill 是被讀的說明書，不是被執行的程式。</div>
+        </div>
       </div>
 
       <div class="subsection">
