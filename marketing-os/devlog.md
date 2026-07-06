@@ -262,6 +262,7 @@ git add . && git commit -m "feat(skill): <名>" && git push
 | 要接廣告/CRM/爬蟲數據 | 打包 **MCP**（`.mcp.json`）佈線；憑證走 env；同事各自授權 |
 | 桌面/網頁要接數據 | 走 **Connectors** 設定頁，各自登入（`.mcp.json` 不適用） |
 | 跨 session 記住進度 | 用 **CLAUDE.md + MEMORY.md**（狀態外置、記憶隔離） |
+| 想把「一個 skill」給所有人、跨 Claude/Cursor/Codex | 發成 SKILL.md repo，一行 `npx skills add <org/repo>`（見下方番外） |
 
 ### 3.16 給同事的三句話安裝說明
 
@@ -276,6 +277,39 @@ CLI 版：
 /plugin marketplace add terrelyeh/marketing-os-marketplace
 /plugin install marketing-os@marketing-os-marketplace
 ```
+
+---
+
+## 三之二、番外：第 4 條安裝路 — `npx skills add`（跨 agent、裝裸 skill）
+
+做完這個專案我才注意到：有些 skill 的安裝長這樣——`npx skills add heygen-com/hyperframes`——完全不在上面三種裡。查了才懂，它是**不同層級**的東西。
+
+- 上面 A/B/C 都在裝「**plugin**」（技能＋指令＋MCP＋hooks 一整包），走 Claude 的外掛系統。
+- `npx skills add` 裝的是「**裸 skill**」——單一 `SKILL.md`，不是 plugin；而且用的是一個**獨立的開源 CLI**（Vercel Labs 的 [`skills`](https://github.com/vercel-labs/skills)，號稱「the open agent skills tool」），不是 Claude 內建的 `/plugin`。
+
+它實際做的事：從 GitHub repo（`org/repo`）抓 SKILL.md，複製進 agent 的 skills 目錄（`.claude/skills/` 或全域 `~/.claude/skills/`）。**它會自動偵測你裝了哪些 agent**（宣稱支援 70+ 種：Claude Code、Cursor、Codex、OpenCode、Cline…），偵測不到就問你要裝進哪個。
+
+```bash
+npx skills add <org/repo>     # 從 GitHub 裝一個/多個 skill
+npx skills update [skills]    # 更新（-g 全域、-y 免確認）
+npx skills remove [skills]    # 移除（別名 rm）
+```
+
+**為什麼有些人選這條**：只想發「一個 skill」給所有人、又要跨工具通吃時最省事——不必包 plugin、不綁 Claude 的 Plugins UI，一行指令、任何 agent 都能裝。廠商（HeyGen、Supabase…）特別愛用。
+
+放回對照：
+
+| | plugin 路線（我這次做的） | `npx skills add` |
+|---|---|---|
+| 裝的單位 | plugin（技能＋指令＋MCP 一整包） | 單一 skill（SKILL.md） |
+| 用什麼裝 | Claude `/plugin`、Plugins UI | Vercel Labs 的 `skills` CLI |
+| 綁定 | Claude 專屬 | 跨 agent（宣稱 70+） |
+| 來源 | marketplace repo / zip / 本機 | GitHub `org/repo` |
+| 更新 | marketplace「連回來源的線」一鍵 | 重跑 `npx skills update` |
+
+> ⚠️ 安全同理：它把別人 repo 的檔案寫進你的 skills 目錄＝在你機器上放了會自動觸發的指令。跟 Upload/自訂 repo 一樣，**只裝信任來源**（HeyGen、Supabase 這種官方帳號 OK；來路不明的 `org/repo` 要小心）。
+
+> 一句話收斂：**plugin＋marketplace** 適合團隊、要一鍵更新、要包 MCP（我這次的路線）；**`npx skills add`** 適合廠商發一個能力給所有人、跨 agent 通吃。兩者不衝突，是為不同目的存在的。
 
 ---
 

@@ -362,6 +362,34 @@ claude plugin validate .        # 發佈前驗證結構</code></pre>
           <div>結論：團隊長期使用，一定選 marketplace。這也是我這次選擇做成 repo 的原因。</div>
         </div>
       </div>
+
+      <div class="subsection">
+        <div class="subsection-label">番外：第 4 條安裝路 — npx skills add（跨 agent、裝裸 skill）</div>
+        <p>做完這個專案我才注意到：有些 skill 的安裝長這樣——<code>npx skills add heygen-com/hyperframes</code>——完全不在上面三種裡。查了才懂，它是<strong>不同層級</strong>的東西：上面 A/B/C 都在裝「<strong>plugin</strong>」（一整包），走 Claude 的外掛系統；而 <code>npx skills add</code> 裝的是「<strong>裸 skill</strong>」——單一 <code>SKILL.md</code>，用的是一個獨立的開源 CLI（<a href="https://github.com/vercel-labs/skills" target="_blank" rel="noopener">Vercel Labs 的 <code>skills</code></a>，號稱「the open agent skills tool」），不是 Claude 內建的 <code>/plugin</code>。</p>
+        <p>它從 GitHub repo（<code>org/repo</code>）抓 SKILL.md，複製進 agent 的 skills 目錄（<code>.claude/skills/</code> 或全域 <code>~/.claude/skills/</code>）。<strong>會自動偵測你裝了哪些 agent</strong>（宣稱支援 70+：Claude Code、Cursor、Codex、OpenCode、Cline…），偵測不到就問你。</p>
+        <pre><code class="language-bash">npx skills add &lt;org/repo&gt;     # 從 GitHub 裝一個/多個 skill
+npx skills update [skills]    # 更新（-g 全域、-y 免確認）
+npx skills remove [skills]    # 移除（別名 rm）</code></pre>
+        <p><strong>為什麼有些人選這條</strong>：只想發「一個 skill」給所有人、又要跨工具通吃時最省事——不必包 plugin、不綁 Claude 的 Plugins UI，一行指令、任何 agent 都能裝。廠商（HeyGen、Supabase…）特別愛用。</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th></th><th>plugin 路線（我這次做的）</th><th>npx skills add</th></tr></thead>
+          <tbody>
+            <tr><td>裝的單位</td><td>plugin（技能＋指令＋MCP 一整包）</td><td>單一 skill（SKILL.md）</td></tr>
+            <tr><td>用什麼裝</td><td>Claude <code>/plugin</code>、Plugins UI</td><td>Vercel Labs 的 <code>skills</code> CLI</td></tr>
+            <tr><td>綁定</td><td>Claude 專屬</td><td>跨 agent（宣稱 70+）</td></tr>
+            <tr><td>來源</td><td>marketplace repo / zip / 本機</td><td>GitHub <code>org/repo</code></td></tr>
+            <tr><td>更新</td><td>marketplace「連回來源的線」一鍵</td><td>重跑 <code>npx skills update</code></td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout-note">
+          <span class="callout-icon">!</span>
+          <div><strong>安全同理：</strong>它把別人 repo 的檔案寫進你的 skills 目錄＝在你機器上放了會自動觸發的指令。跟 Upload／自訂 repo 一樣，只裝信任來源（HeyGen、Supabase 這種官方帳號 OK；來路不明的 <code>org/repo</code> 要小心）。</div>
+        </div>
+        <div class="callout callout-tip">
+          <span class="callout-icon">→</span>
+          <div>一句話收斂：<strong>plugin＋marketplace</strong> 適合團隊、要一鍵更新、要包 MCP（我這次的路線）；<strong>npx skills add</strong> 適合廠商發一個能力給所有人、跨 agent 通吃。兩者不衝突，為不同目的存在。</div>
+        </div>
+      </div>
     </section>
 
     <!-- ══ s5 ══ -->
@@ -496,6 +524,7 @@ git add . &amp;&amp; git commit -m "feat(skill): &lt;名&gt;" &amp;&amp; git pus
           <tr><td>要接廣告/CRM/爬蟲數據</td><td>打包 <strong>MCP</strong>（<code>.mcp.json</code>）佈線；憑證走 env；同事各自授權</td></tr>
           <tr><td>桌面/網頁要接數據</td><td>走 <strong>Connectors</strong> 設定頁，各自登入（<code>.mcp.json</code> 不適用）</td></tr>
           <tr><td>跨 session 記住進度</td><td>用 <strong>CLAUDE.md + MEMORY.md</strong>（狀態外置、記憶隔離）</td></tr>
+          <tr><td>想把「一個 skill」給所有人、跨 Claude/Cursor/Codex</td><td>發成 SKILL.md repo，一行 <code>npx skills add &lt;org/repo&gt;</code>（見 04 節末「第 4 條安裝路」）</td></tr>
         </tbody>
       </table></div>
 
