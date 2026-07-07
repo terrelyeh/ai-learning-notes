@@ -2,7 +2,7 @@
 
 > 🤖 **我用 AI 做了什麼**：跟 Claude Code 一起，把一個「行銷部門專用的 Claude 外掛市集」從概念一路做到發佈；過程中把 Skill / Plugin / Marketplace 的關係、團隊 OS 的設計原則整套搞懂。
 > ⏱ **沒有 AI 的話**：得自己啃 plugin 文件、反覆試 manifest 結構、手刻 git 發佈流程，卡在細節上大概要好幾天。
-> ✅ **最終成果**：一個已發佈為 private repo 的 `marketing-os` 市集（7 個技能 + 1 個開機指令 + Firecrawl 佈線 + 一個 `sales-os` 範例 plugin），外加 README、QUICKSTART，以及這份學習日誌。
+> ✅ **最終成果**：一個已發佈為 public repo 的 `marketing-os` 市集（7 個技能 + 1 個開機指令 + Firecrawl 佈線 + 一個 `sales-os` 範例 plugin），外加 README、QUICKSTART，以及這份學習日誌。
 
 > 這份不是教科書，是我的施工日誌：同樣的知識，換成「我當時卡在哪、Claude 怎麼幫我、我因此懂了什麼」的角度。
 
@@ -20,7 +20,7 @@
 
 跟 Claude 協作到最後，長出來的東西是這樣：
 
-- **一個 marketplace repo**（已發佈為 **private**：`github.com/terrelyeh/marketing-os-marketplace`，`main` 分支）。
+- **一個 marketplace repo**（已發佈為 **public**：`github.com/terrelyeh/marketing-os-marketplace`，`main` 分支；概念手冊上 GitHub Pages）。
 - **`marketing-os` plugin**：7 個可用自然語言觸發的技能——
   `campaign-brief`（活動企劃）、`social-post`（社群貼文）、`ad-copy`（廣告文案＋A/B）、`competitor-scan`（競品分析，優先用 Firecrawl 抓真實頁）、`weekly-report`（週報）、`edm`（電子報）、`subfolders`（隨需建資料夾）。
 - **一個開機指令** `/marketing-os:begin-marketing`：輕量 onboarding + 一鍵鋪四個標準資料夾。
@@ -283,7 +283,7 @@ git add . && git commit -m "feat(skill): <名>" && git push
 
 ### 3.16 給同事的三句話安裝說明
 
-> 可直接貼進群組。private repo 的話，同事的 GitHub 帳號需有讀取權限才裝得起來。
+> 可直接貼進群組。repo 是 public，同事貼上網址即可安裝，無需額外授權。
 
 1. **安裝**：Claude → **Customize → Plugins → Add → Add marketplace → Add from a repository**，貼上 `https://github.com/terrelyeh/marketing-os-marketplace`，在清單找到 **marketing-os** 按 Install。
 2. **開工**：打開任一工作資料夾，輸入 `/marketing-os:begin-marketing` 鋪好標準結構；之後用自然語言使喚技能（「寫三則 IG」「做這週週報」），要記事就說「記一下…」。
@@ -350,7 +350,7 @@ npx skills remove [skills]    # 移除（別名 rm）
 - **文件會漂移，HANDOFF 要當「活文件」養**。程式碼跑得比文件快，結構圖、版本描述、待辦很容易過期。收穫：每次有意義的變更，順手回寫交接文件，別讓它變成考古。
 - **「發佈」是對外動作，值得被鄭重對待**。push 出去、建 GitHub repo，這些是會留痕跡、別人看得到的事。先做可逆的本地步驟、對外前確認名稱與可見性，是好習慣。
 - **marketplace vs upload 的差別，一句話就講完：有沒有連回來源的線**。想通這點，之後所有「要不要做成 repo」的判斷都變簡單。
-- **private repo 有安裝門檻**。設 private 很安全，但同事要有 repo 讀取權限才裝得起來——分享前要先想到權限。
+- **private repo 有安裝門檻**。設 private 很安全，但同事得先被加成 collaborator、還要自己設好 git 憑證才裝得起來——桌面／網頁版 GUI 尤其卡。想清楚後，這個專案最後改成 **public**（repo 裡沒有密鑰、憑證走 env），讓行銷同事貼網址就能一鍵裝，也順手開了 GitHub Pages 放概念手冊。
 - **「能不能搬到別的 AI」要分兩層看：內容通用、包裝專屬**。技能的「腦」（Markdown 流程）到哪都能用；Claude 的「自動觸發手臂」（description 掃描、marketplace 安裝）是平台專屬的，搬不走。
 
 ---
