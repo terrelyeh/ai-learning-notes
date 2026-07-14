@@ -116,6 +116,10 @@
     .result-preview img { width: 100%; height: auto; display: block; }
     .result-preview-caption { background: var(--surface-warm); border-top: 1px solid var(--border); padding: 12px 20px; font-size: 14px; color: var(--ink-3); display: flex; align-items: center; gap: 10px; line-height: 1.5; }
     .result-preview-badge { background: var(--gold-light); color: var(--gold); font-size: 11px; font-weight: 500; letter-spacing: .08em; padding: 2px 8px; border: 1px solid var(--gold-mid); flex-shrink: 0; white-space: nowrap; }
+    /* 側欄截圖是 800x1560 的直式比例，滿版會變成一根巨柱 → 收窄置中，像展示一個裝置。 */
+    .result-preview.panel { background: var(--surface-warm); }
+    .result-preview.panel img { width: auto; max-width: 320px; margin: 30px auto; border: 1px solid var(--border-strong); border-radius: 4px; box-shadow: 0 6px 28px rgba(0,0,0,0.10); }
+    @media (max-width: 720px) { .result-preview.panel img { max-width: 74%; } }
     .arch-flow { display: flex; align-items: flex-start; gap: 0; margin-bottom: 32px; overflow-x: auto; padding: 8px 0; }
     .arch-node { background: var(--surface); border: 1px solid var(--border-strong); border-top: 3px solid var(--ink-3); border-radius: 4px; padding: 16px 20px; min-width: 150px; max-width: 220px; flex-shrink: 0; }
     .arch-node-label { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
@@ -208,7 +212,7 @@
       </div>
     </div>
 
-    <div class="result-preview">
+    <div class="result-preview panel">
       <img src="./screenshots/02_confirm.png" alt="Apollo Bridge 側欄確認畫面" />
       <div class="result-preview-caption">
         <span class="result-preview-badge">成果截圖</span>
@@ -251,7 +255,7 @@
 
       <div class="subsection-label">② Apollo Bridge 擴充套件（Chrome 側欄）</div>
       <p>側欄只列出「已核准、你有權限」的案件——不是你的、還沒核准的，都看不到。</p>
-      <div class="result-preview">
+      <div class="result-preview panel">
         <img src="./screenshots/01_cases.png" alt="已核准案件清單" />
         <div class="result-preview-caption">
           <span class="result-preview-badge">成果截圖</span>
@@ -259,14 +263,14 @@
         </div>
       </div>
       <p>按下帶入之後，<strong>表頭 + 每一筆明細 + 每一張附件全自動填</strong>；逐筆看得到進度，失敗會停下來說清楚原因。介面若是英文會自動切成中文（Apollo 預設開英文，而英文版的欄位標籤會壞掉）。</p>
-      <div class="result-preview">
+      <div class="result-preview panel">
         <img src="./screenshots/03_filling.png" alt="逐筆填入進行中" />
         <div class="result-preview-caption">
           <span class="result-preview-badge">成果截圖</span>
           逐筆填入：表頭打勾、明細 1 打勾、明細 2 進行中、明細 3 待填。每一筆的成功都是<strong>驗證過的</strong>——不是「按了確認就當成功」（見坑二）。
         </div>
       </div>
-      <div class="result-preview">
+      <div class="result-preview panel">
         <img src="./screenshots/04_done.png" alt="完成畫面" />
         <div class="result-preview-caption">
           <span class="result-preview-badge">成果截圖</span>

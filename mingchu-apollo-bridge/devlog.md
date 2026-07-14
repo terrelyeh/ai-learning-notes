@@ -49,19 +49,19 @@ status: 已完成
 
 側欄只列出「已核准、你有權限」的案件。
 
-![已核准案件](./screenshots/01_cases.png)
+<img src="./screenshots/01_cases.png" width="340" alt="已核准案件" />
 
 帶入前先確認：表頭、每一筆明細（科目／成本中心／專案／費用說明）、以及附件要逐筆掛還是合併成一份 PDF。
 
-![確認內容](./screenshots/02_confirm.png)
+<img src="./screenshots/02_confirm.png" width="340" alt="確認內容" />
 
 按下去之後，**表頭 + 每一筆明細 + 每一張附件全自動填**。逐筆看得到進度，失敗會停下來說清楚原因。
 
-![逐筆填入](./screenshots/03_filling.png)
+<img src="./screenshots/03_filling.png" width="340" alt="逐筆填入" />
 
 **送簽永遠留給你自己按**——外掛不會替你送出。
 
-![完成](./screenshots/04_done.png)
+<img src="./screenshots/04_done.png" width="340" alt="完成" />
 
 最後那條是刻意的產品邊界，不是技術限制。自動化到「填完草稿」為止，**送出去的那一下必須有人負責**。
 
