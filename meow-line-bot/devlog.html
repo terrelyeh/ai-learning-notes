@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>喵哥 — 把店裡的 GPTs 助理搬進 LINE｜AI 協作開發紀錄</title>
-  <meta name="description" content="一個餐飲業主用 AI 把 ChatGPT GPTs 助理搬進 LINE 官方帳號的開發紀錄：架構、知識點、踩坑與 AI 協作模式。" />
+  <title>喵哥 — 把店裡的 GPTs 助理搬進 LINE｜架構與技術筆記</title>
+  <meta name="description" content="一個餐飲業主把 ChatGPT GPTs 助理搬進 LINE 官方帳號的技術筆記：webhook 驗簽、全量上下文＋prompt caching、模型路由、成本結構與踩坑。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
@@ -918,10 +918,9 @@
         <a class="nav-link" href="#s1"><span class="nav-num">01</span>為什麼要做</a>
         <a class="nav-link" href="#s2"><span class="nav-num">02</span>系統架構</a>
         <a class="nav-link" href="#s3"><span class="nav-num">03</span>技術選型與金鑰</a>
-        <a class="nav-link" href="#s4"><span class="nav-num">04</span>學到的關鍵知識點</a>
-        <a class="nav-link" href="#s5"><span class="nav-num">05</span>AI 怎麼幫我做的</a>
-        <a class="nav-link" href="#s6"><span class="nav-num">06</span>踩到的坑</a>
-        <a class="nav-link" href="#s7"><span class="nav-num">07</span>如果繼續往下</a>
+        <a class="nav-link" href="#s4"><span class="nav-num">04</span>關鍵技術點</a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span>踩到的坑</a>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span>如果繼續往下</a>
       </div>
     </div>
   </nav>
@@ -937,7 +936,7 @@
       <div class="hero-eyebrow"><span class="eyebrow-text">AI 工具開發 · 非工程師視角</span></div>
       <h1>喵哥 — 把店裡的 GPTs 助理搬進 LINE</h1>
       <div class="hero-rule"></div>
-      <p class="hero-desc">一個餐飲業主的第一支 AI 機器人。記的不是「怎麼寫 code」（那是 AI 做的），而是過程中搞懂的架構與知識點——給同樣想用 AI 做點東西、但不是工程師的人參考。</p>
+      <p class="hero-desc">一個餐飲業主的第一支 LINE 機器人。這篇不寫「怎麼跟 AI 聊天」，而是把它<strong>實際怎麼運作</strong>講清楚——訊息怎麼進來、知識怎麼組成 prompt、模型怎麼呼叫、一則訊息怎麼算錢、哪裡會壞。code 是 AI 寫的，架構是我搞懂的。</p>
       <div class="hero-meta">整理日期：2026-07-17 &nbsp;·&nbsp; 類型：AI 工具開發型</div>
     </header>
 
@@ -972,7 +971,7 @@
       </div>
       <p>店裡本來就有一個 ChatGPT 的 GPTs 助理「喵哥」，員工可以問它酒水、出餐、服務 SOP。但有個致命的摩擦：<strong>要用它，得先打開 ChatGPT、還要登入。</strong>現場忙起來根本不會有人這樣做。</p>
       <p>而員工每天本來就掛在 LINE 上。所以問題其實很單純：<strong>能不能把喵哥搬到 LINE，讓大家在原本就在用的地方直接問？</strong></p>
-      <p>一開始我只想著「搬過去」。但跟 AI 討論的過程中，範圍一路長大——因為 AI 幫我看到：這個排班系統本身已經有一大半基礎建設（LINE 官方帳號、員工綁定、公司制度知識庫）可以直接複用，搬進來反而比從零做一個 GPTs 替代品更省。於是它不只搬了家，還接上了店裡的真實資料。</p>
+      <p>一開始只想「搬過去」，但範圍很快長大——因為排班系統本身已經有一半基礎建設可以直接複用：<strong>同一個 LINE 官方帳號</strong>（原本做班表提醒用）、<strong>員工綁定關係</strong>、<strong>公司制度知識庫</strong>。與其從零做一個 GPTs 替代品，不如接進這套既有系統，順便讓喵哥吃到店裡的真實資料——這個「複用既有地基」的判斷，是它能一個晚上長出來的關鍵。</p>
     </section>
 
     <!-- 02 系統架構 -->
@@ -981,7 +980,7 @@
         <span class="section-num">02</span>
         <h2 class="section-title">系統架構</h2>
       </div>
-      <p>搞懂這條流程，就懂整個機器人怎麼運作了：員工在 LINE 傳訊息，觸發一條叫 webhook 的線通知我的系統；系統查身份、把「人設＋店內知識庫（整包）＋最近對話」組成一份問題包交給大語言模型；模型回答後，用免費的「回覆」通道傳回員工，並把這次對話存起來當下次的記憶。</p>
+      <p>整支機器人就是一條「訊息進 → 組 prompt → 問模型 → 回覆」的管線。員工在 LINE 傳訊息，LINE 平台把它 POST 到我的 webhook；系統驗證來源、查身份，把「人設＋知識庫整包＋最近對話」組成一次 API 呼叫交給大語言模型；模型回答後用免費的 reply 通道傳回，並把這輪對話寫進資料庫當下次的記憶。</p>
       <div class="arch-flow">
         <div class="arch-node arch-frontend">
           <div class="arch-node-label">LINE</div>
@@ -1007,10 +1006,45 @@
           <div class="arch-node-sub">存對話＝下次記憶</div>
         </div>
       </div>
-      <p>知識庫本身有三個入口——公司制度文件、上傳的檔案、酒類資料庫——但它們都匯進同一條組裝管線，在「組問題包」那一步整包交給模型。</p>
+      <p>拆開來看，五個技術點：</p>
+
+      <div class="subsection">
+        <div class="subsection-label">① webhook 驗簽</div>
+        <p>LINE 收到員工訊息後，會 POST 到我指定的網址（webhook）。但任何人都能打這個網址，所以每個請求都帶一個 <code>X-Line-Signature</code>——用我的 channel secret 對內容算 HMAC-SHA256，對不上就丟掉。這是「確定這則訊息真的是 LINE 送來的」的把關。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">② 身份與權限</div>
+        <p>webhook 先看內容：<strong>純 6 碼數字</strong>走綁定（把發訊息的 LINE 帳號寫進對應員工），其他文字／圖片才進問答。進問答前過兩道閘——總開關 <code>bot_enabled</code>、白名單 <code>bot_allowlist</code>（目前只開主管群）。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">③ 組 prompt（最核心的一步）</div>
+        <p>把三樣東西組成一次呼叫的訊息陣列：<strong>system 段</strong>＝喵哥人設＋店內知識庫（整包純文字，三個入口〔制度 / 上傳檔案 / 酒庫〕先匯成一段）；<strong>user 段</strong>＝發問者身份＋這次的問題（身份放 user 不放 system，是為了不污染快取，見第四節）；<strong>記憶</strong>＝撈這個員工近 6 小時的對話（上限約 12 則）一起帶上——模型本身沒有記憶，「記得剛剛講什麼」是我們自己去 DB 撈回來喂的。</p>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">④ 呼叫模型</div>
+        <p>透過 OpenRouter 送給大語言模型，幾個關鍵參數：關掉模型內部「思考」（見踩坑二）、需要時才開 web 搜尋外掛、Anthropic 系模型在知識段標記快取。一次呼叫大致長這樣：</p>
+        <pre><code class="language-javascript">{
+  "model": "anthropic/claude-sonnet-5",
+  "messages": [
+    { "role": "system", "content": "〈喵哥人設〉＋〈店內知識庫整包〉" },
+    { "role": "user",   "content": "〈發問者〉：〈這次的問題〉" }
+  ],
+  "reasoning": { "enabled": false },   // 關掉思考，別燒光回覆額度
+  "plugins":   [{ "id": "web" }]       // 需要時才開上網查
+}</code></pre>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-label">⑤ 回覆＋存檔</div>
+        <p>用 LINE 的 <code>replyToken</code> 回覆（<strong>免費</strong>，見第四節），同時把「使用者這句＋喵哥這句」寫進 <code>bot_messages</code>——既是給主管看的紀錄，也是下一輪的記憶來源。</p>
+      </div>
+
       <div class="callout callout-note">
         <span class="callout-icon">!</span>
-        <div>三個反直覺的點：<strong>webhook</strong> 是「LINE 收到訊息就自動通知我的系統」的那條線；<strong>知識是每次整包塞給 AI</strong>，不是 AI 去搜資料庫；<strong>記憶是自己存的</strong>——AI 本身沒記憶，是我們把最近對話撈出來一起交給它。</div>
+        <div>三個反直覺的點：<strong>知識是每次整包塞給模型</strong>（不是去搜資料庫）；<strong>記憶是自己存的</strong>（模型無狀態、對話要自己撈回來喂）；<strong>「回覆」免費、「主動推播」才計費</strong>（第四節細講）。</div>
       </div>
     </section>
 
@@ -1077,9 +1111,9 @@
     <section class="section" id="s4">
       <div class="section-header">
         <span class="section-num">04</span>
-        <h2 class="section-title">我學到的關鍵知識點</h2>
+        <h2 class="section-title">關鍵技術點</h2>
       </div>
-      <p>這節是這篇筆記的重點——四個讓我「原來如此」的認知。</p>
+      <p>四個把成本、準確度、可維護性拉住的技術決策——這節是重點。</p>
 
       <div class="subsection">
         <div class="subsection-label">1 · LINE 有兩種訊息，一種免費、一種計費</div>
@@ -1092,17 +1126,17 @@
       </div>
 
       <div class="subsection">
-        <div class="subsection-label">2 · 知識庫是「全量上下文＋快取」，不是 RAG</div>
-        <p>我以為 AI 機器人一定是「去資料庫搜出相關段落再回答」的架構（RAG）。但這個規模不需要——我們是<strong>每次對話把店裡全部知識整包塞給 AI</strong>，靠 prompt caching 讓重複的部分只算 1/10 的錢。好處是 AI 看得到全貌，跨酒款比較、「客人喜歡 A 推什麼」不會因搜尋漏抓而答錯，而且零檢索基礎建設。</p>
+        <div class="subsection-label">2 · 知識庫是「全量上下文＋prompt caching」，不是 RAG</div>
+        <p>我以為 AI 機器人一定是「去資料庫搜出相關段落再回答」（RAG）。但這個規模不需要——做法是<strong>每次對話把店裡全部知識（制度、公告、現貨酒單）組成一段純文字，整包塞進 system</strong>。省錢靠 <strong>prompt caching</strong>：把不變的知識段標記起來，模型第一次讀算全額、之後重複的只算約 1/10。要吃到快取有個前提——那段內容必須<strong>逐字節穩定</strong>，所以「發問者是誰」這種每次會變的東西要放到 user 段，不能混進被快取的 system 段，否則快取每次失效。</p>
         <div class="callout callout-tip">
           <span class="callout-icon">→</span>
-          <div>知識大到約十萬字級成本才有感。那時第一步不是急著上 RAG，而是「分層裁剪」——現貨酒款給完整資料、售完的只留一行摘要。比 RAG 簡單又保住準確度。</div>
+          <div>好處：模型看得到全貌，跨酒款比較不會因搜尋漏抓而答錯，且零檢索基礎建設。什麼時候該換：知識大到約十萬字級成本才有感，那時第一步不是上 RAG，而是「分層裁剪」——現貨給完整資料、售完只留一行摘要。</div>
         </div>
       </div>
 
       <div class="subsection">
-        <div class="subsection-label">3 · 透過 OpenRouter，換模型變成「改一個字」</div>
-        <p>我原以為要用哪家 AI 就得去那家開帳號、綁卡、學它的接法。OpenRouter 是一個中間層：一把金鑰、背後接所有家。想從 Claude 換成 GPT 或 Gemini 比較效果，只要改一個模型名稱。這讓「A/B 試哪個模型寫得好」幾乎沒有門檻——我甚至把「聊天模型」和「寫文案模型」分開設定。</p>
+        <div class="subsection-label">3 · 用 OpenRouter 做「模型路由」，換模型是改一個字串</div>
+        <p>OpenRouter 是一個中間層：一把金鑰、背後接所有家模型，介面統一（OpenAI 相容格式）。想從 Claude 換成 GPT 或 Gemini 比效果，只要改一個模型名稱字串，不用各家分別開帳號綁卡。這讓 A/B 幾乎沒門檻——我甚至把<strong>聊天模型</strong>和<strong>寫酒款文案的模型</strong>分成兩個設定（<code>bot_model</code> / <code>bot_draft_model</code>），聊天要人味、文案挑更會查資料的那顆。</p>
       </div>
 
       <div class="subsection">
@@ -1115,112 +1149,87 @@
       </div>
     </section>
 
-    <!-- 05 AI 怎麼幫我做的 -->
+    <!-- 05 踩到的坑 -->
     <section class="section" id="s5">
       <div class="section-header">
         <span class="section-num">05</span>
-        <h2 class="section-title">AI 怎麼幫我做的</h2>
+        <h2 class="section-title">踩到的坑（都是技術問題）</h2>
       </div>
-      <p>我負責所有「判斷」，AI 負責所有「執行」。我一行 code 都沒寫。</p>
-      <div class="ai-role-card">
-        <div class="ai-role-col ai-role-ai">
-          <div class="ai-role-header">AI 負責</div>
-          <ul>
-            <li>架構設計、成本估算</li>
-            <li>全部程式、抓 bug</li>
-            <li>生圖、寫文件</li>
-          </ul>
-        </div>
-        <div class="ai-role-col ai-role-human">
-          <div class="ai-role-header">人負責</div>
-          <ul>
-            <li>要不要做、範圍多大</li>
-            <li>用哪個模型、叫什麼名字</li>
-            <li>風格對不對、上線後哪裡怪</li>
-          </ul>
-        </div>
-      </div>
-      <div class="subsection">
-        <div class="subsection-label">我用了哪些提問方式</div>
-        <p><strong>範例驅動</strong>：把店裡原本的 GPTs 提示詞直接貼給 AI 當「規格書」，說「照這個做但搬到 LINE」。<strong>症狀描述＋截圖</strong>：喵哥排版變糟時，我貼「改之前 vs 改之後」兩張對話截圖，比文字形容準得多。<strong>探索式提問</strong>：問「這是 RAG 嗎？」「什麼算一則訊息？」——這些「要它教我」的問題，反而是我學最多的地方。</p>
-      </div>
-      <p>其中一個關鍵轉折是對品牌的堅持：第一版圖文選單我嫌「太像一般 App、跟店的調性不合」，要求改用萬華世界的和紙木刻風。AI 就改用生圖模型產底圖、再疊上精準中文。<strong>堅持品味，AI 有能力接住。</strong></p>
-      <div class="screenshot-compare">
-        <div class="screenshot-compare-item">
-          <div class="screenshot-compare-label">Before · 第一版（扁平）</div>
-          <img src="./screenshots/richmenu-simple.png" alt="第一版扁平圖文選單" />
-        </div>
-        <div class="screenshot-compare-item">
-          <div class="screenshot-compare-label after">After · 和紙木刻版</div>
-          <img src="./screenshots/richmenu-brand.jpg" alt="和紙木刻風圖文選單" />
-        </div>
-      </div>
-    </section>
-
-    <!-- 06 踩到的坑 -->
-    <section class="section" id="s6">
-      <div class="section-header">
-        <span class="section-num">06</span>
-        <h2 class="section-title">踩到的坑，讓我更懂的事</h2>
-      </div>
-      <p>這些都是 AI 幫我診斷和修的，但每一個都讓我多懂一點。</p>
+      <p>這些都是 AI 幫我診斷和修的，但每一個都是具體的技術問題——也是最能學到東西的地方。</p>
 
       <div class="bug-block">
-        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑一：對話紀錄一直是空的 → 原來「記憶」從沒生效</span></div>
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑一：對話紀錄一直是空的 → 多輪記憶從沒生效</span></div>
         <div class="bug-body">
-          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>後台的對話紀錄一筆都沒有。</div></div>
-          <p><strong>根本原因：</strong>寫入資料庫時「靜默失敗」了——程式沒報錯、但每次都沒寫進去，連帶喵哥的「多輪記憶」從上線起就沒作用（每句話都當新對話在答）。</p>
-          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>「沒報錯」不等於「成功」。會影響資料的操作，一定要主動檢查有沒有真的寫進去。</div></div>
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>後台對話紀錄一筆都沒有，喵哥每句話都當新對話在答。</div></div>
+          <p><strong>根本原因：</strong>寫入 DB 時把「使用者這句」和「喵哥那句」兩列一起批次 insert，但兩列的欄位組不一致，被資料庫的 API 層（PostgREST）整批拒絕（<code>PGRST102</code>）——而程式沒有檢查回傳的錯誤，於是靜默失敗，記憶（撈近 6h 對話）一直撈到空的。</p>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>解法：</strong>兩列補齊成相同欄位組（缺的補 null）＋ 寫入後檢查 error。原則：<strong>「沒報錯」不等於「成功」</strong>，會改資料的操作一定要驗證真的寫進去了。</div></div>
         </div>
       </div>
 
       <div class="bug-block">
-        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑二：喵哥回「有點忙不過來」，草稿也空白</span></div>
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑二：喵哥回「有點忙不過來」、草稿也空白 → token 被「思考」燒光</span></div>
         <div class="bug-body">
           <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>喵哥不回答、酒款草稿產出來是空的。</div></div>
-          <p><strong>根本原因：</strong>新一代 AI 有「深度思考」模式，回答前會在內部先想一長串——而這些思考也算進回覆的字數額度。某些線路預設把思考打開，結果額度被思考燒光、正文一個字都吐不出來。</p>
-          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>AI 的「回覆長度」是有預算的，思考會偷吃這個預算。即答型的場景要把它關掉。</div></div>
+          <p><strong>根本原因：</strong>新一代模型有「深度思考（reasoning）」模式，回答前會在內部先想一長串——這些思考也算進回覆的 token 額度。某些供應商預設把 reasoning 打開，結果額度被思考燒光、正文一個字都吐不出來（<code>finish_reason=length</code>）。</p>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>解法：</strong>即答型場景一律帶 <code>reasoning:{enabled:false}</code> 關掉。模型的「回覆長度」是有預算的，思考會偷吃這個預算。</div></div>
         </div>
       </div>
 
       <div class="bug-block">
-        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑三：改了一句人設，喵哥講話變一坨</span></div>
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑三：改一句人設，喵哥講話擠成一坨</span></div>
         <div class="bug-body">
           <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>想讓回答更簡潔，結果喵哥把答案全擠成一段、不分行不列點。</div></div>
-          <p><strong>根本原因：</strong>我加的一句「短問題幾行講完」被模型過度執行了。</p>
-          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>提示詞是活的、牽一髮動全身。改完一定要用真實問題實測輸出再上，不能憑感覺盲改。</div></div>
+          <p><strong>根本原因：</strong>我加的一句「短問題幾行講完」被模型過度執行。</p>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>解法：</strong>提示詞牽一髮動全身，改完一定要拿真實問題實測輸出再上，不能憑感覺盲改（後來養成習慣：人設一改先跑真問題看結果）。</div></div>
         </div>
       </div>
 
       <div class="bug-block">
-        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑四：要選單圖，但 AI 畫不出正確的中文字</span></div>
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑四：要選單圖，但圖像模型畫不出正確中文</span></div>
         <div class="bug-body">
           <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>用 AI 生圖做圖文選單，但圖像模型畫多個中文字常缺筆畫、糊掉。</div></div>
           <p><strong>根本原因：</strong>圖像模型擅長「畫」、不擅長「精準的字」。</p>
-          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>帶走的原則：</strong>用混合法——讓 AI 生藝術底圖，文字用程式精準疊上去，兩邊各做各的強項。（上面的 Before/After 就是這樣做出來的。）</div></div>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>解法：</strong>混合法——讓 AI 生藝術底圖，文字用程式精準疊上去，兩邊各做各的強項。下面 Before / After 就是這樣做出來的。</div></div>
+          <div class="screenshot-compare">
+            <div class="screenshot-compare-item">
+              <div class="screenshot-compare-label">Before · 第一版（扁平）</div>
+              <img src="./screenshots/richmenu-simple.png" alt="第一版扁平圖文選單" />
+            </div>
+            <div class="screenshot-compare-item">
+              <div class="screenshot-compare-label after">After · 和紙木刻版</div>
+              <img src="./screenshots/richmenu-brand.jpg" alt="和紙木刻風圖文選單" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bug-block">
+        <div class="bug-header"><span class="bug-icon">⚠</span><span class="bug-title">坑五：酒款 AI 草稿「時好時壞」噴解析錯誤 → 模型偶爾暴衝把回覆撞爆</span></div>
+        <div class="bug-body">
+          <div class="callout callout-note"><span class="callout-icon">!</span><div><strong>症狀：</strong>同一張酒標，AI 建檔時好時壞，偶爾跳「JSON 解析失敗」。</div></div>
+          <p><strong>根本原因：</strong>草稿要求模型輸出一份 JSON（店裡固定 14 個欄位），但模型偶爾暴衝、把回覆寫爆 token 上限（<code>finish_reason=length</code>）→ JSON 寫到一半被截斷、沒有結尾 → 整份解析失敗。清楚的酒標很少中，模糊／壓縮過的圖較容易觸發。</p>
+          <div class="callout callout-tip"><span class="callout-icon">→</span><div><strong>解法：</strong>三層防護——① 拉高 token 上限給緩衝（正常用不到、只在暴衝時救得回完整）；② 解析改「逐欄位保底」：欄位是固定的，就算截斷也把斷點前的欄位一個個抠出來當草稿，不再是「整包成功或整包失敗」；③ prompt 強制一定輸出 JSON。原則：<strong>面對 AI 不穩定的輸出，與其要求它每次完美，不如讓解析能優雅降級。</strong></div></div>
         </div>
       </div>
     </section>
 
-    <!-- 07 如果繼續往下 + Takeaway -->
-    <section class="section" id="s7">
+    <!-- 06 如果繼續往下 + Takeaway -->
+    <section class="section" id="s6">
       <div class="section-header">
-        <span class="section-num">07</span>
+        <span class="section-num">06</span>
         <h2 class="section-title">如果繼續往下</h2>
       </div>
       <ul>
-        <li><strong>從主管群開放到全員</strong>：目前先開給主管測試。全員之前要先算 LINE 額度——聊天免費，但全店每天推播提醒得評估付費方案。</li>
-        <li><strong>事件通知</strong>：表單截止、班表發布、臨時徵班——這些主動通知可複用同一套 LINE 基礎建設。</li>
-        <li><strong>知識變多時的分層裁剪</strong>：酒款累積到上百支時，把售完的酒收成一行摘要，替 AI 的「問題包」瘦身。</li>
-        <li><strong>接上銷售數據</strong>：未來把 POS 銷售資料接進來，喵哥就能回答「這支好不好賣」，選酒筆記也能長出真實回購紀錄。</li>
+        <li><strong>從主管群開放到全員</strong>：目前 <code>bot_allowlist</code> 只開主管測試。全員之前要先算 LINE 額度——問答免費，但若要全店每天推播提醒，得評估付費方案。</li>
+        <li><strong>事件通知</strong>：表單截止、班表發布、臨時徵班——這些主動通知可複用同一套 LINE 基礎建設（綁定、push、驗簽都現成）。</li>
+        <li><strong>知識分層裁剪</strong>：酒款累積到上百支時，把售完的酒收成一行摘要，替 system 的知識段瘦身，控制成本與延遲。</li>
+        <li><strong>接上銷售數據</strong>：把 POS 銷售資料接進來，喵哥就能回答「這支好不好賣」，選酒筆記也能長出真實回購紀錄。</li>
       </ul>
 
       <div class="takeaway">
         <div class="takeaway-label">Takeaway</div>
-        <p><strong>這個案例展示了什麼：</strong>一種「決策我來、執行 AI 來」的協作節奏，加上三個很好複製的習慣——(1) 把現有的東西（店裡的 GPTs 提示詞）直接當規格書餵給 AI，省掉大量來回；(2) 先上線、再用真實使用回饋迭代，而不是追求一次做到完美；(3) 用截圖描述症狀，比用文字形容問題精準得多。</p>
-        <p><strong>可移植性：</strong>很適合「手上有明確參考範本、而且願意分批迭代」的專案。特殊條件是——我這個案子能長這麼快，是因為排班系統的地基本來就在；全新從零開始的話，前期會多花時間搭地基。</p>
-        <div class="matrix-row"><span class="matrix-key">先問 AI</span><span class="matrix-arrow">→</span><span>「我想把一個 ChatGPT GPTs 助理搬到 LINE 官方帳號、背後串大語言模型，先幫我盤需要哪些元件、哪些能用現成服務、成本結構是什麼？」</span></div>
-        <div class="matrix-row"><span class="matrix-key">再問 AI</span><span class="matrix-arrow">→</span><span>「LINE 官方帳號的『回覆訊息』和『主動推播』計費差在哪？免費額度怎麼算？」——先搞懂成本，再決定範圍。</span></div>
+        <p><strong>可複用的技術骨架其實就四塊：</strong>(1) 聊天走 LINE 免費的 reply 通道，把成本壓到趨近於零；(2) 知識用「全量上下文 + prompt caching」而不是 RAG，小規模下更準也更好維護；(3) 用 OpenRouter 把模型變成可隨時抽換的字串；(4) 需要結構化輸出（酒款 JSON）時，讓解析能對截斷／髒格式優雅降級，而不是要求模型每次完美。</p>
+        <p><strong>能長這麼快的特殊條件：</strong>排班系統的地基（LINE 帳號、員工資料、知識庫）本來就在。全新從零開始的話，前期得多花時間搭這些地基。</p>
       </div>
     </section>
 
